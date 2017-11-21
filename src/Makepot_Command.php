@@ -40,6 +40,8 @@ class Makepot_Command extends WP_CLI_Command {
 	 *
 	 *     # Create a POT file for the WordPress plugin in the current directory
 	 *     $ wp makepot . languages/my-plugin.pot --project=wp-plugin
+	 *
+	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$project = \WP_CLI\Utils\get_flag_value( $assoc_args, 'project', true );

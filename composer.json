@@ -18,7 +18,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "": "src/"
+            "Swissspidy\\WP_CLI_Makepot\\": "src/"
         },
         "files": [
             "makepot-command.php"

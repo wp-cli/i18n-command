@@ -3,8 +3,9 @@
 namespace Swissspidy\WP_CLI_Makepot;
 
 use WP_CLI;
+use WP_CLI_Command;
 
-class Makepot_Command extends \WP_CLI_Command {
+class Makepot_Command extends WP_CLI_Command {
 	/**
 	 * Create a POT file for a WordPress project.
 	 *

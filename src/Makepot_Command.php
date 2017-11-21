@@ -46,7 +46,7 @@ class Makepot_Command extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$project = \WP_CLI\Utils\get_flag_value( $assoc_args, 'project', true );
 
-		require_once __DIR__ . '../i18n-tools/makepot.php';
+		require_once __DIR__ . '/../i18n-tools/makepot.php';
 
 		$makepot = new \MakePOT();
 

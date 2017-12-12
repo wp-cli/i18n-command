@@ -57,6 +57,9 @@ abstract class MakepotCommand extends WP_CLI_Command {
 		// POT files have no Language header.
 		$this->translations->deleteHeader( Translations::HEADER_LANGUAGE );
 
+		// Todo: Allow users to circumvent this? Needs changes in WordPressFunctionsScanner.
+		$this->translations->setDomain( $this->slug );
+
 		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations );
 
 		// Set entries from main file data.

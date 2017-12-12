@@ -1,40 +1,32 @@
 {
-    "name": "swissspidy/wp-cli-makepot",
+    "name": "wp-cli/makepot-command",
     "description": "Create POT files for WordPress projects",
     "type": "wp-cli-package",
-    "homepage": "https://github.com/swissspidy/wp-cli-makepot",
-    "support": {
-        "issues": "https://github.com/swissspidy/wp-cli-makepot/issues"
-    },
+    "homepage": "https://github.com/wp-cli/makepot-command",
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Pascal Birchler",
-            "email": "pascal@required.com",
-            "homepage": "https://pascalbirchler.com"
-        }
-    ],
+    "authors": [],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
+        "files": [ "makepot-command.php" ],
         "psr-4": {
-            "Swissspidy\\WP_CLI_Makepot\\": "src/"
-        },
-        "files": [
-            "makepot-command.php"
-        ]
+            "WP_CLI\\Makepot\\": "src/"
+        }
     },
-    "require": {},
+    "require": {
+        "wp-cli/wp-cli": "^1.1.0",
+        "gettext/gettext": "^4.4"
+    },
     "require-dev": {
-        "behat/behat": "~2.5",
-        "wp-cli/wp-cli": "*"
+        "behat/behat": "~2.5"
     },
     "extra": {
         "branch-alias": {
             "dev-master": "1.x-dev"
         },
         "commands": [
-            "makepot"
+            "makepot plugin",
+            "makepot theme"
         ],
         "bundled": true
     }

@@ -3,6 +3,7 @@
 namespace WP_CLI\Makepot;
 
 use Gettext\Extractors\PhpCode;
+use Gettext\Translation;
 use Gettext\Translations;
 
 class WordPressCodeExtractor extends PhpCode {
@@ -43,9 +44,6 @@ class WordPressCodeExtractor extends PhpCode {
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$options += static::$options;
 
-		// Make sure a relative file path is added as a comment.
-		$options['file'] = ltrim( str_replace( static::$dir, '', $options['file'] ), '/' );
-
 		$functions = new WordPressFunctionsScanner( $string );
 
 		if ( $options['extractComments'] !== false ) {
@@ -53,6 +51,31 @@ class WordPressCodeExtractor extends PhpCode {
 		}
 
 		$functions->saveGettextFunctions( $translations, $options );
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public static function fromFile( $file, Translations $translations, array $options = [] ) {
+		foreach ( self::getFiles( $file ) as $f ) {
+			// Make sure a relative file path is added as a comment.
+			$options['file'] = ltrim( str_replace( static::$dir, '', $f ), '/' );
+
+			$string = self::readFile( $f );
+
+			if ( $options['wpExtractTemplates'] ) {
+				$headers = MakepotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
+
+				if ( ! empty( $headers[ 'Template Name'])) {
+					$translation = new Translation( '', $headers[ 'Template Name'] );
+					$translation->addExtractedComment('Template Name of the plugin/theme' );
+
+					$translations[] = $translation;
+				}
+			}
+
+			static::fromString( $string, $translations, $options );
+		}
 	}
 
 	/**

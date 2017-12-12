@@ -60,10 +60,13 @@ abstract class MakepotCommand extends WP_CLI_Command {
 		// Todo: Allow users to circumvent this? Needs changes in WordPressFunctionsScanner.
 		$this->translations->setDomain( $this->slug );
 
-		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations );
+		$file_data = $this->get_main_file_data();
+
+		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
+			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
+		] );
 
 		// Set entries from main file data.
-		$file_data = $this->get_main_file_data();
 		unset( $file_data['Version'], $file_data['License'] );
 
 		foreach ( $file_data as $header => $data ) {
@@ -134,11 +137,11 @@ abstract class MakepotCommand extends WP_CLI_Command {
 	 * @see get_file_data()
 	 *
 	 * @param string $file Path to the file.
-	 * @param array $default_headers List of headers, in the format array('HeaderKey' => 'Header Name').
+	 * @param array $headers List of headers, in the format array('HeaderKey' => 'Header Name').
 	 *
 	 * @return array Array of file headers in `HeaderKey => Header Value` format.
 	 */
-	protected function get_file_data( $file, $default_headers ) {
+	protected static function get_file_data( $file, $headers ) {
 		// We don't need to write to the file, so just open for reading.
 		$fp = fopen( $file, 'r' );
 
@@ -151,17 +154,19 @@ abstract class MakepotCommand extends WP_CLI_Command {
 		// Make sure we catch CR-only line endings.
 		$file_data = str_replace( "\r", "\n", $file_data );
 
-		$all_headers = $default_headers;
+		return static::get_file_data_from_string( $file_data, $headers );
+	}
 
-		foreach ( $all_headers as $field => $regex ) {
-			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $file_data, $match ) && $match[1] ) {
-				$all_headers[ $field ] = $this->_cleanup_header_comment( $match[1] );
+	public static function get_file_data_from_string( $string, $headers  ) {
+		foreach ( $headers as $field => $regex ) {
+			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $string, $match ) && $match[1] ) {
+				$headers[ $field ] = static::_cleanup_header_comment( $match[1] );
 			} else {
-				$all_headers[ $field ] = '';
+				$headers[ $field ] = '';
 			}
 		}
 
-		return $all_headers;
+		return $headers;
 	}
 
 	/**
@@ -176,7 +181,7 @@ abstract class MakepotCommand extends WP_CLI_Command {
 	 *
 	 * @return string
 	 */
-	protected function _cleanup_header_comment( $str ) {
+	protected static function _cleanup_header_comment( $str ) {
 		return trim( preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str ) );
 	}
 }

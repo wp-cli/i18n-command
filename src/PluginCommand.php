@@ -74,7 +74,7 @@ class PluginCommand extends MakepotCommand {
 				continue;
 			}
 
-			$plugin_data = $this->get_file_data( "$this->source/$plugin_file", array_combine( $this->headers, $this->headers ) );
+			$plugin_data = static::get_file_data( "$this->source/$plugin_file", array_combine( $this->headers, $this->headers ) );
 
 			// Stop when we find a file with a plugin name header in it.
 			if ( ! empty( $plugin_data['Plugin Name'] ) ) {

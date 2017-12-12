@@ -51,7 +51,7 @@ class ThemeCommand extends MakepotCommand {
 	 * {@inheritdoc}
 	 */
 	protected function set_main_file() {
-		$theme_data = $this->get_file_data( "$this->source/style.css", array_combine( $this->headers, $this->headers ) );
+		$theme_data = static::get_file_data( "$this->source/style.css", array_combine( $this->headers, $this->headers ) );
 
 		// Return file name when it contains a valid Theme Name header.
 		if ( ! empty( $theme_data['Theme Name'] ) ) {

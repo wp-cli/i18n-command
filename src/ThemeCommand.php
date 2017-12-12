@@ -41,7 +41,7 @@ class ThemeCommand extends MakepotCommand {
 			'comments'           => 'Copyright (C) {year} {author}\nThis file is distributed under the same license as the {package-name} package.',
 		];
 
-		$this->headers = [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version' ];
+		$this->headers = [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version', 'License' ];
 
 		parent::__invoke( $args, $assoc_args );
 

@@ -12,26 +12,26 @@ class WordPressCodeExtractor extends PhpCode {
 		'extractComments' => 'translators',
 		'constants'       => [],
 		'functions'       => [
-			'_'                    => 'gettext',
-			'__'                   => 'gettext',
-			'_e'                   => 'gettext',
+			'_'                    => 'dgettext',
+			'__'                   => 'dgettext',
+			'_e'                   => 'dgettext',
 			'_c'                   => 'pgettext',
 			'_n'                   => 'ngettext',
 			'_n_noop'              => 'noop',
-			'_nc'                  => 'gettext',
-			'__ngettext'           => 'gettext',
+			'_nc'                  => 'dgettext',
+			'__ngettext'           => 'dgettext',
 			'__ngettext_noop'      => 'noop',
 			'_x'                   => 'pgettext',
 			'_ex'                  => 'pgettext',
-			'_nx'                  => 'npgettext',
+			'_nx'                  => 'dnpgettext',
 			'_nx_noop'             => 'noop',
 			'_n_js'                => 'ngettext',
 			'_nx_js'               => 'npgettext',
-			'esc_attr__'           => 'gettext',
-			'esc_html__'           => 'gettext',
-			'esc_attr_e'           => 'gettext',
-			'esc_html_e'           => 'gettext',
-			'esc_attr_x'           => 'gettext',
+			'esc_attr__'           => 'dgettext',
+			'esc_html__'           => 'dgettext',
+			'esc_attr_e'           => 'dgettext',
+			'esc_html_e'           => 'dgettext',
+			'esc_attr_x'           => 'dgettext',
 			'esc_html_x'           => 'pgettext',
 			'comments_number_link' => 'ngettext',
 		],
@@ -41,16 +41,18 @@ class WordPressCodeExtractor extends PhpCode {
 	 * {@inheritdoc}
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
+		$options += static::$options;
+
 		// Make sure a relative file path is added as a comment.
 		$options['file'] = ltrim( str_replace( static::$dir, '', $options['file'] ), '/' );
 
-		/*
-		 * Todo: Make own implementation using custom PhpFunctionsScanner.
-		 *
-		 * The default gettext functions have the context first, but WordPress doesn't.
-		 * That's why this currently causes wrong POT files to be generated.
-		 */
-		parent::fromString( $string, $translations, $options );
+		$functions = new WordPressFunctionsScanner( $string );
+
+		if ( $options['extractComments'] !== false ) {
+			$functions->enableCommentsExtraction( $options['extractComments'] );
+		}
+
+		$functions->saveGettextFunctions( $translations, $options );
 	}
 
 	/**

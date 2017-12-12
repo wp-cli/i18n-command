@@ -95,11 +95,16 @@ class WordPressCodeExtractor extends PhpCode {
 
 			if ( preg_match( '/\.php$/', $file_name ) ) {
 				$files[] = "$dir/$file_name";
+
 				continue;
 			}
 
 			if ( is_dir( $file_name ) ) {
-				$files += self::getFilesFromDirectory( "$dir/$file_name" );
+				if ( '.git' === $file_name || '.svn' === $file_name ) {
+					continue;
+				}
+
+				$files = array_merge( $files, self::getFilesFromDirectory( "$dir/$file_name" ) );
 			}
 		}
 

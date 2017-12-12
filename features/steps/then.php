@@ -145,14 +145,15 @@ $steps->Then( '/^(STDOUT|STDERR) should not be empty$/',
 	}
 );
 
-$steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<>) ([+\w\.-]+)$/',
+$steps->Then( '/^(STDOUT|STDERR) should be a version string (<|<=|>|>=|==|=|!=|<>) ([+\w.{}-]+)$/',
 	function ( $world, $stream, $operator, $goal_ver ) {
+		$goal_ver = $world->replace_variables( $goal_ver );
 		$stream = strtolower( $stream );
 		if ( false === version_compare( trim( $world->result->$stream, "\n" ), $goal_ver, $operator ) ) {
 			throw new Exception( $world->result );
 		}
 	}
-);	
+);
 
 $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|not contain:)$/',
 	function ( $world, $path, $type, $action, $expected = null ) {
@@ -171,12 +172,12 @@ $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|
 		switch ( $action ) {
 		case 'exist':
 			if ( ! $test( $path ) ) {
-				throw new Exception( $world->result );
+				throw new Exception( "$path doesn't exist." );
 			}
 			break;
 		case 'not exist':
 			if ( $test( $path ) ) {
-				throw new Exception( $world->result );
+				throw new Exception( "$path exists." );
 			}
 			break;
 		default:
@@ -199,6 +200,25 @@ $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|
 	}
 );
 
+$steps->Then( '/^the contents of the (.+) file should match (((\/.+\/)|(#.+#))([a-z]+)?)$/',
+	function ( $world, $path, $expected ) {
+		$path = $world->replace_variables( $path );
+		// If it's a relative path, make it relative to the current test dir
+		if ( '/' !== $path[0] ) {
+			$path = $world->variables['RUN_DIR'] . "/$path";
+		}
+		$contents = file_get_contents( $path );
+		assertRegExp( $expected, $contents );
+	}
+);
+
+$steps->Then( '/^(STDOUT|STDERR) should match (((\/.+\/)|(#.+#))([a-z]+)?)$/',
+	function ( $world, $stream, $expected ) {
+		$stream = strtolower( $stream );
+		assertRegExp( $expected, $world->result->$stream );
+	}
+);
+
 $steps->Then( '/^an email should (be sent|not be sent)$/', function( $world, $expected ) {
 	if ( 'be sent' === $expected ) {
 		assertNotEquals( 0, $world->email_sends );
@@ -208,3 +228,10 @@ $steps->Then( '/^an email should (be sent|not be sent)$/', function( $world, $ex
 		throw new Exception( 'Invalid expectation' );
 	}
 });
+
+$steps->Then( '/^the HTTP status code should be (\d+)$/',
+	function ( $world, $return_code ) {
+		$response = \Requests::request( 'http://localhost:8080' );
+		assertEquals( $return_code, $response->status_code );
+	}
+);

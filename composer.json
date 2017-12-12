@@ -25,7 +25,8 @@
             "dev-master": "1.x-dev"
         },
         "commands": [
-            "makepot"
+            "makepot plugin",
+            "makepot theme"
         ],
         "bundled": true
     }

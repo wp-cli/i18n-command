@@ -9,13 +9,65 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 
 ## Using
 
+This package implements the following commands:
 
+### wp makepot plugin
+
+Create a POT file for a WordPress plugin.
+
+~~~
+wp makepot plugin <source> <output> [--slug=<slug>]
+~~~
+
+**OPTIONS**
+
+	<source>
+		Directory to scan for string extraction.
+
+	<output>
+		Name of the resulting POT file.
+
+	[--slug=<slug>]
+		Plugin slug. Defaults to the source directory's basename.
+		---
+
+**EXAMPLES**
+
+    # Create a POT file for the WordPress plugin in the current directory
+    $ wp makepot plugin . languages/my-plugin.pot
+
+
+
+### wp makepot theme
+
+Create a POT file for a WordPress theme.
+
+~~~
+wp makepot theme <source> <output> [--slug=<slug>]
+~~~
+
+**OPTIONS**
+
+	<source>
+		Directory to scan for string extraction.
+
+	<output>
+		Name of the resulting POT file.
+
+	[--slug=<slug>]
+		Theme slug. Defaults to the source directory's basename.
+		---
+
+**EXAMPLES**
+
+    # Create a POT file for the WordPress theme in the current directory
+    $ wp makepot theme . languages/my-plugin.pot
 
 ## Installing
 
-Installing this package requires WP-CLI v1.1.0 or greater. Update to the latest stable release with `wp cli update`.
+This package is included with WP-CLI itself, no additional installation necessary.
 
-Once you've done so, you can install this package with:
+To install the latest version of this package over what's included in WP-CLI, run:
 
     wp package install git@github.com:wp-cli/makepot-command.git
 

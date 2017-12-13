@@ -9,7 +9,7 @@ Feature: Generate a POT file of a WordPress project
     And the wp-content/plugins/hello-world/.travis.yml file should exist
     And the wp-content/plugins/hello-world/bin directory should exist
 
-    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --project=wp-plugin`
+    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then STDOUT should be:
       """
       Success: POT file successfully generated!

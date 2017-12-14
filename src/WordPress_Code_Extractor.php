@@ -6,7 +6,7 @@ use Gettext\Extractors\PhpCode;
 use Gettext\Translation;
 use Gettext\Translations;
 
-class WordPressCodeExtractor extends PhpCode {
+class WordPress_Code_Extractor extends PhpCode {
 	protected static $dir = '';
 
 	public static $options = [
@@ -44,7 +44,7 @@ class WordPressCodeExtractor extends PhpCode {
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$options += static::$options;
 
-		$functions = new WordPressFunctionsScanner( $string );
+		$functions = new WordPress_Functions_Scanner( $string );
 
 		if ( $options['extractComments'] !== false ) {
 			$functions->enableCommentsExtraction( $options['extractComments'] );
@@ -64,7 +64,7 @@ class WordPressCodeExtractor extends PhpCode {
 			$string = self::readFile( $f );
 
 			if ( $options['wpExtractTemplates'] ) {
-				$headers = MakepotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
+				$headers = Makepot_Command::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers[ 'Template Name'])) {
 					$translation = new Translation( '', $headers[ 'Template Name'] );

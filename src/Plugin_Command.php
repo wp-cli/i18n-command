@@ -8,7 +8,7 @@ use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
 
-class PluginCommand extends MakepotCommand {
+class Plugin_Command extends Makepot_Command {
 	/**
 	 * Create a POT file for a WordPress plugin.
 	 *

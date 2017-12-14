@@ -79,6 +79,10 @@ abstract class Makepot_Command extends WP_CLI_Command {
 		unset( $file_data['Version'], $file_data['License'] );
 
 		foreach ( $file_data as $header => $data ) {
+			if ( empty( $data ) ) {
+				continue;
+			}
+
 			$translation = new Translation( '', $data );
 			$translation->addExtractedComment( sprintf( '%s of the plugin/theme', $header ) );
 

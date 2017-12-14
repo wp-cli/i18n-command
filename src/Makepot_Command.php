@@ -42,7 +42,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Could not generate a POT file!' );
 		}
 
-		WP_CLI::success( 'Success: POT file successfully generated!' );
+		WP_CLI::success( 'POT file successfully generated!' );
 	}
 
 	abstract protected function set_main_file();

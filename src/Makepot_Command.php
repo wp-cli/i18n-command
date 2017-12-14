@@ -8,7 +8,7 @@ use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
 
-abstract class MakepotCommand extends WP_CLI_Command {
+abstract class Makepot_Command extends WP_CLI_Command {
 	/** @var  Translations */
 	protected $translations;
 
@@ -50,7 +50,7 @@ abstract class MakepotCommand extends WP_CLI_Command {
 		$this->translations = new Translations();
 
 		$meta = $this->get_meta_data();
-		PotGenerator::setCommentBeforeHeaders( $meta['comments'] );
+		Pot_Generator::setCommentBeforeHeaders( $meta['comments'] );
 
 		$this->set_default_headers();
 
@@ -62,7 +62,7 @@ abstract class MakepotCommand extends WP_CLI_Command {
 
 		$file_data = $this->get_main_file_data();
 
-		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
+		WordPress_Code_Extractor::fromDirectory( $this->source, $this->translations, [
 			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
 		] );
 
@@ -76,7 +76,7 @@ abstract class MakepotCommand extends WP_CLI_Command {
 			$this->translations[] = $translation;
 		}
 
-		return PotGenerator::toFile( $this->translations, $this->dest );
+		return Pot_Generator::toFile( $this->translations, $this->dest );
 	}
 
 	protected function get_meta_data() {

@@ -5,7 +5,7 @@ namespace WP_CLI\Makepot;
 use Gettext\Translations;
 use Gettext\Utils\PhpFunctionsScanner;
 
-class WordPressFunctionsScanner extends PhpFunctionsScanner {
+class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 	/**
 	 * {@inheritdoc}
 	 */

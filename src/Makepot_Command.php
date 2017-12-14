@@ -22,8 +22,17 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	protected $main_file_data = [];
 
 	public function __invoke( $args, $assoc_args ) {
-		$this->source = $args[0];
-		$this->dest   = $args[1];
+		$this->source = realpath( $args[0] );
+
+		if ( ! is_dir( $this->source ) ) {
+			WP_CLI::error( 'Not a valid source directory!' );
+		}
+
+		if ( ! is_dir( dirname( $args[1] ) ) && ! mkdir( dirname( $args[1] ) ) && ! is_dir( dirname( $args[1] ) )  ) {
+			WP_CLI::error( 'Could not create destination directory!' );
+		}
+
+		$this->dest = realpath( dirname( $args[1] ) ) . DIRECTORY_SEPARATOR . basename( $args[1] );
 
 		$this->slug = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 

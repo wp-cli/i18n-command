@@ -28,6 +28,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Not a valid source directory!' );
 		}
 
+		// Two is_dir() checks in case of a race condition.
 		if ( ! is_dir( dirname( $args[1] ) ) && ! mkdir( dirname( $args[1] ) ) && ! is_dir( dirname( $args[1] ) )  ) {
 			WP_CLI::error( 'Could not create destination directory!' );
 		}
@@ -84,6 +85,8 @@ abstract class Makepot_Command extends WP_CLI_Command {
 			}
 
 			$translation = new Translation( '', $data );
+
+			// Todo: Use correct string for each type.
 			$translation->addExtractedComment( sprintf( '%s of the plugin/theme', $header ) );
 
 			$this->translations[] = $translation;

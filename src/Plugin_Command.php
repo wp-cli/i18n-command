@@ -34,8 +34,10 @@ class Plugin_Command extends Makepot_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$this->meta = [
 			'comments'           => "Copyright (C) {year} {package-name}\nThis file is distributed under the same license as the {package-name} package.",
+			// Todo: Where should this be used?
 			'description'        => 'Translation of the WordPress plugin {name} {version} by {author}',
 			'msgid-bugs-address' => 'https://wordpress.org/support/plugin/{slug}',
+			// Todo: Where should this be used?
 			'copyright-holder'   => '{author}',
 			'package-name'       => '{name}',
 			'package-version'    => '{version}',

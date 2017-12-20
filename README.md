@@ -16,7 +16,7 @@ This package implements the following commands:
 Create a POT file for a WordPress plugin.
 
 ~~~
-wp makepot plugin <source> <output> [--slug=<slug>]
+wp makepot plugin <source> <output> [--slug=<slug>] [--domain=<domain>]
 ~~~
 
 **OPTIONS**
@@ -29,6 +29,9 @@ wp makepot plugin <source> <output> [--slug=<slug>]
 
 	[--slug=<slug>]
 		Plugin slug. Defaults to the source directory's basename.
+
+	[--domain=<domain>]
+		Text domain to look for in the source code. Defaults to the plugin slug.
 		---
 
 **EXAMPLES**
@@ -43,7 +46,7 @@ wp makepot plugin <source> <output> [--slug=<slug>]
 Create a POT file for a WordPress theme.
 
 ~~~
-wp makepot theme <source> <output> [--slug=<slug>]
+wp makepot theme <source> <output> [--slug=<slug>] [--domain=<domain>]
 ~~~
 
 **OPTIONS**
@@ -56,12 +59,15 @@ wp makepot theme <source> <output> [--slug=<slug>]
 
 	[--slug=<slug>]
 		Theme slug. Defaults to the source directory's basename.
+
+	[--domain=<domain>]
+		Text domain to look for in the source code. Defaults to the theme slug.
 		---
 
 **EXAMPLES**
 
     # Create a POT file for the WordPress theme in the current directory
-    $ wp makepot theme . languages/my-plugin.pot
+    $ wp makepot theme . languages/my-theme.pot
 
 ## Installing
 

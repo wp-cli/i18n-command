@@ -100,14 +100,14 @@ Feature: Generate a POT file of a WordPress plugin
        __( 'bar' );
       """
 
-    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    When I run `wp makepot plugin foo-plugin foo-plugin.pot --domain=bar`
     And the foo-plugin.pot file should contain:
       """
-      msgid "Hello World"
+      msgid "Foo"
       """
     And the foo-plugin.pot file should not contain:
       """
-      msgid "Foo"
+      msgid "Hello World"
       """
     And the foo-plugin.pot file should not contain:
       """

@@ -76,7 +76,7 @@ class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 					return;
 			}
 
-			// Todo: Allow users to have multiple domains?
+			// Todo: Require a domain?
 			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation->addReference( $file, $line );

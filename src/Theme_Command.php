@@ -27,7 +27,7 @@ class Theme_Command extends Makepot_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Create a POT file for the WordPress theme in the current directory
-	 *     $ wp makepot theme . languages/my-plugin.pot
+	 *     $ wp makepot theme . languages/my-theme.pot
 	 *
 	 * @when before_wp_load
 	 */

@@ -46,16 +46,36 @@ abstract class Makepot_Command extends WP_CLI_Command {
 		WP_CLI::success( 'POT file successfully generated!' );
 	}
 
+	/**
+	 * Sets the main file of the plugin or theme.
+	 *
+	 * @return void
+	 */
 	abstract protected function set_main_file();
 
+	/**
+	 * Returns the main file of the plugin or theme.
+	 *
+	 * @return string Main plugin/theme file.
+	 */
 	protected function get_main_file() {
 		return $this->main_file;
 	}
 
+	/**
+	 * Returns the header data of the main plugin/theme file.
+	 *
+	 * @return array Main file data.
+	 */
 	protected function get_main_file_data() {
 		return $this->main_file_data;
 	}
 
+	/**
+	 * Creates a POT file and stores it on disk.
+	 *
+	 * @return bool True on success, false otherwise.
+	 */
 	protected function makepot() {
 		$this->translations = new Translations();
 
@@ -72,6 +92,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 
 		$file_data = $this->get_main_file_data();
 
+		// Extract 'Template Name' headers in theme files.
 		WordPress_Code_Extractor::fromDirectory( $this->source, $this->translations, [
 			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
 		] );
@@ -95,6 +116,11 @@ abstract class Makepot_Command extends WP_CLI_Command {
 		return Pot_Generator::toFile( $this->translations, $this->dest );
 	}
 
+	/**
+	 * Gets the metadata for a plugin or theme and populates placeholders in it.
+	 *
+	 * @return array Meta data with populated placeholders.
+	 */
 	protected function get_meta_data() {
 		$file_data = $this->get_main_file_data();
 		$meta      = $this->meta;
@@ -173,6 +199,14 @@ abstract class Makepot_Command extends WP_CLI_Command {
 		return static::get_file_data_from_string( $file_data, $headers );
 	}
 
+	/**
+	 * Retrieves metadata from a string.
+	 *
+	 * @param string $string String to look for metadata in.
+	 * @param array $headers List of headers.
+	 *
+	 * @return array Array of file headers in `HeaderKey => Header Value` format.
+	 */
 	public static function get_file_data_from_string( $string, $headers  ) {
 		foreach ( $headers as $field => $regex ) {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $string, $match ) && $match[1] ) {
@@ -188,10 +222,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	/**
 	 * Strip close comment and close php tags from file headers used by WP.
 	 *
-	 * @since 2.8.0
-	 * @access private
-	 *
-	 * @see https://core.trac.wordpress.org/ticket/8497
+	 * @see _cleanup_header_comment()
 	 *
 	 * @param string $str Header comment to clean up.
 	 *

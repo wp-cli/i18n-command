@@ -22,6 +22,9 @@ class Theme_Command extends Makepot_Command {
 	 *
 	 * [--slug=<slug>]
 	 * : Theme slug. Defaults to the source directory's basename.
+	 *
+	 * [--domain=<domain>]
+	 * : Text domain to look for in the source code. Defaults to the theme slug.
 	 * ---
 	 *
 	 * ## EXAMPLES

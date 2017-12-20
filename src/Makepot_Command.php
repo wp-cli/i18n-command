@@ -15,6 +15,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	protected $source;
 	protected $dest;
 	protected $slug;
+	protected $domain;
 
 	protected $headers = [];
 	protected $meta = [];
@@ -33,9 +34,12 @@ abstract class Makepot_Command extends WP_CLI_Command {
 			WP_CLI::error( 'Could not create destination directory!' );
 		}
 
+		$this->slug   = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->slug );
+
+		// Todo: If only a directory is provided, use <slug>.pot.
 		$this->dest = realpath( dirname( $args[1] ) ) . DIRECTORY_SEPARATOR . basename( $args[1] );
 
-		$this->slug = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 
 		$this->set_main_file();
 
@@ -87,8 +91,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 		// POT files have no Language header.
 		$this->translations->deleteHeader( Translations::HEADER_LANGUAGE );
 
-		// Todo: Allow users to circumvent this? Needs changes in WordPressFunctionsScanner.
-		$this->translations->setDomain( $this->slug );
+		$this->translations->setDomain( $this->domain );
 
 		$file_data = $this->get_main_file_data();
 

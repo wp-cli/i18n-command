@@ -4,7 +4,6 @@ Feature: Generate a POT file of a WordPress plugin
     Given a WP install
 
   Scenario: Bail for invalid source directories
-
     When I run `wp makepot plugin foo bar/baz.pot`
     Then STDERR should contain:
       """

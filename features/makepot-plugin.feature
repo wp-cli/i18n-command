@@ -3,6 +3,15 @@ Feature: Generate a POT file of a WordPress plugin
   Background:
     Given a WP install
 
+  Scenario: Bail for invalid source directories
+
+    When I run `wp makepot plugin foo bar/baz.pot`
+    Then STDERR should contain:
+      """
+      Error: Not a valid source directory!
+      """
+    And the return code should be 1
+
   Scenario: Generates a POT file by default
     When I run `wp scaffold plugin hello-world`
     Then the wp-content/plugins/hello-world directory should exist

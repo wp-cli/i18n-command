@@ -32,7 +32,6 @@ wp makepot plugin <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 
 	[--domain=<domain>]
 		Text domain to look for in the source code. Defaults to the plugin slug.
-		---
 
 **EXAMPLES**
 
@@ -62,7 +61,6 @@ wp makepot theme <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 
 	[--domain=<domain>]
 		Text domain to look for in the source code. Defaults to the theme slug.
-		---
 
 **EXAMPLES**
 

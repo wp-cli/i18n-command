@@ -22,7 +22,6 @@ class Plugin_Command extends Makepot_Command {
 	 *
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code. Defaults to the plugin slug.
-	 * ---
 	 *
 	 * ## EXAMPLES
 	 *

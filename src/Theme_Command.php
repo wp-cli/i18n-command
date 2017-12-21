@@ -2,11 +2,7 @@
 
 namespace WP_CLI\Makepot;
 
-use Gettext\Translation;
-use Gettext\Translations;
 use WP_CLI;
-use WP_CLI_Command;
-use WP_CLI\Utils;
 
 class Theme_Command extends Makepot_Command {
 	/**

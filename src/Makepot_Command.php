@@ -17,8 +17,6 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	protected $slug;
 	protected $domain;
 
-	protected $headers = [];
-	protected $meta = [];
 	protected $main_file = '';
 	protected $main_file_data = [];
 
@@ -118,42 +116,11 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	}
 
 	/**
-	 * Gets the metadata for a plugin or theme and populates placeholders in it.
+	 * Returns the metadata for a plugin or theme.
 	 *
-	 * @return array Meta data with populated placeholders.
+	 * @return array Meta data.
 	 */
-	protected function get_meta_data() {
-		$file_data = $this->get_main_file_data();
-		$meta      = $this->meta;
-
-		if ( isset( $file_data['Theme Name'] ) ) {
-			if ( isset( $file_data['License'] ) ) {
-				$meta['comments'] = "Copyright (C) {year} {author}\nThis file is distributed under the {$file_data['License']}.";
-			} else {
-				$meta['comments'] = "Copyright (C) {year} {author}\nThis file is distributed under the same license as the {package-name} package.";
-			}
-		}
-
-		$placeholders            = [];
-		$placeholders['year']    = date( 'Y' );
-		$placeholders['version'] = $file_data['Version'];
-		$placeholders['author']  = $file_data['Author'];
-		$placeholders['name']    = isset( $file_data['Plugin Name'] ) ? $file_data['Plugin Name'] : $file_data['Theme Name'];
-		$placeholders['slug']    = $this->slug;
-
-		$placeholders = array_merge( $meta, $placeholders );
-
-		$placeholder_values = array_values( $placeholders );
-		$placeholder_keys   = array_map( function ( $x ) {
-			return "{{$x}}";
-		}, array_keys( $placeholders ) );
-
-		foreach ( $meta as $key => $value ) {
-			$meta[ $key ] = str_replace( $placeholder_keys, $placeholder_values, $value );
-		}
-
-		return $meta;
-	}
+	abstract protected function get_meta_data();
 
 	/**
 	 * Sets default POT file headers for the project.
@@ -161,7 +128,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	protected function set_default_headers() {
 		$meta = $this->get_meta_data();
 
-		$this->translations->setHeader( 'Project-Id-Version', $meta['package-name'] . ' ' . $meta['package-version'] );
+		$this->translations->setHeader( 'Project-Id-Version', $meta['name'] . ' ' . $meta['version'] );
 		$this->translations->setHeader( 'Report-Msgid-Bugs-To', $meta['msgid-bugs-address'] );
 		$this->translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
 		$this->translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
@@ -186,7 +153,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	 */
 	protected static function get_file_data( $file, $headers ) {
 		// We don't need to write to the file, so just open for reading.
-		$fp = fopen( $file, 'r' );
+		$fp = fopen( $file, 'rb' );
 
 		// Pull only the first 8kiB of the file in.
 		$file_data = fread( $fp, 8192 );

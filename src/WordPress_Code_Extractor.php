@@ -5,6 +5,9 @@ namespace WP_CLI\Makepot;
 use Gettext\Extractors\PhpCode;
 use Gettext\Translation;
 use Gettext\Translations;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use WP_CLI;
 
 class WordPress_Code_Extractor extends PhpCode {
 	protected static $dir = '';
@@ -81,17 +84,13 @@ class WordPress_Code_Extractor extends PhpCode {
 	/**
 	 * Recursively extracts the translations from a directory.
 	 *
-	 * @param string $dir A path of a directory.
+	 * @param string $dir Root path to start the recursive traversal in.
 	 * @param Translations $translations The translations instance to append the new translations.
 	 * @param array $options
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		static::$dir = $dir;
-
-		$files = static::getFilesFromDirectory( $dir );
-
-		static::fromFile( $files, $translations, $options );
-
+		static::fromFile( static::getFilesFromDirectory( $dir ), $translations, $options );
 		static::$dir = '';
 	}
 
@@ -103,36 +102,24 @@ class WordPress_Code_Extractor extends PhpCode {
 	 * @return array File list.
 	 */
 	protected static function getFilesFromDirectory( $dir ) {
-		$files = [];
+		$filtered_files = [];
 
-		$old_cwd = getcwd();
+		try {
+			$files = new RecursiveIteratorIterator(
+				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+				RecursiveIteratorIterator::CHILD_FIRST
+			);
 
-		chdir( $dir );
-
-		$file_names = (array) scandir( '.', SCANDIR_SORT_NONE );
-
-		foreach ( $file_names as $file_name ) {
-			if ( '.' === $file_name || '..' === $file_name ) {
-				continue;
-			}
-
-			if ( preg_match( '/\.php$/', $file_name ) ) {
-				$files[] = "$dir/$file_name";
-
-				continue;
-			}
-
-			if ( is_dir( $file_name ) ) {
-				if ( '.git' === $file_name || '.svn' === $file_name ) {
-					continue;
+			/** @var \DirectoryIterator $file */
+			foreach ( $files as $file ) {
+				if ( $file->isFile() && 'php' === $file->getExtension()) {
+					$filtered_files[] = $file->getPathname();
 				}
-
-				$files = array_merge( $files, self::getFilesFromDirectory( "$dir/$file_name" ) );
 			}
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
 		}
 
-		chdir( $old_cwd );
-
-		return $files;
+		return $filtered_files;
 	}
 }

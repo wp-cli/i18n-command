@@ -23,7 +23,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$this->source = realpath( $args[0] );
 
-		if ( ! is_dir( $this->source ) ) {
+		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
 		}
 

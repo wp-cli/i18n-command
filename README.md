@@ -16,7 +16,7 @@ This package implements the following commands:
 Create a POT file for a WordPress plugin.
 
 ~~~
-wp makepot plugin <source> <output> [--slug=<slug>] [--domain=<domain>]
+wp makepot plugin <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 ~~~
 
 **OPTIONS**
@@ -24,7 +24,7 @@ wp makepot plugin <source> <output> [--slug=<slug>] [--domain=<domain>]
 	<source>
 		Directory to scan for string extraction.
 
-	<output>
+	[<destination>]
 		Name of the resulting POT file.
 
 	[--slug=<slug>]
@@ -46,7 +46,7 @@ wp makepot plugin <source> <output> [--slug=<slug>] [--domain=<domain>]
 Create a POT file for a WordPress theme.
 
 ~~~
-wp makepot theme <source> <output> [--slug=<slug>] [--domain=<domain>]
+wp makepot theme <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 ~~~
 
 **OPTIONS**
@@ -54,7 +54,7 @@ wp makepot theme <source> <output> [--slug=<slug>] [--domain=<domain>]
 	<source>
 		Directory to scan for string extraction.
 
-	<output>
+	[<destination>]
 		Name of the resulting POT file.
 
 	[--slug=<slug>]

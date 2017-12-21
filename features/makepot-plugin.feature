@@ -161,3 +161,37 @@ Feature: Generate a POT file of a WordPress plugin
       """
       #: foo-plugin.php:15
       """
+
+  Scenario: Uses the current folder as destination path when none is set.
+    When I run `wp scaffold plugin hello-world`
+    Then the wp-content/plugins/hello-world directory should exist
+
+    When I run `wp makepot plugin wp-content/plugins/hello-world`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+
+  Scenario: Uses Domain Path as destination path when none is set.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+      """
+
+    When I run `wp makepot plugin foo-plugin`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the foo-plugin/languages/foo-plugin.pot file should exist

@@ -22,22 +22,33 @@ abstract class Makepot_Command extends WP_CLI_Command {
 
 	public function __invoke( $args, $assoc_args ) {
 		$this->source = realpath( $args[0] );
+		$this->slug   = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->slug );
 
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
 		}
 
-		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( dirname( $args[1] ) ) && ! mkdir( dirname( $args[1] ) ) && ! is_dir( dirname( $args[1] ) )  ) {
-			WP_CLI::error( 'Could not create destination directory!' );
+		$this->set_main_file();
+
+		if ( isset( $args[1] ) ) {
+			$this->dest = $args[1];
+		} else {
+			$file_data = $this->get_main_file_data();
+
+			// Current directory.
+			$this->dest = $this->slug . '.pot';
+
+			if ( isset( $file_data['Domain Path'] ) ) {
+				// Domain Path inside source folder.
+				$this->dest = $this->source . DIRECTORY_SEPARATOR . $file_data['Domain Path'] . DIRECTORY_SEPARATOR . $this->slug . '.pot';
+			}
 		}
 
-		$this->slug   = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->slug );
-
-		$this->dest = realpath( dirname( $args[1] ) ) . DIRECTORY_SEPARATOR . basename( $args[1] );
-
-		$this->set_main_file();
+		// Two is_dir() checks in case of a race condition.
+		if ( ! is_dir( dirname( $this->dest ) ) && ! mkdir( dirname( $this->dest ) ) && ! is_dir( dirname( $this->dest ) ) ) {
+			WP_CLI::error( 'Could not create destination directory!' );
+		}
 
 		if ( ! $this->makepot() ) {
 			WP_CLI::error( 'Could not generate a POT file!' );
@@ -96,7 +107,7 @@ abstract class Makepot_Command extends WP_CLI_Command {
 			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
 		] );
 
-		unset( $file_data['Version'], $file_data['License'] );
+		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );
 
 		// Set entries from main file data.
 		foreach ( $file_data as $header => $data ) {

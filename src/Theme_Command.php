@@ -5,7 +5,7 @@ namespace WP_CLI\Makepot;
 use WP_CLI;
 
 class Theme_Command extends Makepot_Command {
-	protected $headers = [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version', 'License' ];
+	protected $headers = [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version', 'License', 'Domain Path' ];
 
 	/**
 	 * Create a POT file for a WordPress theme.
@@ -15,7 +15,7 @@ class Theme_Command extends Makepot_Command {
 	 * <source>
 	 * : Directory to scan for string extraction.
 	 *
-	 * <output>
+	 * [<destination>]
 	 * : Name of the resulting POT file.
 	 *
 	 * [--slug=<slug>]

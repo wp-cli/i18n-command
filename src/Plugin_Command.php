@@ -5,7 +5,7 @@ namespace WP_CLI\Makepot;
 use WP_CLI;
 
 class Plugin_Command extends Makepot_Command {
-	protected $headers = [ 'Plugin Name', 'Plugin URI', 'Description', 'Author', 'Author URI', 'Version' ];
+	protected $headers = [ 'Plugin Name', 'Plugin URI', 'Description', 'Author', 'Author URI', 'Version', 'Domain Path' ];
 	/**
 	 * Create a POT file for a WordPress plugin.
 	 *
@@ -14,7 +14,7 @@ class Plugin_Command extends Makepot_Command {
 	 * <source>
 	 * : Directory to scan for string extraction.
 	 *
-	 * <output>
+	 * [<destination>]
 	 * : Name of the resulting POT file.
 	 *
 	 * [--slug=<slug>]

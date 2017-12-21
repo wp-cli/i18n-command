@@ -5,6 +5,7 @@ namespace WP_CLI\Makepot;
 use WP_CLI;
 
 class Plugin_Command extends Makepot_Command {
+	protected $headers = [ 'Plugin Name', 'Plugin URI', 'Description', 'Author', 'Author URI', 'Version' ];
 	/**
 	 * Create a POT file for a WordPress plugin.
 	 *
@@ -31,19 +32,6 @@ class Plugin_Command extends Makepot_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->meta = [
-			'comments'           => "Copyright (C) {year} {package-name}\nThis file is distributed under the same license as the {package-name} package.",
-			// Todo: Where should this be used?
-			'description'        => 'Translation of the WordPress plugin {name} {version} by {author}',
-			'msgid-bugs-address' => 'https://wordpress.org/support/plugin/{slug}',
-			// Todo: Where should this be used?
-			'copyright-holder'   => '{author}',
-			'package-name'       => '{name}',
-			'package-version'    => '{version}',
-		];
-
-		$this->headers = [ 'Plugin Name', 'Plugin URI', 'Description', 'Author', 'Author URI', 'Version' ];
-
 		parent::__invoke( $args, $assoc_args );
 	}
 
@@ -87,5 +75,24 @@ class Plugin_Command extends Makepot_Command {
 		}
 
 		WP_CLI::error( 'No main plugin file found!' );
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	protected function get_meta_data() {
+		$file_data = $this->get_main_file_data();
+
+		return [
+			'name'               => $file_data['Plugin Name'],
+			'version'            => $file_data['Version'],
+			'comments'           => sprintf(
+				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s package.",
+				date( 'Y' ),
+				$file_data['Plugin Name'],
+				$file_data['Plugin Name']
+			),
+			'msgid-bugs-address' => sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug ),
+		];
 	}
 }

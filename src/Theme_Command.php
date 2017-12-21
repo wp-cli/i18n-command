@@ -5,6 +5,8 @@ namespace WP_CLI\Makepot;
 use WP_CLI;
 
 class Theme_Command extends Makepot_Command {
+	protected $headers = [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version', 'License' ];
+
 	/**
 	 * Create a POT file for a WordPress theme.
 	 *
@@ -31,19 +33,7 @@ class Theme_Command extends Makepot_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->meta = [
-			'description'        => 'Translation of the WordPress theme {name} {version} by {author}',
-			'msgid-bugs-address' => 'https://wordpress.org/support/theme/{slug}',
-			'copyright-holder'   => '{author}',
-			'package-name'       => '{name}',
-			'package-version'    => '{version}',
-			'comments'           => 'Copyright (C) {year} {author}\nThis file is distributed under the same license as the {package-name} package.',
-		];
-
-		$this->headers = [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version', 'License' ];
-
 		parent::__invoke( $args, $assoc_args );
-
 	}
 
 	/**
@@ -61,5 +51,37 @@ class Theme_Command extends Makepot_Command {
 		}
 
 		WP_CLI::error( 'No valid theme stylesheet found!' );
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	protected function get_meta_data() {
+		$file_data = $this->get_main_file_data();
+
+		$name = isset( $file_data['Theme Name'] ) ? $file_data['Theme Name'] : $this->slug;
+
+		$meta = [
+			'name'               => $name,
+			'version'            => $file_data['Version'],
+			'comments'           => sprintf(
+				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s package.",
+				date( 'Y' ),
+				$file_data['Author'],
+				$name
+			),
+			'msgid-bugs-address' => sprintf( 'https://wordpress.org/support/theme/%s', $this->slug ),
+		];
+
+		if ( isset( $file_data['License'] ) ) {
+			$meta['comments'] = sprintf(
+				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
+				date( 'Y' ),
+				$file_data['Author'],
+				$file_data['License']
+			);
+		}
+
+		return $meta;
 	}
 }

@@ -39,6 +39,10 @@ class Theme_Command extends Makepot_Command {
 	 * {@inheritdoc}
 	 */
 	protected function set_main_file() {
+		if ( ! is_file( "$this->source/style.css" ) || ! is_readable( "$this->source/style.css" ) ) {
+			WP_CLI::error( 'No valid theme stylesheet found!' );
+		}
+
 		$theme_data = static::get_file_data( "$this->source/style.css", array_combine( $this->headers, $this->headers ) );
 
 		// Return file name when it contains a valid Theme Name header.

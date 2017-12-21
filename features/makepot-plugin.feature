@@ -113,3 +113,24 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "bar"
       """
+
+  Scenario: Bails when no plugin files are found
+    Given an empty foo-plugin directory
+    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    Then STDERR should contain:
+      """
+      Error: No plugin files found!
+      """
+    And the return code should be 1
+
+  Scenario: Bails when no main plugin file is found
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      """
+    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    Then STDERR should contain:
+      """
+      Error: No main plugin file found!
+      """
+    And the return code should be 1

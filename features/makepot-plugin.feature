@@ -134,3 +134,30 @@ Feature: Generate a POT file of a WordPress plugin
       Error: No main plugin file found!
       """
     And the return code should be 1
+
+  Scenario: Adds relative paths to source file as comments.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    And the foo-plugin.pot file should contain:
+      """
+      #: foo-plugin.php:15
+      """

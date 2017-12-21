@@ -2,6 +2,8 @@
 
 namespace WP_CLI\Makepot;
 
+use DirectoryIterator;
+use IteratorIterator;
 use WP_CLI;
 
 class Plugin_Command extends Makepot_Command {
@@ -38,19 +40,15 @@ class Plugin_Command extends Makepot_Command {
 	 * {@inheritdoc}
 	 */
 	protected function set_main_file() {
-		$plugins_dir  = @opendir( $this->source );
 		$plugin_files = [];
-		if ( $plugins_dir ) {
-			while ( ( $file = readdir( $plugins_dir ) ) !== false ) {
-				if ( 0 === strpos( $file, '.' ) ) {
-					continue;
-				}
 
-				if ( '.php' === substr( $file, - 4 ) ) {
-					$plugin_files[] = $file;
-				}
+		$files = new IteratorIterator( new DirectoryIterator( $this->source ) );
+
+		/** @var DirectoryIterator $file */
+		foreach ( $files as $file ) {
+			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension()) {
+				$plugin_files[] = $file->getRealPath();
 			}
-			closedir( $plugins_dir );
 		}
 
 		if ( empty( $plugin_files ) ) {
@@ -58,11 +56,7 @@ class Plugin_Command extends Makepot_Command {
 		}
 
 		foreach ( $plugin_files as $plugin_file ) {
-			if ( ! is_readable( "$this->source/$plugin_file" ) ) {
-				continue;
-			}
-
-			$plugin_data = static::get_file_data( "$this->source/$plugin_file", array_combine( $this->headers, $this->headers ) );
+			$plugin_data = static::get_file_data( $plugin_file, array_combine( $this->headers, $this->headers ) );
 
 			// Stop when we find a file with a plugin name header in it.
 			if ( ! empty( $plugin_data['Plugin Name'] ) ) {

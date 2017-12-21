@@ -37,7 +37,6 @@ abstract class Makepot_Command extends WP_CLI_Command {
 		$this->slug   = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->slug );
 
-		// Todo: If only a directory is provided, use <slug>.pot.
 		$this->dest = realpath( dirname( $args[1] ) ) . DIRECTORY_SEPARATOR . basename( $args[1] );
 
 		$this->set_main_file();

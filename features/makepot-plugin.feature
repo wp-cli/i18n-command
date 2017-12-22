@@ -4,7 +4,7 @@ Feature: Generate a POT file of a WordPress plugin
     Given a WP install
 
   Scenario: Bail for invalid source directories
-    When I run `wp makepot plugin foo bar/baz.pot`
+    When I try `wp makepot plugin foo bar/baz.pot`
     Then STDERR should contain:
       """
       Error: Not a valid source directory!
@@ -116,7 +116,7 @@ Feature: Generate a POT file of a WordPress plugin
 
   Scenario: Bails when no plugin files are found
     Given an empty foo-plugin directory
-    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    When I try `wp makepot plugin foo-plugin foo-plugin.pot`
     Then STDERR should contain:
       """
       Error: No plugin files found!
@@ -128,7 +128,7 @@ Feature: Generate a POT file of a WordPress plugin
     And a foo-plugin/foo-plugin.php file:
       """
       """
-    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    When I try `wp makepot plugin foo-plugin foo-plugin.pot`
     Then STDERR should contain:
       """
       Error: No main plugin file found!

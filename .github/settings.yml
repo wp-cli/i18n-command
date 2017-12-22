@@ -20,7 +20,5 @@ labels:
     color: bfe5bf
   - name: wontfix
     color: c2e0c6
-  - name: command:makepot-plugin
-    color: c5def5
-  - name: command:makepot-theme
+  - name: command:makepot
     color: c5def5

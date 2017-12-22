@@ -4,7 +4,7 @@ Feature: Generate a POT file of a WordPress plugin
     Given a WP install
 
   Scenario: Bail for invalid source directories
-    When I try `wp makepot plugin foo bar/baz.pot`
+    When I try `wp makepot foo bar/baz.pot`
     Then STDERR should contain:
       """
       Error: Not a valid source directory!
@@ -16,9 +16,10 @@ Feature: Generate a POT file of a WordPress plugin
     Then the wp-content/plugins/hello-world directory should exist
     And the wp-content/plugins/hello-world/hello-world.php file should exist
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then STDOUT should be:
       """
+      Plugin file detected.
       Success: POT file successfully generated!
       """
     And STDERR should be empty
@@ -27,7 +28,7 @@ Feature: Generate a POT file of a WordPress plugin
   Scenario: Does not include empty file headers.
     When I run `wp scaffold plugin hello-world --plugin_description=""`
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
       """
@@ -40,7 +41,7 @@ Feature: Generate a POT file of a WordPress plugin
     Then STDOUT should not be empty
     And save STDOUT as {YEAR}
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       # Copyright (C) {YEAR} Hello World
@@ -50,7 +51,7 @@ Feature: Generate a POT file of a WordPress plugin
   Scenario: Sets Project-Id-Version
     When I run `wp scaffold plugin hello-world`
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Project-Id-Version: Hello World 0.1.0\n"
@@ -59,7 +60,7 @@ Feature: Generate a POT file of a WordPress plugin
   Scenario: Sets Report-Msgid-Bugs-To
     When I run `wp scaffold plugin hello-world`
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
@@ -68,7 +69,7 @@ Feature: Generate a POT file of a WordPress plugin
   Scenario: Sets the last translator and the language team
     When I run `wp scaffold plugin hello-world`
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    When I run `wp makepot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -100,7 +101,7 @@ Feature: Generate a POT file of a WordPress plugin
        __( 'bar' );
       """
 
-    When I run `wp makepot plugin foo-plugin foo-plugin.pot --domain=bar`
+    When I run `wp makepot foo-plugin foo-plugin.pot --domain=bar`
     And the foo-plugin.pot file should contain:
       """
       msgid "Foo"
@@ -116,10 +117,10 @@ Feature: Generate a POT file of a WordPress plugin
 
   Scenario: Bails when no plugin files are found
     Given an empty foo-plugin directory
-    When I try `wp makepot plugin foo-plugin foo-plugin.pot`
+    When I try `wp makepot foo-plugin foo-plugin.pot`
     Then STDERR should contain:
       """
-      Error: No plugin files found!
+      Error: No valid theme stylesheet or plugin file found!
       """
     And the return code should be 1
 
@@ -128,10 +129,10 @@ Feature: Generate a POT file of a WordPress plugin
     And a foo-plugin/foo-plugin.php file:
       """
       """
-    When I try `wp makepot plugin foo-plugin foo-plugin.pot`
+    When I try `wp makepot foo-plugin foo-plugin.pot`
     Then STDERR should contain:
       """
-      Error: No main plugin file found!
+      Error: No valid theme stylesheet or plugin file found!
       """
     And the return code should be 1
 
@@ -156,7 +157,7 @@ Feature: Generate a POT file of a WordPress plugin
        __( 'Hello World', 'foo-plugin' );
       """
 
-    When I run `wp makepot plugin foo-plugin foo-plugin.pot`
+    When I run `wp makepot foo-plugin foo-plugin.pot`
     And the foo-plugin.pot file should contain:
       """
       #: foo-plugin.php:15
@@ -166,7 +167,7 @@ Feature: Generate a POT file of a WordPress plugin
     When I run `wp scaffold plugin hello-world`
     Then the wp-content/plugins/hello-world directory should exist
 
-    When I run `wp makepot plugin wp-content/plugins/hello-world`
+    When I run `wp makepot wp-content/plugins/hello-world`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
 
   Scenario: Uses Domain Path as destination path when none is set.
@@ -188,9 +189,10 @@ Feature: Generate a POT file of a WordPress plugin
        */
       """
 
-    When I run `wp makepot plugin foo-plugin`
+    When I run `wp makepot foo-plugin`
     Then STDOUT should be:
       """
+      Plugin file detected.
       Success: POT file successfully generated!
       """
     And STDERR should be empty

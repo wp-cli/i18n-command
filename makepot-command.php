@@ -10,6 +10,5 @@ if ( file_exists( $autoload ) ) {
 	require_once $autoload;
 }
 
-WP_CLI::add_command( 'makepot plugin', '\WP_CLI\Makepot\Plugin_Command' );
-WP_CLI::add_command( 'makepot theme', '\WP_CLI\Makepot\Theme_Command' );
+WP_CLI::add_command( 'makepot', '\WP_CLI\Makepot\Makepot_Command' );
 

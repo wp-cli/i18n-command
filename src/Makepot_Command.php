@@ -127,10 +127,6 @@ class Makepot_Command extends WP_CLI_Command {
 			}
 		}
 
-		if ( empty( $plugin_files ) ) {
-			WP_CLI::error( 'No valid theme stylesheet or plugin file found!' );
-		}
-
 		foreach ( $plugin_files as $plugin_file ) {
 			$plugin_data = static::get_file_data( $plugin_file, array_combine( $this->get_file_headers( 'plugin' ), $this->get_file_headers( 'plugin' ) ) );
 

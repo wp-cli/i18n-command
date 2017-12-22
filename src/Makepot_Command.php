@@ -231,14 +231,11 @@ class Makepot_Command extends WP_CLI_Command {
 	protected function get_meta_data() {
 		$file_data = $this->get_main_file_data();
 
-		$name = $author = $this->slug;
-		$bugs_address = '';
-
 		if ( isset( $file_data['Theme Name'] ) ) {
 			$name         = $file_data['Theme Name'];
 			$author       = $file_data['Author'];
 			$bugs_address = sprintf( 'https://wordpress.org/support/theme/%s', $this->slug );
-		} elseif ( isset( $file_data['Plugin Name'] ) ) {
+		} else {
 			$name         = $file_data['Plugin Name'];
 			$author       = $name;
 			$bugs_address = sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug );

@@ -71,7 +71,7 @@ class WordPress_Code_Extractor extends PhpCode {
 
 				if ( ! empty( $headers[ 'Template Name'])) {
 					$translation = new Translation( '', $headers[ 'Template Name'] );
-					$translation->addExtractedComment('Template Name of the plugin/theme' );
+					$translation->addExtractedComment('Template Name of the theme' );
 
 					$translations[] = $translation;
 				}

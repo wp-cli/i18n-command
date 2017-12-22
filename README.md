@@ -9,14 +9,8 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 
 ## Using
 
-This package implements the following commands:
-
-### wp makepot plugin
-
-Create a POT file for a WordPress plugin.
-
 ~~~
-wp makepot plugin <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
+wp makepot <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 ~~~
 
 **OPTIONS**
@@ -31,41 +25,12 @@ wp makepot plugin <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 		Plugin slug. Defaults to the source directory's basename.
 
 	[--domain=<domain>]
-		Text domain to look for in the source code. Defaults to the plugin slug.
+		Text domain to look for in the source code. Defaults to the plugin/theme slug.
 
 **EXAMPLES**
 
-    # Create a POT file for the WordPress plugin in the current directory
-    $ wp makepot plugin . languages/my-plugin.pot
-
-
-
-### wp makepot theme
-
-Create a POT file for a WordPress theme.
-
-~~~
-wp makepot theme <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
-~~~
-
-**OPTIONS**
-
-	<source>
-		Directory to scan for string extraction.
-
-	[<destination>]
-		Name of the resulting POT file.
-
-	[--slug=<slug>]
-		Theme slug. Defaults to the source directory's basename.
-
-	[--domain=<domain>]
-		Text domain to look for in the source code. Defaults to the theme slug.
-
-**EXAMPLES**
-
-    # Create a POT file for the WordPress theme in the current directory
-    $ wp makepot theme . languages/my-theme.pot
+    # Create a POT file for the WordPress plugin/theme in the current directory
+    $ wp makepot . languages/my-plugin.pot
 
 ## Installing
 

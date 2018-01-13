@@ -39,6 +39,11 @@ class WordPress_Code_Extractor extends PhpCode {
 			'_nc'                  => 'single_plural_number_domain',
 			'__ngettext'           => 'single_plural_number_domain',
 			'__ngettext_noop'      => 'single_plural_domain',
+
+			// For legacy compat with makepot.
+			'_n_js'                => 'single_plural_domain',
+			'_nx_js'               => 'single_plural_context_domain',
+			'comments_number_link' => 'text_single_plural_domain',
 		],
 	];
 

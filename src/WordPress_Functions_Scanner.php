@@ -72,6 +72,16 @@ class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 					list( $original, $plural, $context, $domain ) = $args;
 					break;
 
+				case 'text_single_plural_domain':
+					if ( ! isset( $args[3] ) ) {
+						continue 2;
+					}
+
+					// TODO: support this.
+					\WP_CLI::error( sprintf( "Unsupported legacy function '%s'.", $name ) );
+					break;
+
+
 				default:
 					// Should never happen.
 					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );

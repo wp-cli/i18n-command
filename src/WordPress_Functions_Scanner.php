@@ -23,15 +23,8 @@ class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 			$domain = $context = $original = $plural = null;
 
 			switch ( $functions[ $name ] ) {
-				case 'pgettext':
-					if ( ! isset( $args[1] ) ) {
-						continue 2;
-					}
-
-					list( $original, $context ) = $args;
-					break;
-
-				case 'dgettext':
+				case 'text_domain':
+				case 'gettext':
 					if ( ! isset( $args[1] ) ) {
 						continue 2;
 					}
@@ -39,7 +32,7 @@ class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 					list( $original, $domain ) = $args;
 					break;
 
-				case 'dpgettext':
+				case 'text_context_domain':
 					if ( ! isset( $args[2] ) ) {
 						continue 2;
 					}
@@ -47,23 +40,23 @@ class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 					list( $original, $context, $domain ) = $args;
 					break;
 
-				case 'npgettext':
-					if ( ! isset( $args[2] ) ) {
-						continue 2;
-					}
-
-					list( $original, $plural, $context ) = $args;
-					break;
-
-				case 'dnpgettext':
+				case 'single_plural_number_domain':
 					if ( ! isset( $args[3] ) ) {
 						continue 2;
 					}
 
-					list( $original, $plural, $context, $domain ) = $args;
+					list( $original, $plural, $number, $domain ) = $args;
 					break;
 
-				case 'dngettext':
+				case 'single_plural_number_context_domain':
+					if ( ! isset( $args[4] ) ) {
+						continue 2;
+					}
+
+					list( $original, $plural, $number, $context, $domain ) = $args;
+					break;
+
+				case 'single_plural_domain':
 					if ( ! isset( $args[2] ) ) {
 						continue 2;
 					}
@@ -71,9 +64,17 @@ class WordPress_Functions_Scanner extends PhpFunctionsScanner {
 					list( $original, $plural, $domain ) = $args;
 					break;
 
+				case 'single_plural_context_domain':
+					if ( ! isset( $args[3] ) ) {
+						continue 2;
+					}
+
+					list( $original, $plural, $context, $domain ) = $args;
+					break;
+
 				default:
-					parent::saveGettextFunctions( $translations, $options );
-					return;
+					// Should never happen.
+					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );
 			}
 
 			// Todo: Require a domain?

@@ -1,32 +1,43 @@
 {
-    "name": "wp-cli/makepot-command",
-    "description": "Create POT files for WordPress projects",
+    "name": "wp-cli/i18n-command",
+    "description": "Provides internationalization tools for WordPress projects.",
     "type": "wp-cli-package",
-    "homepage": "https://github.com/wp-cli/makepot-command",
+    "homepage": "https://github.com/wp-cli/i18n-command",
+    "support": {
+        "issues": "https://github.com/wp-cli/i18n-command/issues"
+    },
     "license": "MIT",
-    "authors": [],
+    "authors": [
+        {
+            "name": "Pascal Birchler",
+            "homepage": "https://pascalbirchler.com/"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
-        "files": [ "makepot-command.php" ],
         "psr-4": {
-            "WP_CLI\\Makepot\\": "src/"
-        }
+            "WP_CLI\\I18n\\": "src/"
+        },
+        "files": [
+            "i18n-command.php"
+        ]
     },
     "require": {
-        "wp-cli/wp-cli": "^1.1.0",
         "gettext/gettext": "^4.4"
     },
     "require-dev": {
+        "wp-cli/wp-cli": "^1.1.0",
         "behat/behat": "~2.5"
     },
     "extra": {
         "branch-alias": {
             "dev-master": "1.x-dev"
         },
+        "bundled": true,
         "commands": [
-            "makepot"
-        ],
-        "bundled": true
+            "i18n",
+            "i18n make-pot"
+        ]
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_CLI\Makepot;
+namespace WP_CLI\I18n;
 
 use Gettext\Generators\Po;
 use Gettext\Translations;

@@ -230,10 +230,6 @@ Feature: Generate a POT file of a WordPress plugin
       __ngettext( '__ngettext_single', '__ngettext_plural', $number, 'foo-plugin' );
       __ngettext_noop( '__ngettext_noop_single', '__ngettext_noop_plural', 'foo-plugin' );
 
-      // For legacy compat with makepot.
-      _n_js( '_n_js_single', '_n_js_plural', 'foo-plugin' );
-      _nx_js( '_nx_js_single', '_nx_js_plural', '_nx_js_context', 'foo-plugin' );
-
       __unsupported_func( '__unsupported_func', 'foo-plugin' );
       __( 'wrong-domain', 'wrong-domain' );
       """
@@ -381,26 +377,6 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "__"
       """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgid "_n_js_single"
-      """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgid_plural "_n_js_plural"
-      """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgid "_nx_js_single"
-      """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgid_plural "_nx_js_plural"
-      """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgctxt "_nx_js_context"
-      """
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
       msgid "__unsupported_func"
@@ -409,21 +385,3 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "wrong-domain"
       """
-
-  Scenario: Bail on unsupported legacy function
-    Given an empty foo-plugin directory
-    And a foo-plugin/foo-plugin.php file:
-      """
-      <?php
-      /**
-       * Plugin Name: Foo Plugin
-       */
-      comments_number_link( 'comments_number_link', 'comments_number_link_single', 'comments_number_link_plural', 'foo-plugin' );
-      """
-
-    When I try `wp makepot foo-plugin`
-    Then STDERR should contain:
-      """
-      Error: Unsupported legacy function 'comments_number_link'.
-      """
-    And the return code should be 1

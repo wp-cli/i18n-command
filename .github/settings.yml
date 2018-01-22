@@ -20,5 +20,7 @@ labels:
     color: bfe5bf
   - name: wontfix
     color: c2e0c6
-  - name: command:makepot
+  - name: command:i18n
+    color: c5def5
+  - name: command:i18n-make-pot
     color: c5def5

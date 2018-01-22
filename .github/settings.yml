@@ -1,6 +1,6 @@
 # Used by Probot Settings: https://probot.github.io/apps/settings/
 repository:
-  description: Create POT files for WordPress projects
+  description: Provides internationalization tools for WordPress projects.
 labels:
   - name: bug
     color: fc2929

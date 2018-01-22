@@ -198,3 +198,191 @@ Feature: Generate a POT file of a WordPress plugin
       """
     And STDERR should be empty
     And the foo-plugin/languages/foo-plugin.pot file should exist
+
+  Scenario: Extract all supported functions
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      __( '__', 'foo-plugin' );
+      esc_attr__( 'esc_attr__', 'foo-plugin' );
+      esc_html__( 'esc_html__', 'foo-plugin' );
+      _e( '_e', 'foo-plugin' );
+      esc_attr_e( 'esc_attr_e', 'foo-plugin' );
+      esc_html_e( 'esc_html_e', 'foo-plugin' );
+      _x( '_x', '_x_context', 'foo-plugin' );
+      _ex( '_ex', '_ex_context', 'foo-plugin' );
+      esc_attr_x( 'esc_attr_x', 'esc_attr_x_context', 'foo-plugin' );
+      esc_html_x( 'esc_html_x', 'esc_html_x_context', 'foo-plugin' );
+      _n( '_n_single', '_n_plural', $number, 'foo-plugin' );
+      _nx( '_nx_single', '_nx_plural', $number, '_nx_context', 'foo-plugin' );
+      _n_noop( '_n_noop_single', '_n_noop_plural', 'foo-plugin' );
+      _nx_noop( '_nx_noop_single', '_nx_noop_plural', '_nx_noop_context', 'foo-plugin' );
+
+      // Compat.
+      _( '_', 'foo-plugin' );
+
+      // Deprecated.
+      _c( '_c', 'foo-plugin' );
+      _nc( '_nc_single', '_nc_plural', $number, 'foo-plugin' );
+      __ngettext( '__ngettext_single', '__ngettext_plural', $number, 'foo-plugin' );
+      __ngettext_noop( '__ngettext_noop_single', '__ngettext_noop_plural', 'foo-plugin' );
+
+      __unsupported_func( '__unsupported_func', 'foo-plugin' );
+      __( 'wrong-domain', 'wrong-domain' );
+      """
+
+    When I run `wp makepot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_attr__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_html__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_e"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_attr_e"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_html_e"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_x"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "_x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_ex"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "_ex_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_attr_x"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "esc_attr_x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_html_x"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "esc_html_x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_n_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_n_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_nx_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_nx_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "_nx_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_n_noop_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_n_noop_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_nx_noop_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_nx_noop_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "_nx_noop_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_c"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_nc_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_nc_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__ngettext_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "__ngettext_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__ngettext_noop_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "__ngettext_noop_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgid "__unsupported_func"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgid "wrong-domain"
+      """

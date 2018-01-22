@@ -1,3 +1,4 @@
+@require-php-5.4
 Feature: Generate a POT file of a WordPress plugin
 
   Background:

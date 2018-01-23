@@ -1,2 +1,2 @@
 require:
-  - makepot-command.php
+  - i18n-command.php

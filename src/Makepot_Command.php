@@ -1,6 +1,6 @@
 <?php
 
-namespace WP_CLI\Makepot;
+namespace WP_CLI\I18n;
 
 use Gettext\Translation;
 use Gettext\Translations;
@@ -56,7 +56,7 @@ class Makepot_Command extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Create a POT file for the WordPress plugin/theme in the current directory
-	 *     $ wp makepot . languages/my-plugin.pot
+	 *     $ wp i18n make-pot . languages/my-plugin.pot
 	 *
 	 * @when before_wp_load
 	 */

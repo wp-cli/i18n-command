@@ -11,7 +11,7 @@ use Gettext\Translations;
  * The only difference to the existing PO file generator is that this
  * adds some comments at the very beginning of the file.
  */
-class Pot_Generator extends Po {
+class PotGenerator extends Po {
 	protected static $comments_before_headers = [];
 
 	/**

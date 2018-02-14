@@ -2,6 +2,8 @@
 
 namespace WP_CLI\I18n;
 
+use WP_CLI\Dispatcher\CommandNamespace as BaseCommandNamespace;
+
 /**
  * Provides internationalization tools for WordPress projects.
  *
@@ -11,5 +13,5 @@ namespace WP_CLI\I18n;
  *     $ wp i18n make-pot . languages/my-plugin.pot
  *
  */
-class CommandNamespace extends WP_CLI\Dispatcher\CommandNamespace {
+class CommandNamespace extends BaseCommandNamespace {
 }

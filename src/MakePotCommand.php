@@ -10,7 +10,7 @@ use WP_CLI\Utils;
 use DirectoryIterator;
 use IteratorIterator;
 
-class Makepot_Command extends WP_CLI_Command {
+class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var  Translations
 	 */
@@ -181,7 +181,7 @@ class Makepot_Command extends WP_CLI_Command {
 		$this->translations = new Translations();
 
 		$meta = $this->get_meta_data();
-		Pot_Generator::setCommentBeforeHeaders( $meta['comments'] );
+		PotGenerator::setCommentBeforeHeaders( $meta['comments'] );
 
 		$this->set_default_headers();
 
@@ -193,7 +193,7 @@ class Makepot_Command extends WP_CLI_Command {
 		$file_data = $this->get_main_file_data();
 
 		// Extract 'Template Name' headers in theme files.
-		WordPress_Code_Extractor::fromDirectory( $this->source, $this->translations, [
+		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
 			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
 		] );
 
@@ -216,7 +216,7 @@ class Makepot_Command extends WP_CLI_Command {
 			$this->translations[] = $translation;
 		}
 
-		return Pot_Generator::toFile( $this->translations, $this->destination );
+		return PotGenerator::toFile( $this->translations, $this->destination );
 	}
 
 	/**

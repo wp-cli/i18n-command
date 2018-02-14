@@ -11,10 +11,10 @@ if ( file_exists( $autoload ) ) {
 }
 
 if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
-	WP_CLI::add_command( 'i18n', '\WP_CLI\I18n\Command_Namespace' );
+	WP_CLI::add_command( 'i18n', '\WP_CLI\I18n\CommandNamespace' );
 }
 
-WP_CLI::add_command( 'i18n make-pot', '\WP_CLI\I18n\Makepot_Command', array(
+WP_CLI::add_command( 'i18n make-pot', '\WP_CLI\I18n\MakePotCommand', array(
 	'before_invoke' => function() {
 		$min_version = '5.4';
 		if ( version_compare( PHP_VERSION, $min_version, '<' ) ) {

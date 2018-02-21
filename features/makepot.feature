@@ -386,3 +386,39 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "wrong-domain"
       """
+
+  Scenario: Extract translator comments
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      /* translators: Translators 1! */
+      _e( 'hello world', 'foo-plugin' );
+
+      /* translators: Translators 2! */
+      $foo = __( 'foo', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Plugin name"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: Translators 1!
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: Translators 2!
+      """

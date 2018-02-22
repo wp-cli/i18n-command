@@ -407,6 +407,16 @@ Feature: Generate a POT file of a WordPress plugin
 
       // translators: let your ears fly!
       __( 'on', 'foo-plugin' );
+
+      /*
+       * Translators: If there are characters in your language that are not supported
+       * by Lato, translate this to 'off'. Do not translate into your own language.
+       */
+       __( 'off', 'foo-plugin' );
+
+       /* translators: this should get extracted. */ $foo = __( 'baba', 'foo-plugin' );
+
+       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g ( __( 'baba', 'foo-plugin' ) );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -439,4 +449,16 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       #. translators: let your ears fly!
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. Translators: If there are characters in your language that are not supported by Lato, translate this to 'off'. Do not translate into your own language.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this should get extracted.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this should get extracted too.
       """

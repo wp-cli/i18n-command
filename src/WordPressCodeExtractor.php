@@ -13,7 +13,7 @@ class WordPressCodeExtractor extends PhpCode {
 	protected static $dir = '';
 
 	public static $options = [
-		'extractComments' => 'translators',
+		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
 		'functions'       => [
 			'__'              => 'text_domain',

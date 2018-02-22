@@ -399,8 +399,14 @@ Feature: Generate a POT file of a WordPress plugin
       /* translators: Translators 1! */
       _e( 'hello world', 'foo-plugin' );
 
-      /* translators: Translators 2! */
+      /* Translators: Translators 2! */
       $foo = __( 'foo', 'foo-plugin' );
+
+      /* translators: localized date and time format, see https://secure.php.net/date */
+      __( 'F j, Y g:i a', 'foo-plugin' );
+
+      // translators: let your ears fly!
+      __( 'on', 'foo-plugin' );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -420,5 +426,17 @@ Feature: Generate a POT file of a WordPress plugin
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      #. translators: Translators 2!
+      #. Translators: Translators 2!
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "F j, Y g:i a"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: localized date and time format, see https://secure.php.net/date
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: let your ears fly!
       """

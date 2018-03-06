@@ -160,7 +160,7 @@ class MakePotCommand extends WP_CLI_Command {
 					'Author',
 					'Author URI',
 					'Version',
-					'Domain Path'
+					'Domain Path',
 				];
 			case 'theme':
 				return [
@@ -172,7 +172,6 @@ class MakePotCommand extends WP_CLI_Command {
 					'Version',
 					'License',
 					'Domain Path',
-					'Text Domain'
 				];
 			default:
 				return [];

@@ -151,11 +151,29 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @return array List of file headers.
 	 */
 	protected function get_file_headers( $type ) {
-		switch( $type ) {
+		switch ( $type ) {
 			case 'plugin':
-				return [ 'Plugin Name', 'Plugin URI', 'Description', 'Author', 'Author URI', 'Version', 'Domain Path' ];
+				return [
+					'Plugin Name',
+					'Plugin URI',
+					'Description',
+					'Author',
+					'Author URI',
+					'Version',
+					'Domain Path'
+				];
 			case 'theme':
-				return [ 'Theme Name', 'Theme URI', 'Description', 'Author', 'Author URI', 'Version', 'License', 'Domain Path' ];
+				return [
+					'Theme Name',
+					'Theme URI',
+					'Description',
+					'Author',
+					'Author URI',
+					'Version',
+					'License',
+					'Domain Path',
+					'Text Domain'
+				];
 			default:
 				return [];
 		}

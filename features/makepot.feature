@@ -26,6 +26,37 @@ Feature: Generate a POT file of a WordPress plugin
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
 
+  Scenario: Does include file headers.
+    When I run `wp scaffold plugin hello-world --plugin_name="Hello World" --plugin_author="John Doe" --plugin_author_uri="https://example.com" --plugin_uri="https://foo.example.com"`
+    Then the wp-content/plugins/hello-world directory should exist
+    And the wp-content/plugins/hello-world/hello-world.php file should exist
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "John Doe"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "https://example.com"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "https://foo.example.com"
+      """
+
   Scenario: Does not include empty file headers.
     When I run `wp scaffold plugin hello-world --plugin_description=""`
 
@@ -461,4 +492,34 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       #. translators: this should get extracted too.
+      """
+
+  Scenario: Generates a POT file for a child theme with no other files
+    When I run `wp scaffold child-theme foobar --parent_theme=twentyseventeen --theme_name="Foo Bar" --author="Jane Doe" --author_uri="https://example.com" --theme_uri="https://foobar.example.com"`
+    Then the wp-content/themes/foobar directory should exist
+    And the wp-content/themes/foobar/style.css file should exist
+
+    When I run `wp i18n make-pot wp-content/themes/foobar wp-content/themes/foobar/languages/foobar.pot`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the wp-content/themes/foobar/languages/foobar.pot file should exist
+    And the wp-content/themes/foobar/languages/foobar.pot file should contain:
+      """
+      msgid "Foo Bar"
+      """
+    And the wp-content/themes/foobar/languages/foobar.pot file should contain:
+      """
+      msgid "Jane Doe"
+      """
+    And the wp-content/themes/foobar/languages/foobar.pot file should contain:
+      """
+      msgid "https://example.com"
+      """
+    And the wp-content/themes/foobar/languages/foobar.pot file should contain:
+      """
+      msgid "https://foobar.example.com"
       """

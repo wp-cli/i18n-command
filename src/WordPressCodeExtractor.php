@@ -91,7 +91,17 @@ class WordPressCodeExtractor extends PhpCode {
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		static::$dir = $dir;
-		static::fromFile( static::getFilesFromDirectory( $dir ), $translations, $options );
+
+		$files = static::getFilesFromDirectory( $dir );
+
+		try {
+			if ( ! empty( $files ) ) {
+				static::fromFile( $files, $translations, $options );
+			}
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
+		}
+
 		static::$dir = '';
 	}
 

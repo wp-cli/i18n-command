@@ -189,11 +189,19 @@ Feature: Generate a POT file of a WordPress plugin
 
        __( 'Hello World', 'foo-plugin' );
       """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( 'Hello World', 'foo-plugin' );
+      """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
     And the foo-plugin.pot file should contain:
       """
       #: foo-plugin.php:15
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      #: foo-plugin.js:1
       """
 
   Scenario: Uses the current folder as destination path when none is set.
@@ -440,7 +448,7 @@ Feature: Generate a POT file of a WordPress plugin
 
        /* translators: this should get extracted. */ $foo = __( 'baba', 'foo-plugin' );
 
-       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g ( __( 'baba', 'foo-plugin' ) );
+       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g ( __( 'bubu', 'foo-plugin' ) );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -598,4 +606,115 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
       msgid "wrong-domain"
+      """
+
+  Scenario: Extract translator comments from JavaScript file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      /* translators: Translators 1! */
+      _e( 'hello world', 'foo-plugin' );
+
+      /* Translators: Translators 2! */
+      const foo = __( 'foo', 'foo-plugin' );
+
+      /* translators: localized date and time format, see https://secure.php.net/date */
+      __( 'F j, Y g:i a', 'foo-plugin' );
+
+      // translators: let your ears fly!
+      __( 'on', 'foo-plugin' );
+
+      /*
+       * Translators: If there are characters in your language that are not supported
+       * by Lato, translate this to 'off'. Do not translate into your own language.
+       */
+       __( 'off', 'foo-plugin' );
+
+       /* translators: this should get extracted. */ const bar = __( 'baba', 'foo-plugin' );
+
+       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ let baz = g ( __( 'bubu', 'foo-plugin' ) );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Plugin name"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: Translators 1!
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. Translators: Translators 2!
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "F j, Y g:i a"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: localized date and time format, see https://secure.php.net/date
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: let your ears fly!
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. Translators: If there are characters in your language that are not supported by Lato, translate this to 'off'. Do not translate into your own language.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this should get extracted.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this should get extracted too.
+      """
+
+
+  Scenario: Ignores any other text domain in JavaScript file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( 'Hello World', 'foo-plugin' );
+
+      __( 'Foo', 'bar' );
+
+      __( 'bar' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --domain=bar`
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Foo"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Hello World"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "bar"
       """

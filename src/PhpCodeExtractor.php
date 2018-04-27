@@ -9,7 +9,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use WP_CLI;
 
-class WordPressCodeExtractor extends PhpCode {
+class PhpCodeExtractor extends PhpCode {
 	protected static $dir = '';
 
 	public static $options = [
@@ -48,12 +48,9 @@ class WordPressCodeExtractor extends PhpCode {
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$options += static::$options;
 
-		$functions = new WordPressFunctionsScanner( $string );
+		$functions = new PhpFunctionsScanner( $string );
 
-		if ( $options['extractComments'] !== false ) {
-			$functions->enableCommentsExtraction( $options['extractComments'] );
-		}
-
+		$functions->enableCommentsExtraction( $options['extractComments'] );
 		$functions->saveGettextFunctions( $translations, $options );
 	}
 
@@ -67,7 +64,7 @@ class WordPressCodeExtractor extends PhpCode {
 
 			$string = self::readFile( $f );
 
-			if ( $options['wpExtractTemplates'] ) {
+			if ( ! empty ( $options['wpExtractTemplates'] ) ) {
 				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers[ 'Template Name'])) {
@@ -94,12 +91,8 @@ class WordPressCodeExtractor extends PhpCode {
 
 		$files = static::getFilesFromDirectory( $dir );
 
-		try {
-			if ( ! empty( $files ) ) {
-				static::fromFile( $files, $translations, $options );
-			}
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		if ( ! empty( $files ) ) {
+			static::fromFile( $files, $translations, $options );
 		}
 
 		static::$dir = '';
@@ -115,20 +108,20 @@ class WordPressCodeExtractor extends PhpCode {
 	protected static function getFilesFromDirectory( $dir ) {
 		$filtered_files = [];
 
-		try {
-			$files = new RecursiveIteratorIterator(
-				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
-				RecursiveIteratorIterator::CHILD_FIRST
-			);
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
 
-			/** @var \DirectoryIterator $file */
-			foreach ( $files as $file ) {
-				if ( $file->isFile() && 'php' === $file->getExtension()) {
-					$filtered_files[] = $file->getPathname();
-				}
+		/* @var \DirectoryIterator $file */
+		foreach ( $files as $file ) {
+			if ( ! $file->isFile() ) {
+				continue;
 			}
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+
+			if ( $file->isFile() && 'php' === $file->getExtension() ) {
+				$filtered_files[] = $file->getPathname();
+			}
 		}
 
 		return $filtered_files;

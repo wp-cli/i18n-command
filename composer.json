@@ -24,7 +24,8 @@
         ]
     },
     "require": {
-        "gettext/gettext": "dev-master#37882dc3b58c2357fc6ddc204c1f22f7bb2b6601"
+        "gettext/gettext": "dev-master#37882dc3b58c2357fc6ddc204c1f22f7bb2b6601",
+        "mck89/peast": "^1.7"
     },
     "require-dev": {
         "wp-cli/wp-cli": "^1.1.0",

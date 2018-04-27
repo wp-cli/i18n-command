@@ -39,6 +39,8 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Create a POT file for a WordPress plugin or theme.
 	 *
+	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
+	 *
 	 * ## OPTIONS
 	 *
 	 * <source>
@@ -120,7 +122,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		$files = new IteratorIterator( new DirectoryIterator( $this->source ) );
 
-		/** @var DirectoryIterator $file */
+		/* @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension()) {
 				$plugin_files[] = $file->getRealPath();
@@ -209,11 +211,6 @@ class MakePotCommand extends WP_CLI_Command {
 
 		$file_data = $this->get_main_file_data();
 
-		// Extract 'Template Name' headers in theme files.
-		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
-			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
-		] );
-
 		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );
 
 		// Set entries from main file data.
@@ -231,6 +228,17 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			$this->translations[] = $translation;
+		}
+
+		try {
+			PhpCodeExtractor::fromDirectory( $this->source, $this->translations, [
+				// Extract 'Template Name' headers in theme files.
+				'wpExtractTemplates' => isset( $file_data['Theme Name'] )
+			] );
+
+			JsCodeExtractor::fromDirectory( $this->source, $this->translations );
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
 		}
 
 		return PotGenerator::toFile( $this->translations, $this->destination );

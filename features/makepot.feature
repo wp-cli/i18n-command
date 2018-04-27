@@ -66,6 +66,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
       Description of the plugin
       """
+
   Scenario: Adds copyright comments
     When I run `wp scaffold plugin hello-world`
 
@@ -401,14 +402,6 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid_plural "__ngettext_noop_plural"
       """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgid "__"
-      """
-    And the foo-plugin/foo-plugin.pot file should contain:
-      """
-      msgid "__"
-      """
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
       msgid "__unsupported_func"
@@ -522,4 +515,87 @@ Feature: Generate a POT file of a WordPress plugin
     And the wp-content/themes/foobar/languages/foobar.pot file should contain:
       """
       msgid "https://foobar.example.com"
+      """
+
+  Scenario: Extracts functions from from JavaScript file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( '__', 'foo-plugin' );
+      _x( '_x', '_x_context', 'foo-plugin' );
+      _n( '_n_single', '_n_plural', number, 'foo-plugin' );
+      _nx( '_nx_single', '_nx_plural', number, '_nx_context', 'foo-plugin' );
+
+      __( 'wrong-domain', 'wrong-domain' );
+
+      __( 'Hello world' ); // translators: Greeting
+
+      // translators: Foo Bar Comment
+      __( 'Foo Bar', 'foo-plugin' );
+
+      // TrANslAtORs: Bar Baz Comment
+      __( 'Bar Baz', 'foo-plugin' );
+
+      // translators: Software name
+      const string = __( 'WordPress', 'foo-plugin' );
+
+      // translators: So much space
+
+      __( 'Spacey text', 'foo-plugin' );
+
+      /* translators: Long comment
+      spanning multiple
+      lines */
+      const string = __( 'Short text', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_x"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "_x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_n_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_n_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "_nx_single"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "_nx_plural"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "_nx_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgid "wrong-domain"
       """

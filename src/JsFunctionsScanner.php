@@ -124,11 +124,6 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation->addReference( $file, $line_found );
 
-				if ( isset( $function[3] ) ) {
-					foreach ( [] as $extractedComment ) {
-						$translation->addExtractedComment( $extractedComment );
-					}
-				}
 
 				/* @var \Peast\Syntax\Node\Comment $comment */
 				foreach ( $node->getCallee()->getLeadingComments() as $comment ) {

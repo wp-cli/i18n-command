@@ -92,6 +92,8 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( 'Could not create destination directory!' );
 		}
 
+		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
+
 		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {
 			WP_CLI::error( 'Could not generate a POT file!' );
 		}
@@ -135,6 +137,7 @@ class MakePotCommand extends WP_CLI_Command {
 			// Stop when we find a file with a valid Plugin Name header.
 			if ( ! empty( $plugin_data['Plugin Name'] ) ) {
 				WP_CLI::log( 'Plugin file detected.' );
+				WP_CLI::debug( sprintf( 'Plugin file: %s', $plugin_file ), 'make-pot' );
 
 				$this->main_file_data = $plugin_data;
 

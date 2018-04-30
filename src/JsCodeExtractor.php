@@ -4,6 +4,7 @@ namespace WP_CLI\I18n;
 
 use Gettext\Extractors\JsCode;
 use Gettext\Translations;
+use Peast\Syntax\Exception as PeastException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use WP_CLI;
@@ -44,7 +45,19 @@ class JsCodeExtractor extends JsCode {
 
 			$string = self::readFile( $f );
 
-			static::fromString( $string, $translations, $options );
+			try {
+				static::fromString( $string, $translations, $options );
+			} catch ( PeastException $e ) {
+				WP_CLI::debug(
+					sprintf(
+						'Could not parse file %1$s: %2$s (line %3$d, column %4$d)',
+						$options['file'],
+						$e->getMessage(),
+						$e->getPosition()->getLine(),
+						$e->getPosition()->getColumn()
+					)
+				);
+			}
 		}
 	}
 

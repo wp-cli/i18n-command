@@ -620,7 +620,7 @@ Feature: Generate a POT file of a WordPress plugin
     And a foo-plugin/foo-plugin.js file:
       """
       /* translators: Translators 1! */
-      _e( 'hello world', 'foo-plugin' );
+      __( 'hello world', 'foo-plugin' );
 
       /* Translators: Translators 2! */
       const foo = __( 'foo', 'foo-plugin' );
@@ -635,11 +635,18 @@ Feature: Generate a POT file of a WordPress plugin
        * Translators: If there are characters in your language that are not supported
        * by Lato, translate this to 'off'. Do not translate into your own language.
        */
-       __( 'off', 'foo-plugin' );
+      __( 'off', 'foo-plugin' );
 
-       /* translators: this should get extracted. */ const bar = __( 'baba', 'foo-plugin' );
+      /* translators: this should get extracted. */ let bar = __( 'baba', 'foo-plugin' );
 
-       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ let baz = g ( __( 'bubu', 'foo-plugin' ) );
+      /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ let bar = g ( __( 'bubu', 'foo-plugin' ) );
+
+      /* translators: this is before the multiline call. */
+      var baz = __(
+        /* translators: this is inside the multiline call. */
+        'This is the original',
+        'foo-plugin'
+      );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -651,7 +658,7 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgid "Plugin name"
+      msgid "Foo Plugin"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
@@ -683,9 +690,20 @@ Feature: Generate a POT file of a WordPress plugin
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
+      #. translators: boo
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
       #. translators: this should get extracted too.
       """
-
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this is before the multiline call.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this is inside the multiline call.
+      """
 
   Scenario: Ignores any other text domain in JavaScript file
     Given an empty foo-plugin directory

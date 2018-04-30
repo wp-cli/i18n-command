@@ -6,6 +6,8 @@ use Gettext\Translations;
 use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
 use Gettext\Utils\ParsedComment;
 use Peast\Peast;
+use Peast\Syntax\Node\Node;
+use Peast\Syntax\Node\VariableDeclaration;
 use Peast\Traverser;
 use Peast\Syntax\Node\CallExpression;
 use Peast\Syntax\Node\Identifier;
@@ -45,33 +47,64 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		] )->parse();
 
 		$traverser = new Traverser();
+
+		/**
+		 * Traverse through JS code to find and extract gettext functions.
+		 *
+		 * Make sure translator comments in front of variable declarations
+		 * and inside nested call expressions are available when parsing the function call.
+		 */
 		$traverser->addFunction( function ( $node ) use ( &$translations, $options ) {
 			$functions = $options['functions'];
 			$file      = $options['file'];
 
-			/* @var CallExpression $node */
+			/* @var Node $node */
+
+			if ( 'VariableDeclaration' === $node->getType() ) {
+				/* @var VariableDeclaration $node */
+				foreach ( $node->getDeclarations() as $declarator ) {
+					$declarator->getInit()->setLeadingComments(
+						$declarator->getInit()->getLeadingComments() + $node->getLeadingComments()
+					);
+
+					if ( 'CallExpression' === $declarator->getInit()->getType() && 'Identifier' === $declarator->getInit()->getCallee()->getType() ) {
+						$declarator->getInit()->getCallee()->setLeadingComments(
+							$declarator->getInit()->getCallee()->getLeadingComments() + $node->getLeadingComments()
+						);
+					}
+				}
+			}
 
 			if ( 'CallExpression' !== $node->getType() ) {
 				return;
 			}
 
+			/* @var CallExpression $node */
+			foreach ( $node->getArguments() as $argument ) {
+				// Support nested function calls.
+				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
+			}
+
 			/* @var Identifier $callee */
 			$callee = $node->getCallee();
 
-			if ( 'Identifier' !== $callee->getType() ) {
+			while ( 'MemberExpression' === $callee->getType() ) {
+				$callee = $callee->getObject();
+			}
+
+			if ( ! isset( $functions[ $callee->getName() ] ) ) {
 				return;
 			}
 
-			$function_name = $callee->getName();
-			$line_found    = $node->getLocation()->getStart()->getLine();
+			$domain = $context = $original = $plural = null;
+			$args   = [];
 
-			if ( ! isset( $functions[ $function_name ] ) ) {
-				return;
-			}
+			$comments = $node->getLeadingComments() + $callee->getLeadingComments();
 
-			$args = [];
-
+			/* @var Node $argument */
 			foreach ( $node->getArguments() as $argument ) {
+				$comments = array_merge( $comments, $argument->getLeadingComments() );
+
 				if ( 'Identifier' === $argument->getType() ) {
 					$args[] = ''; // The value doesn't matter as it's unused.
 				}
@@ -82,9 +115,7 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 			}
 
-			$domain = $context = $original = $plural = null;
-
-			switch ( $functions[ $function_name ] ) {
+			switch ( $functions[ $callee->getName() ] ) {
 				case 'text_domain':
 				case 'gettext':
 					if ( ! isset( $args[1] ) ) {
@@ -122,11 +153,10 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			// Todo: Require a domain?
 			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
-				$translation->addReference( $file, $line_found );
-
+				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
 
 				/* @var \Peast\Syntax\Node\Comment $comment */
-				foreach ( $node->getCallee()->getLeadingComments() as $comment ) {
+				foreach ( $comments as $comment ) {
 					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
 					$prefixes       = array_filter( (array) $this->extractComments );
 

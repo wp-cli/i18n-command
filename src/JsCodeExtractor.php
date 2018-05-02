@@ -101,9 +101,15 @@ class JsCodeExtractor extends JsCode {
 				continue;
 			}
 
-			if ( $file->isFile() && 'js' === $file->getExtension() ) {
-				$filtered_files[] = $file->getPathname();
+			if ( ! $file->isFile() || 'js' !== $file->getExtension() ) {
+				continue;
 			}
+
+			if ( in_array( $file->getBasename(), [ 'webpack.config.js', 'Gruntfile.js' ], true ) ) {
+				continue;
+			}
+
+			$filtered_files[] = $file->getPathname();
 		}
 
 		return $filtered_files;

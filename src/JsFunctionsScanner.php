@@ -42,11 +42,13 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 */
 	public function saveGettextFunctions( Translations $translations, array $options ) {
 		$ast = Peast::latest( $this->code, [
-			'sourceType' => Peast::SOURCE_TYPE_SCRIPT,
+			'sourceType' => Peast::SOURCE_TYPE_MODULE,
 			'comments'   => false !== $this->extractComments,
 		] )->parse();
 
 		$traverser = new Traverser();
+
+		$all_comments = [];
 
 		/**
 		 * Traverse through JS code to find and extract gettext functions.
@@ -54,28 +56,17 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		 * Make sure translator comments in front of variable declarations
 		 * and inside nested call expressions are available when parsing the function call.
 		 */
-		$traverser->addFunction( function ( $node ) use ( &$translations, $options ) {
+		$traverser->addFunction( function ( $node ) use ( &$translations, $options, &$all_comments ) {
 			$functions = $options['functions'];
 			$file      = $options['file'];
 
 			/* @var Node $node */
-
-			if ( 'VariableDeclaration' === $node->getType() ) {
-				/* @var VariableDeclaration $node */
-				foreach ( $node->getDeclarations() as $declarator ) {
-					$declarator->getInit()->setLeadingComments(
-						$declarator->getInit()->getLeadingComments() + $node->getLeadingComments()
-					);
-
-					if ( 'CallExpression' === $declarator->getInit()->getType() && 'Identifier' === $declarator->getInit()->getCallee()->getType() ) {
-						$declarator->getInit()->getCallee()->setLeadingComments(
-							$declarator->getInit()->getCallee()->getLeadingComments() + $node->getLeadingComments()
-						);
-					}
-				}
+			foreach( $node->getLeadingComments() as $comment ) {
+				$all_comments[] = $comment;
 			}
 
-			if ( 'CallExpression' !== $node->getType() ) {
+			/* @var CallExpression $node */
+			if ( 'CallExpression' !== $node->getType() || 'Identifier' !== $node->getCallee()->getType() ) {
 				return;
 			}
 
@@ -88,22 +79,22 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			/* @var Identifier $callee */
 			$callee = $node->getCallee();
 
-			while ( 'MemberExpression' === $callee->getType() ) {
-				$callee = $callee->getObject();
-			}
-
 			if ( ! isset( $functions[ $callee->getName() ] ) ) {
 				return;
+			}
+
+			foreach( $callee->getLeadingComments() as $comment ) {
+				$all_comments[] = $comment;
 			}
 
 			$domain = $context = $original = $plural = null;
 			$args   = [];
 
-			$comments = $node->getLeadingComments() + $callee->getLeadingComments();
-
 			/* @var Node $argument */
 			foreach ( $node->getArguments() as $argument ) {
-				$comments = array_merge( $comments, $argument->getLeadingComments() );
+				foreach( $argument->getLeadingComments() as $comment ) {
+					$all_comments[] = $comment;
+				}
 
 				if ( 'Identifier' === $argument->getType() ) {
 					$args[] = ''; // The value doesn't matter as it's unused.
@@ -156,13 +147,25 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
 
 				/* @var \Peast\Syntax\Node\Comment $comment */
-				foreach ( $comments as $comment ) {
+				foreach ( $all_comments as $comment ) {
+					if ( $node->getLocation()->getStart()->getLine() - $comment->getLocation()->getEnd()->getLine() > 1 ) {
+						continue;
+					}
+
+					if ( $node->getLocation()->getStart()->getColumn() < $comment->getLocation()->getStart()->getColumn() ) {
+						continue;
+					}
+
 					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
 					$prefixes       = array_filter( (array) $this->extractComments );
 
 					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
 						$translation->addExtractedComment( $parsed_comment->getComment() );
 					}
+				}
+
+				if ( isset( $parsed_comment ) ) {
+					$all_comments = [];
 				}
 			}
 		} );

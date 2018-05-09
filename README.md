@@ -13,13 +13,16 @@ This package implements the following commands:
 
 ### wp i18n
 
-
+Provides internationalization tools for WordPress projects.
 
 ~~~
 wp i18n
 ~~~
 
+**EXAMPLES**
 
+    # Create a POT file for the WordPress plugin/theme in the current directory
+    $ wp i18n make-pot . languages/my-plugin.pot
 
 
 
@@ -28,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge=<file>]
 ~~~
 
 **OPTIONS**
@@ -44,6 +47,12 @@ wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 
 	[--domain=<domain>]
 		Text domain to look for in the source code. Defaults to the plugin/theme slug.
+
+	[--merge=<file>]
+		Existing POT file file whose content should be merged with the extracted strings.
+		---
+		default: destination POT file
+		---
 
 **EXAMPLES**
 

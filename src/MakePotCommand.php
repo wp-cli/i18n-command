@@ -2,6 +2,7 @@
 
 namespace WP_CLI\I18n;
 
+use Gettext\Extractors\Po;
 use Gettext\Translation;
 use Gettext\Translations;
 use WP_CLI;
@@ -29,6 +30,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var string
 	 */
+	protected $merge;
+
+	/**
+	 * @var string
+	 */
 	protected $slug;
 
 	/**
@@ -52,6 +58,10 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug.
+	 *
+	 * [--merge=<file>]
+	 * : Existing POT file file whose content should be merged with the extracted strings.
+	 * If left empty, defaults to the destination POT file.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -88,6 +98,20 @@ class MakePotCommand extends WP_CLI_Command {
 		// Two is_dir() checks in case of a race condition.
 		if ( ! is_dir( dirname( $this->destination ) ) && ! mkdir( dirname( $this->destination ) ) && ! is_dir( dirname( $this->destination ) ) ) {
 			WP_CLI::error( 'Could not create destination directory!' );
+		}
+
+		if ( isset( $assoc_args['merge'] ) ) {
+			if ( empty( $assoc_args['merge'] ) && file_exists( $this->destination ) ) {
+				$this->merge = $this->destination;
+			}
+
+			if ( ! empty( $assoc_args['merge'] ) ) {
+				if ( ! file_exists( $assoc_args['merge'] ) ) {
+					WP_CLI::error( sprintf( 'Invalid file %s', $assoc_args['merge'] ) );
+				}
+
+				$this->merge = $assoc_args['merge'];
+			}
 		}
 
 		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {
@@ -196,6 +220,11 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	protected function makepot( $domain ) {
 		$this->translations = new Translations();
+
+		// Add existing strings first.
+		if ( $this->merge ) {
+			Po::fromFile( $this->merge, $this->translations );
+		}
 
 		$meta = $this->get_meta_data();
 		PotGenerator::setCommentBeforeHeaders( $meta['comments'] );

@@ -59,7 +59,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug.
 	 *
-	 * [--merge=<file>]
+	 * [--merge[=<file>]]
 	 * : Existing POT file file whose content should be merged with the extracted strings.
 	 * If left empty, defaults to the destination POT file.
 	 *
@@ -101,11 +101,9 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( isset( $assoc_args['merge'] ) ) {
-			if ( empty( $assoc_args['merge'] ) && file_exists( $this->destination ) ) {
+			if ( true === $assoc_args['merge'] && file_exists( $this->destination ) ) {
 				$this->merge = $this->destination;
-			}
-
-			if ( ! empty( $assoc_args['merge'] ) ) {
+			} elseif ( ! empty( $assoc_args['merge'] ) ) {
 				if ( ! file_exists( $assoc_args['merge'] ) ) {
 					WP_CLI::error( sprintf( 'Invalid file %s', $assoc_args['merge'] ) );
 				}

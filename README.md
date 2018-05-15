@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge=<file>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge[=<file>]]
 ~~~
 
 **OPTIONS**
@@ -48,11 +48,9 @@ wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [-
 	[--domain=<domain>]
 		Text domain to look for in the source code. Defaults to the plugin/theme slug.
 
-	[--merge=<file>]
+	[--merge[=<file>]]
 		Existing POT file file whose content should be merged with the extracted strings.
-		---
-		default: destination POT file
-		---
+		If left empty, defaults to the destination POT file.
 
 **EXAMPLES**
 

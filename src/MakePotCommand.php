@@ -211,7 +211,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Extract 'Template Name' headers in theme files.
 		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
-			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
+			'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
+			'exclude'            => [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor' ]
 		] );
 
 		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );

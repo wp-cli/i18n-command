@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Extractors\Po;
+use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
 use WP_CLI;
@@ -219,9 +220,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected function makepot( $domain ) {
 		$this->translations = new Translations();
 
-		// Add existing strings first.
+		// Add existing strings first but don't keep headers.
 		if ( $this->merge ) {
-			Po::fromFile( $this->merge, $this->translations );
+			$existing_translations = new Translations();
+			Po::fromFile( $this->merge, $existing_translations );
+			$this->translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
 		}
 
 		$meta = $this->get_meta_data();

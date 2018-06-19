@@ -523,3 +523,75 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "https://foobar.example.com"
       """
+
+  Scenario: Skips excluded folders
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    And the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+
+  Scenario: Skips additionally excluded folders
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/foo/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/bar/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude=foo,bar`
+    And the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """

@@ -29,6 +29,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var string
 	 */
+	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor' ];
+
+	/**
+	 * @var string
+	 */
 	protected $slug;
 
 	/**
@@ -52,6 +57,11 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug.
+	 *
+	 * [--exclude=<paths>]
+	 * : Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
+	 *
+	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -88,6 +98,10 @@ class MakePotCommand extends WP_CLI_Command {
 		// Two is_dir() checks in case of a race condition.
 		if ( ! is_dir( dirname( $this->destination ) ) && ! mkdir( dirname( $this->destination ) ) && ! is_dir( dirname( $this->destination ) ) ) {
 			WP_CLI::error( 'Could not create destination directory!' );
+		}
+
+		if ( isset( $assoc_args['exclude'] ) ) {
+			$this->exclude = array_unique( array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) ) );
 		}
 
 		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {
@@ -212,7 +226,7 @@ class MakePotCommand extends WP_CLI_Command {
 		// Extract 'Template Name' headers in theme files.
 		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
 			'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
-			'exclude'            => [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor' ]
+			'exclude'            => $this->exclude,
 		] );
 
 		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );

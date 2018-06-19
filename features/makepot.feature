@@ -562,6 +562,11 @@ Feature: Generate a POT file of a WordPress plugin
       spanning multiple
       lines */
       const string = __( 'Short text', 'foo-plugin' );
+
+      ReactDOM.render(
+        <h1>{__( 'Hello JSX', 'foo-plugin' )}</h1>,
+        document.getElementById('root')
+      );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -602,6 +607,10 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgctxt "_nx_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Hello JSX"
       """
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
@@ -646,6 +655,12 @@ Feature: Generate a POT file of a WordPress plugin
         /* translators: this is inside the multiline call. */
         'This is the original',
         'foo-plugin'
+      );
+
+      ReactDOM.render(
+        /* translators: this is JSX */
+        <h1>{__( 'Hello JSX', 'foo-plugin' )}</h1>,
+        document.getElementById('root')
       );
       """
 
@@ -704,6 +719,10 @@ Feature: Generate a POT file of a WordPress plugin
       """
       #. translators: this is inside the multiline call.
       """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this is JSX
+      """
 
   Scenario: Ignores any other text domain in JavaScript file
     Given an empty foo-plugin directory
@@ -721,6 +740,11 @@ Feature: Generate a POT file of a WordPress plugin
       __( 'Foo', 'bar' );
 
       __( 'bar' );
+
+      ReactDOM.render(
+        <h1>{__( 'Hello JSX', 'baz' )}</h1>,
+        document.getElementById('root')
+      );
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --domain=bar`
@@ -735,4 +759,8 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin.pot file should not contain:
       """
       msgid "bar"
+      """
+     And the foo-plugin.pot file should not contain:
+      """
+      msgid "Hello JSX"
       """

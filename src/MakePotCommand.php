@@ -233,6 +233,23 @@ class MakePotCommand extends WP_CLI_Command {
 			$this->translations[] = $translation;
 		}
 
+		foreach( $this->translations as $translation ) {
+			if ( ! $translation->hasExtractedComments() ) {
+				continue;
+			}
+
+			$comments = array_unique( $translation->getExtractedComments() );
+			$comments_count = count( $comments );
+
+			if ( $comments_count > 1 ) {
+				WP_CLI::warning( sprintf(
+					'The string "%1$s" has %2$d different translator comments.',
+					$translation->getOriginal(),
+					$comments_count
+				) );
+			}
+		}
+
 		return PotGenerator::toFile( $this->translations, $this->destination );
 	}
 

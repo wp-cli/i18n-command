@@ -550,7 +550,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
-    And the foo-plugin.pot file should not contain:
+    Then the foo-plugin.pot file should not contain:
       """
       I am being ignored
       """
@@ -591,7 +591,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude=foo,bar`
-    And the foo-plugin.pot file should not contain:
+    Then the foo-plugin.pot file should not contain:
       """
       I am being ignored
       """

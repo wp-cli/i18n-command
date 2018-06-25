@@ -141,7 +141,7 @@ class WordPressCodeExtractor extends PhpCode {
 
 			/** @var SplFileInfo $file */
 			foreach ( $files as $file ) {
-				if (  $file->isFile() ) {
+				if ( $file->isFile() ) {
 					$filtered_files[] = $file->getPathname();
 				}
 			}
@@ -151,5 +151,4 @@ class WordPressCodeExtractor extends PhpCode {
 
 		return $filtered_files;
 	}
-
 }

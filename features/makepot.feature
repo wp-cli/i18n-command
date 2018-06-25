@@ -523,3 +523,33 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "https://foobar.example.com"
       """
+
+  Scenario: Prints a warning when two identical strings have different translator comments.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      /* translators: Translators 1! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* translators: Translators 1! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* Translators: Translators 2! */
+      __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Warning: The string "Hello World" has 2 different translator comments.
+      """

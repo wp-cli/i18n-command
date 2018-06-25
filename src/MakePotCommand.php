@@ -63,6 +63,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 	 *
+	 * Leading and trailing slashes are ignored, i.e. `/mydirectory/` is the same as `mydirectory`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create a POT file for the WordPress plugin/theme in the current directory
@@ -101,7 +103,11 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( isset( $assoc_args['exclude'] ) ) {
-			$this->exclude = array_unique( array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) ) );
+			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
+			$this->exclude = array_map(function($exclude) {
+				return ltrim( rtrim( $exclude, '/\\' ), '/\\' );
+			}, $this->exclude);
+			$this->exclude = array_unique( $this->exclude );
 		}
 
 		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {

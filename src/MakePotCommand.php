@@ -238,7 +238,7 @@ class MakePotCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$comments = array_unique( $translation->getExtractedComments() );
+			$comments = $translation->getExtractedComments();
 			$comments_count = count( $comments );
 
 			if ( $comments_count > 1 ) {

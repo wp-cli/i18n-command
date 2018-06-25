@@ -536,6 +536,9 @@ Feature: Generate a POT file of a WordPress plugin
       /* translators: Translators 1! */
       __( 'Hello World', 'foo-plugin' );
 
+      /* translators: Translators 1! */
+      __( 'Hello World', 'foo-plugin' );
+
       /* Translators: Translators 2! */
       __( 'Hello World', 'foo-plugin' );
       """

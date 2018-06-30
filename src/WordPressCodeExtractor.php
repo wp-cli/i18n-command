@@ -128,6 +128,13 @@ class WordPressCodeExtractor extends PhpCode {
 							return false;
 						}
 
+						// Check for more complex paths, e.g. /some/sub/folder.
+						foreach( $exclude as $path_or_file ) {
+							if ( substr( $file->getPathname(), - strlen( $path_or_file ) ) === $path_or_file ) {
+								return false;
+							}
+						}
+
 						/** @var RecursiveCallbackFilterIterator $iterator */
 						if ( $iterator->hasChildren() ) {
 							return true;

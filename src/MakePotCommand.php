@@ -63,7 +63,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 	 *
-	 * Leading and trailing slashes are ignored, i.e. `/mydirectory/` is the same as `mydirectory`.
+	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
 	 * ## EXAMPLES
 	 *

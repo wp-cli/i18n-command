@@ -13,13 +13,16 @@ This package implements the following commands:
 
 ### wp i18n
 
-
+Provides internationalization tools for WordPress projects.
 
 ~~~
 wp i18n
 ~~~
 
+**EXAMPLES**
 
+    # Create a POT file for the WordPress plugin/theme in the current directory
+    $ wp i18n make-pot . languages/my-plugin.pot
 
 
 
@@ -28,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--exclude=<paths>]
 ~~~
 
 **OPTIONS**
@@ -44,6 +47,13 @@ wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>]
 
 	[--domain=<domain>]
 		Text domain to look for in the source code. Defaults to the plugin/theme slug.
+
+	[--exclude=<paths>]
+		Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
+
+By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+
+Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 
 **EXAMPLES**
 

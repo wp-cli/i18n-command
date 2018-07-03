@@ -1067,3 +1067,27 @@ Feature: Generate a POT file of a WordPress plugin
       """
       msgid "Hello JSX"
       """
+
+  Scenario: Skips JavaScript file altogether
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --skip-js`
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Hello World"
+      """

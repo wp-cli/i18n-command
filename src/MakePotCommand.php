@@ -42,6 +42,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $main_file_data = [];
 
 	/**
+	 * @var bool
+	 */
+	protected $scan_js = true;
+
+	/**
 	 * Create a POT file for a WordPress plugin or theme.
 	 *
 	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -67,6 +72,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
+	 * [--skip-js]
+	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create a POT file for the WordPress plugin/theme in the current directory
@@ -75,8 +83,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->source = realpath( $args[0] );
-		$this->slug   = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->source  = realpath( $args[0] );
+		$this->slug    = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->scan_js = ! Utils\get_flag_value( $assoc_args, 'skip-js', ! $this->scan_js );
 
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
@@ -260,7 +269,9 @@ class MakePotCommand extends WP_CLI_Command {
 				'exclude'            => $this->exclude,
 			] );
 
-			JsCodeExtractor::fromDirectory( $this->source, $this->translations );
+			if ( $this->scan_js ) {
+				JsCodeExtractor::fromDirectory( $this->source, $this->translations );
+			}
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
 		}

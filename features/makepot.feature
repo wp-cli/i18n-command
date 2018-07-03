@@ -828,7 +828,7 @@ Feature: Generate a POT file of a WordPress plugin
       I am not being ignored either
       """
 
-  Scenario: Extracts functions from from JavaScript file
+  Scenario: Extracts functions from JavaScript file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """

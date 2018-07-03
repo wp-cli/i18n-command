@@ -36,6 +36,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var string
 	 */
+	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor' ];
+
+	/**
+	 * @var string
+	 */
 	protected $slug;
 
 	/**
@@ -63,6 +68,12 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--merge[=<file>]]
 	 * : Existing POT file file whose content should be merged with the extracted strings.
 	 * If left empty, defaults to the destination POT file.
+	 * [--exclude=<paths>]
+	 * : Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
+	 *
+	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+	 *
+	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -111,6 +122,12 @@ class MakePotCommand extends WP_CLI_Command {
 
 				$this->merge = $assoc_args['merge'];
 			}
+		if ( isset( $assoc_args['exclude'] ) ) {
+			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
+			$this->exclude = array_map(function($exclude) {
+				return ltrim( rtrim( $exclude, '/\\' ), '/\\' );
+			}, $this->exclude);
+			$this->exclude = array_unique( $this->exclude );
 		}
 
 		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {
@@ -241,7 +258,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Extract 'Template Name' headers in theme files.
 		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
-			'wpExtractTemplates' => isset( $file_data['Theme Name'] )
+			'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
+			'exclude'            => $this->exclude,
 		] );
 
 		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );
@@ -261,6 +279,23 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			$this->translations[] = $translation;
+		}
+
+		foreach( $this->translations as $translation ) {
+			if ( ! $translation->hasExtractedComments() ) {
+				continue;
+			}
+
+			$comments = $translation->getExtractedComments();
+			$comments_count = count( $comments );
+
+			if ( $comments_count > 1 ) {
+				WP_CLI::warning( sprintf(
+					'The string "%1$s" has %2$d different translator comments.',
+					$translation->getOriginal(),
+					$comments_count
+				) );
+			}
 		}
 
 		return PotGenerator::toFile( $this->translations, $this->destination );

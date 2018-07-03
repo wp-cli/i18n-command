@@ -80,11 +80,11 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 			// Todo: Require a domain?
 			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
-				$translation->addReference( $file, $line );
+				$translation = $translation->addReference( $file, $line );
 
 				if ( isset( $function[3] ) ) {
 					foreach ( $function[3] as $extractedComment ) {
-						$translation->addExtractedComment( $extractedComment );
+						$translation = $translation->addExtractedComment( $extractedComment );
 					}
 				}
 			}

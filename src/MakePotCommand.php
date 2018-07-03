@@ -60,20 +60,19 @@ class MakePotCommand extends WP_CLI_Command {
 	 * : Name of the resulting POT file.
 	 *
 	 * [--slug=<slug>]
-	 * : Plugin slug. Defaults to the source directory's basename.
+	 * : Plugin or theme slug. Defaults to the source directory's basename.
 	 *
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug.
 	 *
 	 * [--merge[=<file>]]
 	 * : Existing POT file file whose content should be merged with the extracted strings.
-	 * If left empty, defaults to the destination POT file.
+	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+	 *
 	 * [--exclude=<paths>]
 	 * : Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
-	 *
-	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
-	 *
-	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+	 * If left empty, defaults to the destination POT file.
 	 *
 	 * ## EXAMPLES
 	 *

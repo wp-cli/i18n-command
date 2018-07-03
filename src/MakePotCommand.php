@@ -122,6 +122,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 				$this->merge = $assoc_args['merge'];
 			}
+		}
+
 		if ( isset( $assoc_args['exclude'] ) ) {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
 			$this->exclude = array_map(function($exclude) {

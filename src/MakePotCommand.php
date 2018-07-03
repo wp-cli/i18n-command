@@ -29,6 +29,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var string
 	 */
+	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor', 'Gruntfile.js', 'webpack.config.js' ];
+
+	/**
+	 * @var string
+	 */
 	protected $slug;
 
 	/**
@@ -54,6 +59,13 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug.
+	 *
+	 * [--exclude=<paths>]
+	 * : Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
+	 *
+	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+	 *
+	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -93,6 +105,14 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
+
+		if ( isset( $assoc_args['exclude'] ) ) {
+			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
+			$this->exclude = array_map(function($exclude) {
+				return ltrim( rtrim( $exclude, '/\\' ), '/\\' );
+			}, $this->exclude);
+			$this->exclude = array_unique( $this->exclude );
+		}
 
 		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {
 			WP_CLI::error( 'Could not generate a POT file!' );
@@ -236,12 +256,30 @@ class MakePotCommand extends WP_CLI_Command {
 		try {
 			PhpCodeExtractor::fromDirectory( $this->source, $this->translations, [
 				// Extract 'Template Name' headers in theme files.
-				'wpExtractTemplates' => isset( $file_data['Theme Name'] )
+				'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
+				'exclude'            => $this->exclude,
 			] );
 
 			JsCodeExtractor::fromDirectory( $this->source, $this->translations );
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
+		}
+
+		foreach( $this->translations as $translation ) {
+			if ( ! $translation->hasExtractedComments() ) {
+				continue;
+			}
+
+			$comments = $translation->getExtractedComments();
+			$comments_count = count( $comments );
+
+			if ( $comments_count > 1 ) {
+				WP_CLI::warning( sprintf(
+					'The string "%1$s" has %2$d different translator comments.',
+					$translation->getOriginal(),
+					$comments_count
+				) );
+			}
 		}
 
 		return PotGenerator::toFile( $this->translations, $this->destination );

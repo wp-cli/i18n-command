@@ -5,6 +5,7 @@ namespace WP_CLI\I18n;
 use Gettext\Extractors\JsCode;
 use Gettext\Translations;
 use Peast\Syntax\Exception as PeastException;
+use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use WP_CLI;
@@ -71,7 +72,7 @@ class JsCodeExtractor extends JsCode {
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		static::$dir = $dir;
 
-		$files = static::getFilesFromDirectory( $dir );
+		$files = static::getFilesFromDirectory( $dir, isset( $options['exclude'] ) ? $options['exclude'] : [] );
 
 		if ( ! empty( $files ) ) {
 			static::fromFile( $files, $translations, $options );
@@ -84,28 +85,43 @@ class JsCodeExtractor extends JsCode {
 	 * Recursively gets all PHP files within a directory.
 	 *
 	 * @param string $dir A path of a directory.
+	 * @param array $exclude List of files and directories to skip.
 	 *
 	 * @return array File list.
 	 */
-	protected static function getFilesFromDirectory( $dir ) {
+	protected static function getFilesFromDirectory( $dir, array $exclude = [] ) {
 		$filtered_files = [];
 
 		$files = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+			new RecursiveCallbackFilterIterator(
+				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+				function ( $file, $key, $iterator ) use ( $exclude ) {
+					/** @var SplFileInfo $file */
+					if ( in_array( $file->getBasename(), $exclude, true ) ) {
+						return false;
+					}
+
+					// Check for more complex paths, e.g. /some/sub/folder.
+					foreach( $exclude as $path_or_file ) {
+						if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
+							return false;
+						}
+					}
+
+					/** @var RecursiveCallbackFilterIterator $iterator */
+					if ( $iterator->hasChildren() ) {
+						return true;
+					}
+
+					return ( $file->isFile() && 'js' === $file->getExtension() );
+				}
+			),
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
 		/* @var \DirectoryIterator $file */
 		foreach ( $files as $file ) {
-			if ( ! $file->isFile() ) {
-				continue;
-			}
-
 			if ( ! $file->isFile() || 'js' !== $file->getExtension() ) {
-				continue;
-			}
-
-			if ( in_array( $file->getBasename(), [ 'webpack.config.js', 'Gruntfile.js' ], true ) ) {
 				continue;
 			}
 

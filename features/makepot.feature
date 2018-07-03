@@ -525,6 +525,309 @@ Feature: Generate a POT file of a WordPress plugin
       msgid "https://foobar.example.com"
       """
 
+  Scenario: Prints a warning when two identical strings have different translator comments.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      /* translators: Translators 1! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* translators: Translators 1! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* Translators: Translators 2! */
+      __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Warning: The string "Hello World" has 2 different translator comments.
+      """
+
+  Scenario: Skips excluded folders
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+
+  Scenario: Skips additionally excluded folders
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/foo/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/bar/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude=foo,bar`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+
+  Scenario: Skips excluded subfolders
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/foo/bar/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+
+  Scenario: Skips additionally excluded file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/notignored.php file:
+      """
+      <?php
+       __( 'I am not being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude=ignored.php`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am not being ignored
+      """
+
+  Scenario: Does not exclude files and folders with partial matches
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/myvendor/notignored.php file:
+      """
+      <?php
+       __( 'I am not being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/foos.php file:
+      """
+      <?php
+       __( 'I am not being ignored either', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude=foo`
+    Then the foo-plugin.pot file should contain:
+      """
+      I am not being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am not being ignored either
+      """
+
+  Scenario: Removes trailing and leading slashes of excluded paths
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/myvendor/foo.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude="/myvendor/,/ignored.php"`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+
+  Scenario: Excludes nested folders and files
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/some/sub/folder/foo.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/some/other/sub/folder/foo.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/bsome/sub/folder/foo.php file:
+      """
+      <?php
+       __( 'I am not being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/some/sub/folder.php file:
+      """
+      <?php
+       __( 'I am not being ignored either', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude="some/sub/folder,other/sub/folder/foo.php"`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am not being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am not being ignored either
+      """
+
   Scenario: Extracts functions from from JavaScript file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

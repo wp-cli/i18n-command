@@ -44,6 +44,7 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		$ast = Peast::latest( $this->code, [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
 			'comments'   => false !== $this->extractComments,
+			'jsx'        => true,
 		] )->parse();
 
 		$traverser = new Traverser();

@@ -34,6 +34,8 @@ Create a POT file for a WordPress plugin or theme.
 wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--exclude=<paths>]
 ~~~
 
+Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
+
 **OPTIONS**
 
 	<source>

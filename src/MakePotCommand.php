@@ -34,7 +34,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $merge;
 
 	/**
-	 * @var string
+	 * @var array
 	 */
 	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor' ];
 

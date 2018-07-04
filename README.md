@@ -31,8 +31,10 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge[=<file>]] [--exclude=<paths>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge[=<file>]] [--exclude=<paths>] [--skip-js]
 ~~~
+
+Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
 
 **OPTIONS**
 
@@ -56,6 +58,9 @@ wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [-
 		Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
 		By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 		Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+
+	[--skip-js]
+		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 
 **EXAMPLES**
 

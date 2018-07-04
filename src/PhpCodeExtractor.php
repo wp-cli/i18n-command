@@ -8,11 +8,11 @@ use Gettext\Translations;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SplFileInfo;
+use DirectoryIterator;
 use WP_CLI;
 
-class WordPressCodeExtractor extends PhpCode {
-	protected static $dir = '';
+final class PhpCodeExtractor extends PhpCode {
+	private static $dir = '';
 
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
@@ -50,12 +50,9 @@ class WordPressCodeExtractor extends PhpCode {
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$options += static::$options;
 
-		$functions = new WordPressFunctionsScanner( $string );
+		$functions = new PhpFunctionsScanner( $string );
 
-		if ( $options['extractComments'] !== false ) {
-			$functions->enableCommentsExtraction( $options['extractComments'] );
-		}
-
+		$functions->enableCommentsExtraction( $options['extractComments'] );
 		$functions->saveGettextFunctions( $translations, $options );
 	}
 
@@ -63,13 +60,24 @@ class WordPressCodeExtractor extends PhpCode {
 	 * {@inheritdoc}
 	 */
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
-		foreach ( self::getFiles( $file ) as $f ) {
+		foreach ( static::getFiles( $file ) as $f ) {
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = ltrim( str_replace( static::$dir, '', $f ), '/' );
 
-			$string = self::readFile( $f );
+			$string = file_get_contents( $f );
 
-			if ( $options['wpExtractTemplates'] ) {
+			if ( ! $string ) {
+				WP_CLI::debug(
+					sprintf(
+						'Could not load file %1s',
+						$f
+					)
+				);
+
+				continue;
+			}
+
+			if ( ! empty ( $options['wpExtractTemplates'] ) ) {
 				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers[ 'Template Name'])) {
@@ -96,12 +104,8 @@ class WordPressCodeExtractor extends PhpCode {
 
 		$files = static::getFilesFromDirectory( $dir, isset( $options['exclude'] ) ? $options['exclude'] : [] );
 
-		try {
-			if ( ! empty( $files ) ) {
-				static::fromFile( $files, $translations, $options );
-			}
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+		if ( ! empty( $files ) ) {
+			static::fromFile( $files, $translations, $options );
 		}
 
 		static::$dir = '';
@@ -115,45 +119,43 @@ class WordPressCodeExtractor extends PhpCode {
 	 *
 	 * @return array File list.
 	 */
-	protected static function getFilesFromDirectory( $dir, array $exclude = [] ) {
+	private static function getFilesFromDirectory( $dir, array $exclude = [] ) {
 		$filtered_files = [];
 
-		try {
-			$files = new RecursiveIteratorIterator(
-				new RecursiveCallbackFilterIterator(
-					new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
-					function ( $file, $key, $iterator ) use ( $exclude ) {
-						/** @var SplFileInfo $file */
-						if ( in_array( $file->getBasename(), $exclude, true ) ) {
+		$files = new RecursiveIteratorIterator(
+			new RecursiveCallbackFilterIterator(
+				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+				function ( $file, $key, $iterator ) use ( $exclude ) {
+					/** @var DirectoryIterator $file */
+					if ( in_array( $file->getBasename(), $exclude, true ) ) {
+						return false;
+					}
+
+					// Check for more complex paths, e.g. /some/sub/folder.
+					foreach( $exclude as $path_or_file ) {
+						if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
 							return false;
 						}
-
-						// Check for more complex paths, e.g. /some/sub/folder.
-						foreach( $exclude as $path_or_file ) {
-							if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
-								return false;
-							}
-						}
-
-						/** @var RecursiveCallbackFilterIterator $iterator */
-						if ( $iterator->hasChildren() ) {
-							return true;
-						}
-
-						return ( $file->isFile() && 'php' === $file->getExtension() );
 					}
-				),
-				RecursiveIteratorIterator::CHILD_FIRST
-			);
 
-			/** @var SplFileInfo $file */
-			foreach ( $files as $file ) {
-				if ( $file->isFile() ) {
-					$filtered_files[] = $file->getPathname();
+					/** @var RecursiveCallbackFilterIterator $iterator */
+					if ( $iterator->hasChildren() ) {
+						return true;
+					}
+
+					return ( $file->isFile() && 'php' === $file->getExtension() );
 				}
+			),
+			RecursiveIteratorIterator::CHILD_FIRST
+		);
+
+		foreach ( $files as $file ) {
+			/** @var DirectoryIterator $file */
+			if ( ! $file->isFile() || 'php' !== $file->getExtension() ) {
+				continue;
 			}
-		} catch ( \Exception $e ) {
-			WP_CLI::error( $e->getMessage() );
+
+			$filtered_files[] = $file->getPathname();
 		}
 
 		return $filtered_files;

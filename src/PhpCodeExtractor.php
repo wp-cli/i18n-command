@@ -115,7 +115,7 @@ class PhpCodeExtractor extends PhpCode {
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
 				function ( $file, $key, $iterator ) use ( $exclude ) {
-					/** @var SplFileInfo $file */
+					/** @var DirectoryIterator $file */
 					if ( in_array( $file->getBasename(), $exclude, true ) ) {
 						return false;
 					}
@@ -138,8 +138,8 @@ class PhpCodeExtractor extends PhpCode {
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
-		/* @var \DirectoryIterator $file */
 		foreach ( $files as $file ) {
+			/** @var DirectoryIterator $file */
 			if ( ! $file->isFile() || 'php' !== $file->getExtension() ) {
 				continue;
 			}

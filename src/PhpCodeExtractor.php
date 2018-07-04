@@ -8,11 +8,11 @@ use Gettext\Translations;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SplFileInfo;
+use DirectoryIterator;
 use WP_CLI;
 
-class PhpCodeExtractor extends PhpCode {
-	protected static $dir = '';
+final class PhpCodeExtractor extends PhpCode {
+	private static $dir = '';
 
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
@@ -60,11 +60,22 @@ class PhpCodeExtractor extends PhpCode {
 	 * {@inheritdoc}
 	 */
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
-		foreach ( self::getFiles( $file ) as $f ) {
+		foreach ( static::getFiles( $file ) as $f ) {
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = ltrim( str_replace( static::$dir, '', $f ), '/' );
 
-			$string = self::readFile( $f );
+			$string = file_get_contents( $f );
+
+			if ( ! $string ) {
+				WP_CLI::debug(
+					sprintf(
+						'Could not load file %1s',
+						$f
+					)
+				);
+
+				continue;
+			}
 
 			if ( ! empty ( $options['wpExtractTemplates'] ) ) {
 				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
@@ -108,7 +119,7 @@ class PhpCodeExtractor extends PhpCode {
 	 *
 	 * @return array File list.
 	 */
-	protected static function getFilesFromDirectory( $dir, array $exclude = [] ) {
+	private static function getFilesFromDirectory( $dir, array $exclude = [] ) {
 		$filtered_files = [];
 
 		$files = new RecursiveIteratorIterator(

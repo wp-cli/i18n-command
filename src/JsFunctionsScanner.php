@@ -9,13 +9,13 @@ use Peast\Peast;
 use Peast\Syntax\Node;
 use Peast\Traverser;
 
-class JsFunctionsScanner extends GettextJsFunctionsScanner {
+final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
 	 * If not false, comments will be extracted.
 	 *
 	 * @var string|false|array
 	 */
-	protected $extractComments = false;
+	private $extractComments = false;
 
 	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).

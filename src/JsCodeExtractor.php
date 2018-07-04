@@ -8,10 +8,11 @@ use Peast\Syntax\Exception as PeastException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use DirectoryIterator;
 use WP_CLI;
 
-class JsCodeExtractor extends JsCode {
-	protected static $dir = '';
+final class JsCodeExtractor extends JsCode {
+	private static $dir = '';
 
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
@@ -40,11 +41,22 @@ class JsCodeExtractor extends JsCode {
 	 * {@inheritdoc}
 	 */
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
-		foreach ( self::getFiles( $file ) as $f ) {
+		foreach ( static::getFiles( $file ) as $f ) {
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = ltrim( str_replace( static::$dir, '', $f ), '/' );
 
-			$string = self::readFile( $f );
+			$string = file_get_contents( $f );
+
+			if ( ! $string ) {
+				WP_CLI::debug(
+					sprintf(
+						'Could not load file %1s',
+						$f
+					)
+				);
+
+				continue;
+			}
 
 			try {
 				static::fromString( $string, $translations, $options );
@@ -89,7 +101,7 @@ class JsCodeExtractor extends JsCode {
 	 *
 	 * @return array File list.
 	 */
-	protected static function getFilesFromDirectory( $dir, array $exclude = [] ) {
+	private static function getFilesFromDirectory( $dir, array $exclude = [] ) {
 		$filtered_files = [];
 
 		$files = new RecursiveIteratorIterator(

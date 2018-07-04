@@ -50,12 +50,12 @@ wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [-
 
 	[--merge[=<file>]]
 		Existing POT file file whose content should be merged with the extracted strings.
-		By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
-		Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+		If left empty, defaults to the destination POT file.
 
 	[--exclude=<paths>]
 		Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
-		If left empty, defaults to the destination POT file.
+		By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+		Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 
 **EXAMPLES**
 

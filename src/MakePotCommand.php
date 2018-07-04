@@ -44,7 +44,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var bool
 	 */
-	protected $scan_js = true;
+	protected $skip_js = false;
 
 	/**
 	 * Create a POT file for a WordPress plugin or theme.
@@ -85,7 +85,7 @@ class MakePotCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$this->source  = realpath( $args[0] );
 		$this->slug    = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->scan_js = ! Utils\get_flag_value( $assoc_args, 'skip-js', ! $this->scan_js );
+		$this->skip_js = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
@@ -269,7 +269,7 @@ class MakePotCommand extends WP_CLI_Command {
 				'exclude'            => $this->exclude,
 			] );
 
-			if ( $this->scan_js ) {
+			if ( ! $this->skip_js ) {
 				JsCodeExtractor::fromDirectory( $this->source, $this->translations );
 			}
 		} catch ( \Exception $e ) {

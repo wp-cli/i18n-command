@@ -77,7 +77,6 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );
 			}
 
-			// Todo: Require a domain?
 			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation = $translation->addReference( $file, $line );

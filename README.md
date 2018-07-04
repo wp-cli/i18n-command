@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--exclude=<paths>] [--skip-js]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge[=<file>]] [--exclude=<paths>] [--skip-js]
 ~~~
 
 Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -45,17 +45,19 @@ Scans PHP and JavaScript files, as well as theme stylesheets for translatable st
 		Name of the resulting POT file.
 
 	[--slug=<slug>]
-		Plugin slug. Defaults to the source directory's basename.
+		Plugin or theme slug. Defaults to the source directory's basename.
 
 	[--domain=<domain>]
 		Text domain to look for in the source code. Defaults to the plugin/theme slug.
 
+	[--merge[=<file>]]
+		Existing POT file file whose content should be merged with the extracted strings.
+		If left empty, defaults to the destination POT file.
+
 	[--exclude=<paths>]
 		Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
-
-By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
-
-Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+		By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+		Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.

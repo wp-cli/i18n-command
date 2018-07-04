@@ -828,6 +828,177 @@ Feature: Generate a POT file of a WordPress plugin
       I am not being ignored either
       """
 
+  Scenario: Merges translations with the ones from an existing POT file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr ""
+      """
+
+    When I run `wp scaffold plugin hello-world --plugin_name="Hello World" --plugin_author="John Doe" --plugin_author_uri="https://example.com" --plugin_uri="https://foo.example.com"`
+    Then the wp-content/plugins/hello-world directory should exist
+    And the wp-content/plugins/hello-world/hello-world.php file should exist
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      #: foo-plugin.js:15
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+
+  Scenario: Merges translations with existing destination file
+    When I run `wp scaffold plugin hello-world --plugin_name="Hello World" --plugin_author="John Doe" --plugin_author_uri="https://example.com" --plugin_uri="https://foo.example.com"`
+    Then the wp-content/plugins/hello-world directory should exist
+    And the wp-content/plugins/hello-world/hello-world.php file should exist
+
+    Given a wp-content/plugins/hello-world/languages/hello-world.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: hello-world.js:15
+      msgid "Hello World JS"
+      msgstr ""
+      """
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      #: hello-world.js:15
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Hello World JS"
+      """
+
+  Scenario: Uses newer file headers when merging translations
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: John Doe <johndoe@example.com>\n"
+      "Language-Team: Language Team <foo@example.com>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr ""
+      """
+
+    When I run `wp scaffold plugin hello-world --plugin_name="Hello World" --plugin_author="John Doe" --plugin_author_uri="https://example.com" --plugin_uri="https://foo.example.com"`
+    Then the wp-content/plugins/hello-world directory should exist
+    And the wp-content/plugins/hello-world/hello-world.php file should exist
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      # Copyright (C) 2018 Hello World
+      # This file is distributed under the same license as the Hello World package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Hello World 0.1.0\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
+      """
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      "X-Domain: hello-world\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      #: foo-plugin.js:15
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+
   Scenario: Extracts functions from JavaScript file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

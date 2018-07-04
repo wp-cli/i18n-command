@@ -3,9 +3,9 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Translations;
-use Gettext\Utils\PhpFunctionsScanner;
+use Gettext\Utils\PhpFunctionsScanner as GettextPhpFunctionsScanner;
 
-class WordPressFunctionsScanner extends PhpFunctionsScanner {
+final class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 	/**
 	 * {@inheritdoc}
 	 */
@@ -77,7 +77,6 @@ class WordPressFunctionsScanner extends PhpFunctionsScanner {
 					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );
 			}
 
-			// Todo: Require a domain?
 			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation = $translation->addReference( $file, $line );

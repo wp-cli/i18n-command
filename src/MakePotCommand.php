@@ -36,7 +36,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var array
 	 */
-	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor' ];
+	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor', 'Gruntfile.js', 'webpack.config.js' ];
 
 	/**
 	 * @var string
@@ -49,7 +49,14 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $main_file_data = [];
 
 	/**
+	 * @var bool
+	 */
+	protected $skip_js = false;
+
+	/**
 	 * Create a POT file for a WordPress plugin or theme.
+	 *
+	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
 	 *
 	 * ## OPTIONS
 	 *
@@ -74,6 +81,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
+	 * [--skip-js]
+	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create a POT file for the WordPress plugin/theme in the current directory
@@ -82,8 +92,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->source = realpath( $args[0] );
-		$this->slug   = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->source  = realpath( $args[0] );
+		$this->slug    = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->skip_js = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
@@ -122,6 +133,8 @@ class MakePotCommand extends WP_CLI_Command {
 				$this->merge = $assoc_args['merge'];
 			}
 		}
+
+		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
 
 		if ( isset( $assoc_args['exclude'] ) ) {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
@@ -174,6 +187,7 @@ class MakePotCommand extends WP_CLI_Command {
 			// Stop when we find a file with a valid Plugin Name header.
 			if ( ! empty( $plugin_data['Plugin Name'] ) ) {
 				WP_CLI::log( 'Plugin file detected.' );
+				WP_CLI::debug( sprintf( 'Plugin file: %s', $plugin_file ), 'make-pot' );
 
 				$this->main_file_data = $plugin_data;
 
@@ -257,12 +271,6 @@ class MakePotCommand extends WP_CLI_Command {
 
 		$file_data = $this->get_main_file_data();
 
-		// Extract 'Template Name' headers in theme files.
-		WordPressCodeExtractor::fromDirectory( $this->source, $this->translations, [
-			'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
-			'exclude'            => $this->exclude,
-		] );
-
 		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );
 
 		// Set entries from main file data.
@@ -280,6 +288,20 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			$this->translations[] = $translation;
+		}
+
+		try {
+			PhpCodeExtractor::fromDirectory( $this->source, $this->translations, [
+				// Extract 'Template Name' headers in theme files.
+				'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
+				'exclude'            => $this->exclude,
+			] );
+
+			if ( ! $this->skip_js ) {
+				JsCodeExtractor::fromDirectory( $this->source, $this->translations );
+			}
+		} catch ( \Exception $e ) {
+			WP_CLI::error( $e->getMessage() );
 		}
 
 		foreach( $this->translations as $translation ) {

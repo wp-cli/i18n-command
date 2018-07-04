@@ -96,7 +96,7 @@ class JsCodeExtractor extends JsCode {
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
 				function ( $file, $key, $iterator ) use ( $exclude ) {
-					/** @var SplFileInfo $file */
+					/** @var DirectoryIterator $file */
 					if ( in_array( $file->getBasename(), $exclude, true ) ) {
 						return false;
 					}
@@ -119,8 +119,8 @@ class JsCodeExtractor extends JsCode {
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
-		/* @var \DirectoryIterator $file */
 		foreach ( $files as $file ) {
+			/** @var DirectoryIterator $file */
 			if ( ! $file->isFile() || 'js' !== $file->getExtension() ) {
 				continue;
 			}

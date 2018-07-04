@@ -6,12 +6,8 @@ use Gettext\Translations;
 use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
 use Gettext\Utils\ParsedComment;
 use Peast\Peast;
-use Peast\Syntax\Node\Node;
-use Peast\Syntax\Node\VariableDeclaration;
+use Peast\Syntax\Node;
 use Peast\Traverser;
-use Peast\Syntax\Node\CallExpression;
-use Peast\Syntax\Node\Identifier;
-use Peast\Syntax\Node\Literal;
 
 class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
@@ -61,23 +57,23 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			$functions = $options['functions'];
 			$file      = $options['file'];
 
-			/* @var Node $node */
+			/** @var Node\Node $node */
 			foreach( $node->getLeadingComments() as $comment ) {
 				$all_comments[] = $comment;
 			}
 
-			/* @var CallExpression $node */
+			/** @var Node\CallExpression $node */
 			if ( 'CallExpression' !== $node->getType() || 'Identifier' !== $node->getCallee()->getType() ) {
 				return;
 			}
 
-			/* @var CallExpression $node */
+			/** @var Node\CallExpression $node */
 			foreach ( $node->getArguments() as $argument ) {
 				// Support nested function calls.
 				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
 			}
 
-			/* @var Identifier $callee */
+			/** @var Node\Identifier $callee */
 			$callee = $node->getCallee();
 
 			if ( ! isset( $functions[ $callee->getName() ] ) ) {
@@ -91,7 +87,7 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			$domain = $context = $original = $plural = null;
 			$args   = [];
 
-			/* @var Node $argument */
+			/** @var Node\Node $argument */
 			foreach ( $node->getArguments() as $argument ) {
 				foreach( $argument->getLeadingComments() as $comment ) {
 					$all_comments[] = $comment;
@@ -102,7 +98,7 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 
 				if ( 'Literal' === $argument->getType() ) {
-					/* @var Literal $argument */
+					/** @var Node\Literal $argument */
 					$args[] = $argument->getValue();
 				}
 			}
@@ -147,7 +143,7 @@ class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
 
-				/* @var \Peast\Syntax\Node\Comment $comment */
+				/** @var Node\Comment $comment */
 				foreach ( $all_comments as $comment ) {
 					if ( $node->getLocation()->getStart()->getLine() - $comment->getLocation()->getEnd()->getLine() > 1 ) {
 						continue;

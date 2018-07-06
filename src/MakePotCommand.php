@@ -298,7 +298,13 @@ class MakePotCommand extends WP_CLI_Command {
 			] );
 
 			if ( ! $this->skip_js ) {
-				JsCodeExtractor::fromDirectory( $this->source, $this->translations );
+				JsCodeExtractor::fromDirectory(
+					$this->source,
+					$this->translations,
+					[
+						'exclude' => $this->exclude,
+					]
+				);
 			}
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );

@@ -54,6 +54,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $skip_js = false;
 
 	/**
+	 * @var string
+	 */
+	protected $domain;
+
+	/**
 	 * Create a POT file for a WordPress plugin or theme.
 	 *
 	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -70,7 +75,10 @@ class MakePotCommand extends WP_CLI_Command {
 	 * : Plugin or theme slug. Defaults to the source directory's basename.
 	 *
 	 * [--domain=<domain>]
-	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug.
+	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug, unless the `--ignore-domain` option is used.
+	 *
+	 * [--ignore-domain]
+	 * : Ignore the text domain completely and extract strings with any text domain.
 	 *
 	 * [--merge[=<file>]]
 	 * : Existing POT file file whose content should be merged with the extracted strings.
@@ -95,6 +103,12 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->source  = realpath( $args[0] );
 		$this->slug    = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+
+		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
+
+		if ( ! $ignore_domain ) {
+			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->slug );
+		}
 
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
@@ -144,7 +158,7 @@ class MakePotCommand extends WP_CLI_Command {
 			$this->exclude = array_unique( $this->exclude );
 		}
 
-		if ( ! $this->makepot( Utils\get_flag_value( $assoc_args, 'domain', $this->slug ) ) ) {
+		if ( ! $this->makepot() ) {
 			WP_CLI::error( 'Could not generate a POT file!' );
 		}
 
@@ -245,11 +259,9 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Creates a POT file and stores it on disk.
 	 *
-	 * @param string $domain The text domain to extract.
-	 *
 	 * @return bool True on success, false otherwise.
 	 */
-	protected function makepot( $domain ) {
+	protected function makepot() {
 		$this->translations = new Translations();
 
 		// Add existing strings first but don't keep headers.
@@ -267,7 +279,9 @@ class MakePotCommand extends WP_CLI_Command {
 		// POT files have no Language header.
 		$this->translations->deleteHeader( Translations::HEADER_LANGUAGE );
 
-		$this->translations->setDomain( $domain );
+		if ( $this->domain ) {
+			$this->translations->setDomain( $this->domain );
+		}
 
 		$file_data = $this->get_main_file_data();
 

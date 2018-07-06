@@ -20,56 +20,32 @@ final class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				continue;
 			}
 
-			$domain = $context = $original = $plural = null;
+			$context = $plural = null;
 
 			switch ( $functions[ $name ] ) {
 				case 'text_domain':
 				case 'gettext':
-					if ( ! isset( $args[1] ) ) {
-						continue 2;
-					}
-
-					list( $original, $domain ) = $args;
+					list( $original, $domain ) = array_pad( $args, 2, null );
 					break;
 
 				case 'text_context_domain':
-					if ( ! isset( $args[2] ) ) {
-						continue 2;
-					}
-
-					list( $original, $context, $domain ) = $args;
+					list( $original, $context, $domain ) = array_pad( $args, 3, null );
 					break;
 
 				case 'single_plural_number_domain':
-					if ( ! isset( $args[3] ) ) {
-						continue 2;
-					}
-
-					list( $original, $plural, $number, $domain ) = $args;
+					list( $original, $plural, $number, $domain ) = array_pad( $args, 4, null );
 					break;
 
 				case 'single_plural_number_context_domain':
-					if ( ! isset( $args[4] ) ) {
-						continue 2;
-					}
-
-					list( $original, $plural, $number, $context, $domain ) = $args;
+					list( $original, $plural, $number, $context, $domain ) = array_pad( $args, 5, null );
 					break;
 
 				case 'single_plural_domain':
-					if ( ! isset( $args[2] ) ) {
-						continue 2;
-					}
-
-					list( $original, $plural, $domain ) = $args;
+					list( $original, $plural, $domain ) = array_pad( $args, 3, null );
 					break;
 
 				case 'single_plural_context_domain':
-					if ( ! isset( $args[3] ) ) {
-						continue 2;
-					}
-
-					list( $original, $plural, $context, $domain ) = $args;
+					list( $original, $plural, $context, $domain ) = array_pad( $args, 4, null );
 					break;
 
 				default:
@@ -77,7 +53,7 @@ final class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );
 			}
 
-			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
+			if ( (string) $original !== '' && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation = $translation->addReference( $file, $line );
 

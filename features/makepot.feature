@@ -239,6 +239,46 @@ Feature: Generate a POT file of a WordPress plugin
     And STDERR should be empty
     And the foo-plugin/languages/foo-plugin.pot file should exist
 
+  Scenario: Uses Text Domain header when no domain is set.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: bar-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Foo Text', 'foo-plugin' );
+
+       __( 'Bar Text', 'bar-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the foo-plugin.pot file should exist
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Bar Text"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Foo Text"
+      """
+
   Scenario: Extract all supported functions
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

@@ -84,8 +84,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$all_comments[] = $comment;
 			}
 
-			$domain = $context = $original = $plural = null;
-			$args   = [];
+			$context = $plural = null;
+			$args    = [];
 
 			/** @var Node\Node $argument */
 			foreach ( $node->getArguments() as $argument ) {
@@ -106,39 +106,23 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			switch ( $functions[ $callee->getName() ] ) {
 				case 'text_domain':
 				case 'gettext':
-					if ( ! isset( $args[1] ) ) {
-						break;
-					}
-
-					list( $original, $domain ) = $args;
+					list( $original, $domain ) = array_pad( $args, 2, null );
 					break;
 
 				case 'text_context_domain':
-					if ( ! isset( $args[2] ) ) {
-						break;
-					}
-
-					list( $original, $context, $domain ) = $args;
+					list( $original, $context, $domain ) = array_pad( $args, 3, null );
 					break;
 
 				case 'single_plural_number_domain':
-					if ( ! isset( $args[3] ) ) {
-						break;
-					}
-
-					list( $original, $plural, $number, $domain ) = $args;
+					list( $original, $plural, $number, $domain ) = array_pad( $args, 4, null );
 					break;
 
 				case 'single_plural_number_context_domain':
-					if ( ! isset( $args[4] ) ) {
-						break;
-					}
-
-					list( $original, $plural, $number, $context, $domain ) = $args;
+					list( $original, $plural, $number, $context, $domain ) = array_pad( $args, 5, null );
 					break;
 			}
 
-			if ( (string) $original !== '' && ( $domain === null || $domain === $translations->getDomain() ) ) {
+			if ( (string) $original !== '' && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
 

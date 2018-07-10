@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--merge[=<file>]] [--exclude=<paths>] [--skip-js]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<file>]] [--exclude=<paths>] [--skip-js]
 ~~~
 
 Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -48,7 +48,10 @@ Scans PHP and JavaScript files, as well as theme stylesheets for translatable st
 		Plugin or theme slug. Defaults to the source directory's basename.
 
 	[--domain=<domain>]
-		Text domain to look for in the source code. Defaults to the plugin/theme slug.
+		Text domain to look for in the source code. Defaults to the plugin/theme slug, unless the `--ignore-domain` option is used.
+
+	[--ignore-domain]
+		Ignore the text domain completely and extract strings with any text domain.
 
 	[--merge[=<file>]]
 		Existing POT file file whose content should be merged with the extracted strings.

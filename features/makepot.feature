@@ -1222,6 +1222,11 @@ Feature: Generate a POT file of a WordPress plugin
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --domain=bar`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
     And the foo-plugin.pot file should contain:
       """
       msgid "Foo"
@@ -1254,6 +1259,11 @@ Feature: Generate a POT file of a WordPress plugin
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --skip-js`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
     And the foo-plugin.pot file should contain:
       """
       msgid "Foo Plugin"
@@ -1261,4 +1271,69 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin.pot file should not contain:
       """
       msgid "Hello World"
+      """
+
+  Scenario: Extract all strings regardless of text domain
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Hello World', 'foo-plugin' );
+
+       __( 'Foo', 'bar' );
+
+       __( 'bar' );
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( '__', 'foo-plugin' );
+
+      __( 'wrong-domain', 'wrong-domain' );
+
+      __( 'Hello JS' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --domain=bar --ignore-domain`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Foo"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "bar"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "__"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "wrong-domain"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Hello JS"
       """

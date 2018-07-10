@@ -48,7 +48,9 @@ Scans PHP and JavaScript files, as well as theme stylesheets for translatable st
 		Plugin or theme slug. Defaults to the source directory's basename.
 
 	[--domain=<domain>]
-		Text domain to look for in the source code. Defaults to the plugin/theme slug, unless the `--ignore-domain` option is used.
+		Text domain to look for in the source code, unless the `--ignore-domain` option is used.
+		By default, the "Text Domain" header of the plugin or theme is used.
+		If none is provided, it falls back to the plugin/theme slug.
 
 	[--ignore-domain]
 		Ignore the text domain completely and extract strings with any text domain.

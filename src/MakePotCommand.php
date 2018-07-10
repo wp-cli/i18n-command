@@ -75,7 +75,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * : Plugin or theme slug. Defaults to the source directory's basename.
 	 *
 	 * [--domain=<domain>]
-	 * : Text domain to look for in the source code. Defaults to the plugin/theme slug, unless the `--ignore-domain` option is used.
+	 * : Text domain to look for in the source code, unless the `--ignore-domain` option is used.
+	 * By default, the "Text Domain" header of the plugin or theme is used.
+	 * If none is provided, it falls back to the plugin/theme slug.
 	 *
 	 * [--ignore-domain]
 	 * : Ignore the text domain completely and extract strings with any text domain.
@@ -106,15 +108,23 @@ class MakePotCommand extends WP_CLI_Command {
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
-		if ( ! $ignore_domain ) {
-			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->slug );
-		}
-
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
 			WP_CLI::error( 'Not a valid source directory!' );
 		}
 
 		$this->retrieve_main_file_data();
+
+		$file_data = $this->get_main_file_data();
+
+		if ( ! $ignore_domain ) {
+			$this->domain = $this->slug;
+
+			if ( ! empty( $file_data['Text Domain'] ) ) {
+				$this->domain = $file_data['Text Domain'];
+			}
+
+			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->domain );
+		}
 
 		// Determine destination.
 		if ( isset( $args[1] ) ) {
@@ -152,9 +162,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['exclude'] ) ) {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
-			$this->exclude = array_map(function($exclude) {
-				return ltrim( rtrim( $exclude, '/\\' ), '/\\' );
-			}, $this->exclude);
+			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude);
 			$this->exclude = array_unique( $this->exclude );
 		}
 
@@ -163,6 +171,16 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( 'POT file successfully generated!' );
+	}
+
+	/**
+	 * Removes leading and trailing slashes of a string.
+	 *
+	 * @param string $string What to add the remove slashes from.
+	 * @return string String without leading and trailing slashes.
+	 */
+	protected function unslashit( $string ) {
+		return ltrim( rtrim( $string, '/\\' ), '/\\' );
 	}
 
 	/**
@@ -230,6 +248,7 @@ class MakePotCommand extends WP_CLI_Command {
 					'Author URI',
 					'Version',
 					'Domain Path',
+					'Text Domain',
 				];
 			case 'theme':
 				return [
@@ -241,6 +260,7 @@ class MakePotCommand extends WP_CLI_Command {
 					'Version',
 					'License',
 					'Domain Path',
+					'Text Domain',
 				];
 			default:
 				return [];
@@ -285,7 +305,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		$file_data = $this->get_main_file_data();
 
-		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'] );
+		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'], $file_data['Text Domain'] );
 
 		// Set entries from main file data.
 		foreach ( $file_data as $header => $data ) {

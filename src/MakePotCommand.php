@@ -127,11 +127,11 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		// Determine destination.
-		$this->destination = $this->source . DIRECTORY_SEPARATOR . $this->slug . '.pot';
+		$this->destination = "{$this->source}/{$this->slug}.pot";
 
 		if ( ! empty( $file_data['Domain Path'] ) ) {
 			// Domain Path inside source folder.
-			$this->destination = $this->source . DIRECTORY_SEPARATOR . $file_data['Domain Path'] . DIRECTORY_SEPARATOR . $this->slug . '.pot';
+			$this->destination = sprintf( '%s/%s/%s.pot', $this->source, $file_data['Domain Path'], $this->slug );
 		}
 
 		if ( isset( $args[1] ) ) {

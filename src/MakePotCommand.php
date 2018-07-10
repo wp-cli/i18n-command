@@ -127,18 +127,15 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		// Determine destination.
+		$this->destination = $this->source . DIRECTORY_SEPARATOR . $this->slug . '.pot';
+
+		if ( ! empty( $file_data['Domain Path'] ) ) {
+			// Domain Path inside source folder.
+			$this->destination = $this->source . DIRECTORY_SEPARATOR . $file_data['Domain Path'] . DIRECTORY_SEPARATOR . $this->slug . '.pot';
+		}
+
 		if ( isset( $args[1] ) ) {
 			$this->destination = $args[1];
-		} else {
-			$file_data = $this->get_main_file_data();
-
-			// Current directory.
-			$this->destination = $this->slug . '.pot';
-
-			if ( isset( $file_data['Domain Path'] ) ) {
-				// Domain Path inside source folder.
-				$this->destination = $this->source . DIRECTORY_SEPARATOR . $file_data['Domain Path'] . DIRECTORY_SEPARATOR . $this->slug . '.pot';
-			}
 		}
 
 		// Two is_dir() checks in case of a race condition.

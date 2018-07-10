@@ -620,6 +620,10 @@ Feature: Generate a POT file of a WordPress plugin
       <?php
        __( 'I am being ignored', 'foo-plugin' );
       """
+     And a foo-plugin/bar/ignored.js file:
+      """
+      __( 'I am being ignored', 'foo-plugin' );
+      """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude=foo,bar`
     Then the foo-plugin.pot file should not contain:

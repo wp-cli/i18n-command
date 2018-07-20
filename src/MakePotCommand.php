@@ -285,7 +285,7 @@ class MakePotCommand extends WP_CLI_Command {
 		if ( $this->merge ) {
 			$existing_translations = new Translations();
 			Po::fromFile( $this->merge, $existing_translations );
-			$this->translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
+			$this->translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE | Merge::HEADERS_ADD );
 		}
 
 		$meta = $this->get_meta_data();

@@ -326,6 +326,7 @@ class MakePotCommand extends WP_CLI_Command {
 				// Extract 'Template Name' headers in theme files.
 				'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
 				'exclude'            => $this->exclude,
+				'extensions'         => [ 'php' ],
 			] );
 
 			if ( ! $this->skip_js ) {

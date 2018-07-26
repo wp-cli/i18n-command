@@ -54,6 +54,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $skip_js = false;
 
 	/**
+	 * @var array
+	 */
+	protected $headers = [];
+
+	/**
 	 * @var string
 	 */
 	protected $domain;
@@ -91,6 +96,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
+	 * [--headers=<headers>]
+	 * : Array in JSON format of custom headers which will be added to the POT file. Defaults to empty array.
+	 *
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
@@ -102,9 +110,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->source  = realpath( $args[0] );
-		$this->slug    = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->skip_js = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->source         = realpath( $args[0] );
+		$this->slug           = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->skip_js        = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -161,6 +169,10 @@ class MakePotCommand extends WP_CLI_Command {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
 			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude);
 			$this->exclude = array_unique( $this->exclude );
+		}
+
+		if ( isset( $assoc_args['headers'] ) ) {
+			$this->headers = json_decode( $assoc_args['headers'], true );
 		}
 
 		if ( ! $this->makepot() ) {
@@ -413,6 +425,10 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->translations->setHeader( 'Report-Msgid-Bugs-To', $meta['msgid-bugs-address'] );
 		$this->translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
 		$this->translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
+
+		foreach( $this->headers as $key => $value ) {
+			$this->translations->setHeader( $key, $value );
+		}
 	}
 
 	/**

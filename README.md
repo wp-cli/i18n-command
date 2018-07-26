@@ -64,6 +64,9 @@ Scans PHP and JavaScript files, as well as theme stylesheets for translatable st
 		By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
 		Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 
+	[--headers=<headers>]
+		Array in JSON format of custom headers which will be added to the POT file. Defaults to empty array.
+
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 

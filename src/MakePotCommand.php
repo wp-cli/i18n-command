@@ -110,9 +110,12 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->source         = realpath( $args[0] );
-		$this->slug           = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->skip_js        = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$array_arguments = array( 'headers' );
+		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		$this->source    = realpath( $args[0] );
+		$this->slug      = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->skip_js   = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->headers   = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -169,10 +172,6 @@ class MakePotCommand extends WP_CLI_Command {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
 			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude);
 			$this->exclude = array_unique( $this->exclude );
-		}
-
-		if ( isset( $assoc_args['headers'] ) ) {
-			$this->headers = json_decode( $assoc_args['headers'], true );
 		}
 
 		if ( ! $this->makepot() ) {

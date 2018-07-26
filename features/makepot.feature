@@ -107,6 +107,10 @@ Feature: Generate a POT file of a WordPress plugin
       """
       "Report-Msgid-Bugs-To: https://github.com/hello-world/hello-world/\n"
       """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
+      """
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
+      """
 
   Scenario: Sets custom header
     When I run `wp scaffold plugin hello-world`

@@ -15,7 +15,16 @@ trait IterableCodeExtractor {
 	private static $dir = '';
 
 	/**
-	 * {@inheritdoc}
+	 * Extract the translations from a file.
+	 *
+	 * @param array|string $file         A path of a file or files
+	 * @param Translations $translations The translations instance to append the new translations.
+	 * @param array        $options      {
+	 *     Optional. An array of options passed down to static::fromString()
+	 *
+	 *     @type bool $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 * }
+	 * @return null
 	 */
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file ) as $f ) {
@@ -51,11 +60,18 @@ trait IterableCodeExtractor {
 	}
 
 	/**
-	 * Recursively extracts the translations from a directory.
+	 * Extract the translations from a file.
 	 *
-	 * @param string $dir Root path to start the recursive traversal in.
+	 * @param string $dir                Root path to start the recursive traversal in.
 	 * @param Translations $translations The translations instance to append the new translations.
-	 * @param array $options
+	 * @param array        $options      {
+	 *     Optional. An array of options passed down to static::fromString()
+	 *
+	 *     @type bool $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type array $exclude           A list of path to exclude. Default [].
+	 *     @type array $extensions        A list of extensions to process. Default [].
+	 * }
+	 * @return null
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		static::$dir = $dir;

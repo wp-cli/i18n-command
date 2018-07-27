@@ -102,6 +102,18 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @when before_wp_load
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		$this->handle_arguments( $args, $assoc_args );
+		if ( ! $this->makepot() ) {
+			WP_CLI::error( 'Could not generate a POT file!' );
+		}
+
+		WP_CLI::success( 'POT file successfully generated!' );
+	}
+
+	/**
+	 * Process arguments from command-line in a reusable way.
+	 */
+	public function handle_arguments( $args, $assoc_args ) {
 		$this->source  = realpath( $args[0] );
 		$this->slug    = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
@@ -162,12 +174,6 @@ class MakePotCommand extends WP_CLI_Command {
 			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude);
 			$this->exclude = array_unique( $this->exclude );
 		}
-
-		if ( ! $this->makepot() ) {
-			WP_CLI::error( 'Could not generate a POT file!' );
-		}
-
-		WP_CLI::success( 'POT file successfully generated!' );
 	}
 
 	/**

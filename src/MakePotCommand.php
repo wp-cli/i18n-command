@@ -432,6 +432,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->translations->setHeader( 'Report-Msgid-Bugs-To', $meta['msgid-bugs-address'] );
 		$this->translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
 		$this->translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
+		$this->translations->setHeader( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
 
 		foreach( $this->headers as $key => $value ) {
 			$this->translations->setHeader( $key, $value );

@@ -421,7 +421,7 @@ class MakePotCommand extends WP_CLI_Command {
 			/** @var Translation $translation */
 
 			$references = $translation->getReferences();
-			$location   = implode( ':', array_unshift( $references ) );
+			$location   = implode( ':', array_shift( $references ) );
 
 			if ( $translation->hasExtractedComments() ) {
 				$comments = $translation->getExtractedComments();

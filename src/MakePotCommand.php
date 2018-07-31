@@ -14,11 +14,6 @@ use IteratorIterator;
 
 class MakePotCommand extends WP_CLI_Command {
 	/**
-	 * @var  Translations
-	 */
-	protected $translations;
-
-	/**
 	 * @var string
 	 */
 	protected $source;
@@ -111,10 +106,19 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$this->handle_arguments( $args, $assoc_args );
-		if ( ! $this->makepot() ) {
+		$translations = $this->extract_strings();
+		if ( ! $translations ) {
+			WP_CLI::warning( 'No translation found' );
+		}
+		$translations_count = count( $translations );
+		if ( 1 === $translations_count ) {
+			WP_CLI::debug( sprintf( 'Extracted %d string', $translations_count ), 'make-pot' );
+		} else {
+			WP_CLI::debug( sprintf( 'Extracted %d strings', $translations_count ), 'make-pot' );
+		}
+		if ( ! PotGenerator::toFile( $translations, $this->destination ) ) {
 			WP_CLI::error( 'Could not generate a POT file!' );
 		}
-
 		WP_CLI::success( 'POT file successfully generated!' );
 	}
 
@@ -312,10 +316,10 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Creates a POT file and stores it on disk.
 	 *
-	 * @return bool True on success, false otherwise.
+	 * @return Translations A Translation set.
 	 */
-	protected function makepot() {
-		$this->translations = new Translations();
+	protected function extract_strings() {
+		$translations = new Translations();
 
 		// Add existing strings first but don't keep headers.
 		if ( $this->merge ) {
@@ -323,19 +327,19 @@ class MakePotCommand extends WP_CLI_Command {
 
 			$existing_translations = new Translations();
 			Po::fromFile( $this->merge, $existing_translations );
-			$this->translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
+			$translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
 		}
 
 		$meta = $this->get_meta_data();
 		PotGenerator::setCommentBeforeHeaders( $meta['comments'] );
 
-		$this->set_default_headers();
+		$this->set_default_headers( $translations );
 
 		// POT files have no Language header.
-		$this->translations->deleteHeader( Translations::HEADER_LANGUAGE );
+		$translations->deleteHeader( Translations::HEADER_LANGUAGE );
 
 		if ( $this->domain ) {
-			$this->translations->setDomain( $this->domain );
+			$translations->setDomain( $this->domain );
 		}
 
 		$file_data = $this->get_main_file_data();
@@ -356,11 +360,11 @@ class MakePotCommand extends WP_CLI_Command {
 				$translation->addExtractedComment( sprintf( '%s of the plugin', $header ) );
 			}
 
-			$this->translations[] = $translation;
+			$translations[] = $translation;
 		}
 
 		try {
-			PhpCodeExtractor::fromDirectory( $this->source, $this->translations, [
+			PhpCodeExtractor::fromDirectory( $this->source, $translations, [
 				// Extract 'Template Name' headers in theme files.
 				'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
 				'exclude'            => $this->exclude,
@@ -370,7 +374,7 @@ class MakePotCommand extends WP_CLI_Command {
 			if ( ! $this->skip_js ) {
 				JsCodeExtractor::fromDirectory(
 					$this->source,
-					$this->translations,
+					$translations,
 					[
 						'exclude' => $this->exclude,
 						'extensions' => [ 'js' ],
@@ -381,7 +385,7 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		foreach( $this->translations as $translation ) {
+		foreach( $translations as $translation ) {
 			if ( ! $translation->hasExtractedComments() ) {
 				continue;
 			}
@@ -397,18 +401,7 @@ class MakePotCommand extends WP_CLI_Command {
 				) );
 			}
 		}
-
-		$result = PotGenerator::toFile( $this->translations, $this->destination );
-
-		$translations_count = count( $this->translations );
-
-		if ( 1 === $translations_count ) {
-			WP_CLI::debug( sprintf( 'Extracted %d string', $translations_count ), 'make-pot' );
-		} else {
-			WP_CLI::debug( sprintf( 'Extracted %d strings', $translations_count ), 'make-pot' );
-		}
-
-		return $result;
+		return $translations;
 	}
 
 	/**
@@ -456,17 +449,17 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Sets default POT file headers for the project.
 	 */
-	protected function set_default_headers() {
+	protected function set_default_headers( $translations ) {
 		$meta = $this->get_meta_data();
 
-		$this->translations->setHeader( 'Project-Id-Version', $meta['name'] . ' ' . $meta['version'] );
-		$this->translations->setHeader( 'Report-Msgid-Bugs-To', $meta['msgid-bugs-address'] );
-		$this->translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
-		$this->translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
-		$this->translations->setHeader( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
+		$translations->setHeader( 'Project-Id-Version', $meta['name'] . ' ' . $meta['version'] );
+		$translations->setHeader( 'Report-Msgid-Bugs-To', $meta['msgid-bugs-address'] );
+		$translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
+		$translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
+		$translations->setHeader( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
 
 		foreach( $this->headers as $key => $value ) {
-			$this->translations->setHeader( $key, $value );
+			$translations->setHeader( $key, $value );
 		}
 	}
 

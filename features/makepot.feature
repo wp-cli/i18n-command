@@ -605,9 +605,6 @@ Feature: Generate a POT file of a WordPress plugin
       /* translators: Translators 1! */
       __( 'Hello World', 'foo-plugin' );
 
-      /* translators: Translators 1! */
-      __( 'Hello World', 'foo-plugin' );
-
       /* Translators: Translators 2! */
       __( 'Hello World', 'foo-plugin' );
       """
@@ -620,7 +617,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
     And STDERR should contain:
       """
-      Warning: The string "Hello World" has 2 different translator comments.
+      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
       """
 
   Scenario: Skips excluded folders

@@ -5,7 +5,7 @@ namespace WP_CLI\I18n;
 use Gettext\Translations;
 use Gettext\Utils\PhpFunctionsScanner as GettextPhpFunctionsScanner;
 
-final class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
+class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 	/**
 	 * {@inheritdoc}
 	 */

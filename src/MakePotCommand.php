@@ -64,6 +64,52 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $domain;
 
 	/**
+	 * These Regexes copied from http://php.net/manual/en/function.sprintf.php#93552
+	 * and adjusted for better precision and updated specs.
+	 */
+	const SPRINTF_PLACEHOLDER_REGEX = '/(?:
+		(?<!%)                     # Don\'t match a literal % (%%).
+		(
+			%                          # Start of placeholder.
+			(?:[0-9]+\$)?              # Optional ordering of the placeholders.
+			[+-]?                      # Optional sign specifier.
+			(?:
+				(?:0|\'.)?                 # Optional padding specifier - excluding the space.
+				-?                         # Optional alignment specifier.
+				[0-9]*                     # Optional width specifier.
+				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+				|                      # Only recognize the space as padding in combination with a width specifier.
+				(?:[ ])?                   # Optional space padding specifier.
+				-?                         # Optional alignment specifier.
+				[0-9]+                     # Width specifier.
+				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+			)
+			[bcdeEfFgGosuxX]           # Type specifier.
+		)
+	)/x';
+
+	/**
+	 * "Unordered" means there's no position specifier: '%s', not '%2$s'.
+	 */
+	const UNORDERED_SPRINTF_PLACEHOLDER_REGEX = '/(?:
+		(?<!%)                     # Don\'t match a literal % (%%).
+		%                          # Start of placeholder.
+		[+-]?                      # Optional sign specifier.
+		(?:
+			(?:0|\'.)?                 # Optional padding specifier - excluding the space.
+			-?                         # Optional alignment specifier.
+			[0-9]*                     # Optional width specifier.
+			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+			|                      # Only recognize the space as padding in combination with a width specifier.
+			(?:[ ])?                   # Optional space padding specifier.
+			-?                         # Optional alignment specifier.
+			[0-9]+                     # Width specifier.
+			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+		)
+		[bcdeEfFgGosuxX]           # Type specifier.
+	)/x';
+
+	/**
 	 * Create a POT file for a WordPress plugin or theme.
 	 *
 	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -360,24 +406,84 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		foreach( $this->translations as $translation ) {
-			if ( ! $translation->hasExtractedComments() ) {
-				continue;
-			}
-
-			$comments = $translation->getExtractedComments();
-			$comments_count = count( $comments );
-
-			if ( $comments_count > 1 ) {
-				WP_CLI::warning( sprintf(
-					'The string "%1$s" has %2$d different translator comments.',
-					$translation->getOriginal(),
-					$comments_count
-				) );
-			}
-		}
+		$this->audit_strings();
 
 		return PotGenerator::toFile( $this->translations, $this->destination );
+	}
+
+	/**
+	 * Audits strings.
+	 *
+	 * Goes through all extracted strings to find possible mistakes.
+	 */
+	protected function audit_strings() {
+		foreach( $this->translations as $translation ) {
+			/** @var Translation $translation */
+
+			$references = $translation->getReferences();
+			$location   = implode( ':', array_unshift( $references ) );
+
+			if ( $translation->hasExtractedComments() ) {
+				$comments = $translation->getExtractedComments();
+				$comments_count = count( $comments );
+
+				if ( $comments_count > 1 ) {
+					WP_CLI::warning( sprintf(
+						'The string "%1$s" has %2$d different translator comments. (%3$s)',
+						$translation->getOriginal(),
+						$comments_count,
+						$location
+					) );
+				}
+			}
+
+			$non_placeholder_content = trim( preg_replace( '`^([\'"])(.*)\1$`Ds', '$2', $translation->getOriginal() ) );
+			$non_placeholder_content = preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $non_placeholder_content );
+
+			if ( '' === $non_placeholder_content ) {
+				WP_CLI::warning( sprintf(
+					'Found string without translatable content (%s)',
+					$location
+				) );
+			}
+
+			if ( $translation->hasPlural() ) {
+				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
+				$single_placeholders = $single_placeholders[0];
+
+				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getPlural(), $plural_placeholders );
+				$plural_placeholders = $plural_placeholders[0];
+
+				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals
+				if ( count( $single_placeholders ) < \count( $plural_placeholders ) ) {
+					WP_CLI::warning( sprintf(
+						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals (%s)',
+						$location
+					) );
+				} else {
+					sort( $single_placeholders );
+					sort( $plural_placeholders );
+
+					if ( $single_placeholders !== $plural_placeholders ) {
+						WP_CLI::warning( sprintf(
+							'Singular and plural placeholder appear in different order (%s)',
+							$location
+						) );
+					}
+				}
+
+				// UnorderedPlaceholders: Check for multiple unordered placeholders.
+				$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
+				$unordered_matches       = $unordered_matches[0];
+
+				if ( $unordered_matches_count >= 2 ) {
+					WP_CLI::warning( sprintf(
+						'Multiple placeholders should be ordered (%s)',
+						$location
+					) );
+				}
+			}
+		}
 	}
 
 	/**

@@ -99,6 +99,28 @@ Feature: Generate a POT file of a WordPress plugin
       "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
       """
 
+  Scenario: Sets custom Report-Msgid-Bugs-To
+    When I run `wp scaffold plugin hello-world`
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --headers='{"Report-Msgid-Bugs-To":"https://github.com/hello-world/hello-world/"}'`
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      "Report-Msgid-Bugs-To: https://github.com/hello-world/hello-world/\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
+      """
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
+      """
+
+  Scenario: Sets custom header
+    When I run `wp scaffold plugin hello-world`
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --headers='{"X-Poedit-Basepath":".."}'`
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      "X-Poedit-Basepath: ..\n"
+      """
+
   Scenario: Sets the last translator and the language team
     When I run `wp scaffold plugin hello-world`
 

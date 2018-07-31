@@ -1501,7 +1501,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      foo-themes/languages/foo-theme.pot
+      foo-theme/languages/foo-theme.pot
       """
     And STDERR should contain:
       """

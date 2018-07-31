@@ -241,7 +241,6 @@ class MakePotCommand extends WP_CLI_Command {
 
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
-			WP_CLI::debug($file->getRealPath());
 			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension()) {
 				$plugin_files[] = $file->getRealPath();
 			}

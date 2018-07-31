@@ -1,5 +1,5 @@
 @require-php-5.4
-Feature: Generate a POT file of a WordPress plugin
+Feature: Generate a POT file of a WordPress project
 
   Background:
     Given a WP install
@@ -1493,7 +1493,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
     And STDERR should contain:
       """
-      foobar/style.css
+      foo-theme/style.css
       """
     And STDERR should contain:
       """
@@ -1501,7 +1501,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
     And STDERR should contain:
       """
-      foobar/languages/foobar.pot
+      foo-themes/languages/foo-theme.pot
       """
     And STDERR should contain:
       """

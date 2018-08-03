@@ -620,6 +620,113 @@ Feature: Generate a POT file of a WordPress plugin
       Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
       """
 
+  Scenario: Prints a warning for strings without translatable content
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      sprintf( __( '"%s"', 'foo-plugin' ) );
+
+      """
+
+    When I run `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Warning: Found string without translatable content. (foo-plugin.php:6)
+      """
+
+  Scenario: Prints a warning for missing singular placeholder
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      sprintf(
+        _n( 'One Comment', '%s Comments', $number, 'foo-plugin' ),
+        $number
+      );
+
+      """
+
+    When I run `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals (foo-plugin.php:7)
+      """
+
+  Scenario: Prints a warning for placeholders in different order
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      sprintf(
+        _n( '%1$s Comment (%2$s)', '%2$$s Comments (%1$s)', $number, 'foo-plugin' ),
+        $number,
+        $another_variable
+      );
+
+      """
+
+    When I run `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Singular and plural placeholder appear in different order. (foo-plugin.php:7)
+      """
+
+  Scenario: Prints a warning for multiple unordered placeholders
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      sprintf(
+        __( 'Hello %s %s', 'foo-plugin' ),
+        $a_variable,
+        $another_variable
+      );
+
+      """
+
+    When I run `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Multiple placeholders should be ordered. (foo-plugin.php:7)
+      """
+
   Scenario: Skips excluded folders
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

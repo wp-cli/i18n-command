@@ -444,7 +444,18 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( '' === $non_placeholder_content ) {
 				WP_CLI::warning( sprintf(
-					'Found string without translatable content %s',
+					'Found string without translatable content. %s',
+					$location
+				) );
+			}
+
+			// UnorderedPlaceholders: Check for multiple unordered placeholders.
+			$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
+			$unordered_matches = $unordered_matches[0];
+
+			if ( $unordered_matches_count >= 2 ) {
+				WP_CLI::warning( sprintf(
+					'Multiple placeholders should be ordered. %s',
 					$location
 				) );
 			}
@@ -468,21 +479,10 @@ class MakePotCommand extends WP_CLI_Command {
 
 					if ( $single_placeholders !== $plural_placeholders ) {
 						WP_CLI::warning( sprintf(
-							'Singular and plural placeholder appear in different order %s',
+							'Singular and plural placeholder appear in different order. %s',
 							$location
 						) );
 					}
-				}
-
-				// UnorderedPlaceholders: Check for multiple unordered placeholders.
-				$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
-				$unordered_matches       = $unordered_matches[0];
-
-				if ( $unordered_matches_count >= 2 ) {
-					WP_CLI::warning( sprintf(
-						'Multiple placeholders should be ordered %s',
-						$location
-					) );
 				}
 			}
 		}

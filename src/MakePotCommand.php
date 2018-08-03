@@ -403,9 +403,9 @@ class MakePotCommand extends WP_CLI_Command {
 		$translations_count = count( $this->translations );
 
 		if ( 1 === $translations_count ) {
-			WP_CLI::debug( sprintf( 'Extracted %d string', count( $this->translations ) ), 'make-pot' );
+			WP_CLI::debug( sprintf( 'Extracted %d string', $translations_count ), 'make-pot' );
 		} else {
-			WP_CLI::debug( sprintf( 'Extracted %d strings', count( $this->translations ) ), 'make-pot' );
+			WP_CLI::debug( sprintf( 'Extracted %d strings', $translations_count ), 'make-pot' );
 		}
 
 		return $result;

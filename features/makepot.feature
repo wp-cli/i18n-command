@@ -1472,6 +1472,17 @@ Feature: Generate a POT file of a WordPress project
       Merging with existing POT file
       """
 
+    When I run `wp i18n make-pot foo-plugin --merge=bar.pot --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Invalid file provided to --merge
+      """
+
   Scenario: Prints helpful debug messages for theme
     Given an empty foo-theme directory
     And a foo-theme/style.css file:

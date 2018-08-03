@@ -190,7 +190,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( isset( $this->merge ) && ! file_exists( $this->merge ) ) {
-				WP_CLI::warning( sprintf( 'POT file to merge with does not exist: %s', $this->merge ) );
+				WP_CLI::warning( sprintf( 'Invalid file provided to --merge: %s', $this->merge ) );
 
 				unset( $this->merge );
 			}

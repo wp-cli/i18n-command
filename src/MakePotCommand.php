@@ -319,7 +319,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Add existing strings first but don't keep headers.
 		if ( $this->merge ) {
-			WP_CLI::debug( sprintf( 'Mergining with existing POT file: %s', $this->merge ), 'make-pot' );
+			WP_CLI::debug( sprintf( 'Merging with existing POT file: %s', $this->merge ), 'make-pot' );
 
 			$existing_translations = new Translations();
 			Po::fromFile( $this->merge, $existing_translations );

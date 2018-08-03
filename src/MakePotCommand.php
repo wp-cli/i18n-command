@@ -431,7 +431,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $comments_count > 1 ) {
 					WP_CLI::warning( sprintf(
-						'The string "%1$s" has %2$d different translator comments. (%3$s)',
+						'The string "%1$s" has %2$d different translator comments. %3$s',
 						$translation->getOriginal(),
 						$comments_count,
 						$location
@@ -459,7 +459,7 @@ class MakePotCommand extends WP_CLI_Command {
 				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals
 				if ( count( $single_placeholders ) < \count( $plural_placeholders ) ) {
 					WP_CLI::warning( sprintf(
-						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals (%s)',
+						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals %s',
 						$location
 					) );
 				} else {

@@ -13,6 +13,13 @@
             "homepage": "https://pascalbirchler.com/"
         }
     ],
+    "config": {
+        "platform": {
+            "php": "5.4"
+        },
+        "process-timeout": 7200,
+        "sort-packages": true
+    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
@@ -24,30 +31,22 @@
         ]
     },
     "require": {
+        "php": ">=5.4",
         "gettext/gettext": "dev-master#37882dc3b58c2357fc6ddc204c1f22f7bb2b6601",
         "mck89/peast": "^1.8"
     },
     "require-dev": {
-        "wp-cli/wp-cli": "^1.1.0",
         "behat/behat": "~2.5",
-		"wp-cli/core-command": "^1.0",
-		"wp-cli/package-command": "^1.0",
         "roave/security-advisories": "dev-master",
-        "wp-cli/wp-cli-tests": "dev-master"
+        "wp-cli/core-command": "^1.0",
+        "wp-cli/scaffold-command": "^1.0",
+        "wp-cli/wp-cli-tests": "dev-master",
+        "wp-cli/wp-cli": "^1.1.0"
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.x-dev"
+            "dev-master": "2.0.x-dev"
         },
-        "bundled": true,
-        "commands": [
-            "i18n",
-            "i18n make-pot"
-        ]
-    },
-    "config": {
-        "platform": {
-            "php": "5.4"
-        }
+        "bundled": true
     }
 }

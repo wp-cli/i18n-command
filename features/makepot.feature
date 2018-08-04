@@ -1210,7 +1210,7 @@ Feature: Generate a POT file of a WordPress project
       );
       """
 
-    When I run `wp i18n make-pot foo-plugin`
+    When I try `wp i18n make-pot foo-plugin`
     Then STDOUT should be:
       """
       Plugin file detected.

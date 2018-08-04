@@ -139,6 +139,10 @@ class MakePotCommand extends WP_CLI_Command {
 
 		$file_data = $this->get_main_file_data();
 
+		if ( $ignore_domain ) {
+			WP_CLI::debug( 'Extracting all strings regardless of text domain', 'make-pot' );
+		}
+
 		if ( ! $ignore_domain ) {
 			$this->domain = $this->slug;
 
@@ -147,6 +151,8 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->domain );
+
+			WP_CLI::debug( sprintf( 'Extracting all strings with text domain "%s"', $this->domain ), 'make-pot' );
 		}
 
 		// Determine destination.
@@ -154,31 +160,41 @@ class MakePotCommand extends WP_CLI_Command {
 
 		if ( ! empty( $file_data['Domain Path'] ) ) {
 			// Domain Path inside source folder.
-			$this->destination = sprintf( '%s/%s/%s.pot', $this->source, $file_data['Domain Path'], $this->slug );
+			$this->destination = sprintf(
+				'%s/%s/%s.pot',
+				$this->source,
+				$this->unslashit( $file_data['Domain Path'] ),
+				$this->slug
+			);
 		}
 
 		if ( isset( $args[1] ) ) {
 			$this->destination = $args[1];
 		}
 
+		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
+
 		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( dirname( $this->destination ) ) && ! mkdir( dirname( $this->destination ) ) && ! is_dir( dirname( $this->destination ) ) ) {
+		if ( ! is_dir( dirname( $this->destination ) ) &&
+		     ! mkdir( dirname( $this->destination ), 0777, true ) &&
+		     ! is_dir( dirname( $this->destination ) )
+		) {
 			WP_CLI::error( 'Could not create destination directory!' );
 		}
 
 		if ( isset( $assoc_args['merge'] ) ) {
-			if ( true === $assoc_args['merge'] && file_exists( $this->destination ) ) {
+			if ( true === $assoc_args['merge'] ) {
 				$this->merge = $this->destination;
 			} elseif ( ! empty( $assoc_args['merge'] ) ) {
-				if ( ! file_exists( $assoc_args['merge'] ) ) {
-					WP_CLI::error( sprintf( 'Invalid file %s', $assoc_args['merge'] ) );
-				}
-
 				$this->merge = $assoc_args['merge'];
 			}
-		}
 
-		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
+			if ( isset( $this->merge ) && ! file_exists( $this->merge ) ) {
+				WP_CLI::warning( sprintf( 'Invalid file provided to --merge: %s', $this->merge ) );
+
+				unset( $this->merge );
+			}
+		}
 
 		if ( isset( $assoc_args['exclude'] ) ) {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
@@ -190,7 +206,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Removes leading and trailing slashes of a string.
 	 *
-	 * @param string $string What to add the remove slashes from.
+	 * @param string $string What to add and remove slashes from.
 	 * @return string String without leading and trailing slashes.
 	 */
 	protected function unslashit( $string ) {
@@ -203,12 +219,15 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @return void
 	 */
 	protected function retrieve_main_file_data() {
-		if ( is_file( "$this->source/style.css" ) && is_readable( "$this->source/style.css" ) ) {
-			$theme_data = static::get_file_data( "$this->source/style.css", array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
+		$stylesheet = sprintf( '%s/style.css', $this->source );
+
+		if ( is_file( $stylesheet ) && is_readable( $stylesheet ) ) {
+			$theme_data = static::get_file_data( $stylesheet, array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
 
 			// Stop when it contains a valid Theme Name header.
 			if ( ! empty( $theme_data['Theme Name'] ) ) {
 				WP_CLI::log( 'Theme stylesheet detected.' );
+				WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet ), 'make-pot' );
 
 				$this->main_file_data = $theme_data;
 
@@ -300,6 +319,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Add existing strings first but don't keep headers.
 		if ( $this->merge ) {
+			WP_CLI::debug( sprintf( 'Merging with existing POT file: %s', $this->merge ), 'make-pot' );
+
 			$existing_translations = new Translations();
 			Po::fromFile( $this->merge, $existing_translations );
 			$this->translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
@@ -377,7 +398,17 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 		}
 
-		return PotGenerator::toFile( $this->translations, $this->destination );
+		$result = PotGenerator::toFile( $this->translations, $this->destination );
+
+		$translations_count = count( $this->translations );
+
+		if ( 1 === $translations_count ) {
+			WP_CLI::debug( sprintf( 'Extracted %d string', $translations_count ), 'make-pot' );
+		} else {
+			WP_CLI::debug( sprintf( 'Extracted %d strings', $translations_count ), 'make-pot' );
+		}
+
+		return $result;
 	}
 
 	/**

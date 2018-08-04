@@ -612,7 +612,7 @@ Feature: Generate a POT file of a WordPress project
       __( 'Hello World', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1430,7 +1430,7 @@ Feature: Generate a POT file of a WordPress project
        __( 'Hello World', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1461,7 +1461,7 @@ Feature: Generate a POT file of a WordPress project
       Extracted 3 strings
       """
 
-    When I run `wp i18n make-pot foo-plugin --merge --debug`
+    When I try `wp i18n make-pot foo-plugin --merge --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1472,7 +1472,7 @@ Feature: Generate a POT file of a WordPress project
       Merging with existing POT file
       """
 
-    When I run `wp i18n make-pot foo-plugin --merge=bar.pot --debug`
+    When I try `wp i18n make-pot foo-plugin --merge=bar.pot --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1500,7 +1500,7 @@ Feature: Generate a POT file of a WordPress project
       */
       """
 
-    When I run `wp i18n make-pot foo-theme --debug`
+    When I try `wp i18n make-pot foo-theme --debug`
     Then STDOUT should be:
       """
       Theme stylesheet detected.

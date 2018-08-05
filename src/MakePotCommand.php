@@ -12,8 +12,6 @@ use WP_CLI\Utils;
 use DirectoryIterator;
 use IteratorIterator;
 
-use function WP_CLI\Utils\pluralize;
-
 class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var  Translations
@@ -439,7 +437,7 @@ class MakePotCommand extends WP_CLI_Command {
 			sprintf(
 				'Extracted %d %s',
 				$translations_count,
-				pluralize( 'string', $translations_count )
+				WP_CLI\Utils\pluralize( 'string', $translations_count )
 			),
 			'make-pot'
 		);

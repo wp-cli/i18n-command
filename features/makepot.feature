@@ -629,7 +629,7 @@ Feature: Generate a POT file of a WordPress project
       /**
        * Plugin Name: Foo Plugin
        * Plugin URI:  https://example.com
-       * Description:
+       * Description: Plugin Description
        * Version:     0.1.0
        * Author:
        * Author URI:
@@ -646,7 +646,16 @@ Feature: Generate a POT file of a WordPress project
        __( 'I am being ignored', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    When I try `wp i18n make-pot foo-plugin foo-plugin.pot --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Extracted 4 strings
+      """
     Then the foo-plugin.pot file should not contain:
       """
       I am being ignored

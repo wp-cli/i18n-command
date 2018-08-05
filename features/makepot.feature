@@ -660,7 +660,7 @@ Feature: Generate a POT file of a WordPress project
 
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -688,7 +688,7 @@ Feature: Generate a POT file of a WordPress project
 
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -716,7 +716,7 @@ Feature: Generate a POT file of a WordPress project
 
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.

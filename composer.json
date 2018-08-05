@@ -28,8 +28,9 @@
         "mck89/peast": "^1.8"
     },
     "require-dev": {
-        "wp-cli/wp-cli": "^1.1.0",
-        "behat/behat": "~2.5"
+        "wp-cli/wp-cli": "^2",
+        "wp-cli/wp-cli-tests": "^0",
+        "wp-cli/scaffold-command": "^1.2"
     },
     "extra": {
         "branch-alias": {
@@ -39,6 +40,19 @@
         "commands": [
             "i18n",
             "i18n make-pot"
+        ]
+    },
+    "scripts": {
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpunit": "run-php-unit-tests",
+        "behat": "run-behat-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
         ]
     }
 }

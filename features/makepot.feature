@@ -178,24 +178,22 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Bails when no plugin files are found
     Given an empty foo-plugin directory
-    When I try `wp i18n make-pot foo-plugin foo-plugin.pot`
+    When I try `wp i18n make-pot foo-plugin foo-plugin.pot --debug`
     Then STDERR should contain:
       """
-      Error: No valid theme stylesheet or plugin file found!
+      No valid theme stylesheet or plugin file found, treating as a regular project.
       """
-    And the return code should be 1
 
   Scenario: Bails when no main plugin file is found
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
       """
-    When I try `wp i18n make-pot foo-plugin foo-plugin.pot`
+    When I try `wp i18n make-pot foo-plugin foo-plugin.pot --debug`
     Then STDERR should contain:
       """
-      Error: No valid theme stylesheet or plugin file found!
+      No valid theme stylesheet or plugin file found, treating as a regular project.
       """
-    And the return code should be 1
 
   Scenario: Adds relative paths to source file as comments.
     Given an empty foo-plugin directory

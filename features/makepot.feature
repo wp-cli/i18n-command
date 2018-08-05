@@ -1,5 +1,5 @@
 @require-php-5.4
-Feature: Generate a POT file of a WordPress plugin
+Feature: Generate a POT file of a WordPress project
 
   Background:
     Given a WP install
@@ -163,7 +163,7 @@ Feature: Generate a POT file of a WordPress plugin
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --domain=bar`
-    And the foo-plugin.pot file should contain:
+    Then the foo-plugin.pot file should contain:
       """
       msgid "Foo"
       """
@@ -609,7 +609,7 @@ Feature: Generate a POT file of a WordPress plugin
       __( 'Hello World', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -633,7 +633,7 @@ Feature: Generate a POT file of a WordPress plugin
 
       """
 
-    When I run `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1314,7 +1314,7 @@ Feature: Generate a POT file of a WordPress plugin
       );
       """
 
-    When I run `wp i18n make-pot foo-plugin`
+    When I try `wp i18n make-pot foo-plugin`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1512,4 +1512,125 @@ Feature: Generate a POT file of a WordPress plugin
     And the foo-plugin.pot file should contain:
       """
       msgid "Hello JS"
+      """
+
+  Scenario: Prints helpful debug messages for plugin
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Extracting all strings with text domain "foo-plugin"
+      """
+    And STDERR should contain:
+      """
+      Plugin file:
+      """
+    And STDERR should contain:
+      """
+      foo-plugin/foo-plugin.php
+      """
+    And STDERR should contain:
+      """
+      Destination:
+      """
+    And STDERR should contain:
+      """
+      foo-plugin/languages/foo-plugin.pot
+      """
+    And STDERR should contain:
+      """
+      Extracted 3 strings
+      """
+
+    When I try `wp i18n make-pot foo-plugin --merge --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Merging with existing POT file
+      """
+
+    When I try `wp i18n make-pot foo-plugin --merge=bar.pot --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Invalid file provided to --merge
+      """
+
+  Scenario: Prints helpful debug messages for theme
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name:     Foo Theme
+      Theme URI:      https://example.com
+      Description:
+      Author:
+      Author URI:
+      Version:        0.1.0
+      License:        GPL-2.0+
+      Text Domain:    foo-theme
+      Domain Path:    /languages
+      */
+      """
+
+    When I try `wp i18n make-pot foo-theme --debug`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Extracting all strings with text domain "foo-theme"
+      """
+    And STDERR should contain:
+      """
+      Theme stylesheet:
+      """
+    And STDERR should contain:
+      """
+      foo-theme/style.css
+      """
+    And STDERR should contain:
+      """
+      Destination:
+      """
+    And STDERR should contain:
+      """
+      foo-theme/languages/foo-theme.pot
+      """
+    And STDERR should contain:
+      """
+      Extracted 2 strings
       """

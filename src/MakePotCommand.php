@@ -236,9 +236,9 @@ class MakePotCommand extends WP_CLI_Command {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
 			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude );
 			$this->exclude = array_unique( $this->exclude );
-
-			WP_CLI::debug( sprintf( 'Excluding the following files: %s', implode( ',', $this->exclude ) ), 'make-pot' );
 		}
+
+		WP_CLI::debug( sprintf( 'Excluding the following files: %s', implode( ',', $this->exclude ) ), 'make-pot' );
 	}
 
 	/**

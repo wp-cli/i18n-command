@@ -107,10 +107,10 @@ trait IterableCodeExtractor {
 
 			// Check for more complex paths, e.g. /some/sub/folder.
 			foreach ( $include as $path_or_file ) {
-				$pattern = preg_quote( str_replace( '*', '__wildcard__', '/' . $path_or_file ) );
-				$pattern = str_replace( '__wildcard__', '(.+)', $pattern );
+				$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
+				$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
 
-				if ( false !== mb_ereg( $pattern . '$', $file->getPathname() ) ) {
+				if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
 					$is_valid = true;
 				}
 			}
@@ -121,17 +121,16 @@ trait IterableCodeExtractor {
 		}
 
 		if ( ! empty( $exclude ) ) {
-
 			if ( in_array( $file->getBasename(), $exclude, true ) ) {
 				return false;
 			}
 
 			// Check for more complex paths, e.g. /some/sub/folder.
 			foreach ( $exclude as $path_or_file ) {
-				$pattern = preg_quote( str_replace( '*', '__wildcard__', '/' . $path_or_file ) );
-				$pattern = str_replace( '__wildcard__', '(.+)', $pattern );
+				$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
+				$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
 
-				if ( false !== mb_ereg( $pattern . '$', $file->getPathname() ) ) {
+				if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
 					return false;
 				}
 			}
@@ -159,15 +158,15 @@ trait IterableCodeExtractor {
 				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
 					/** @var SplFileInfo $file */
 
-					/** @var RecursiveCallbackFilterIterator $iterator */
-					if ( $iterator->hasChildren() ) {
-						return true;
-					}
-
 					$is_valid = static::isValidFile( $file, $include, $exclude );
 
 					if ( ! $is_valid ) {
 						return false;
+					}
+
+					/** @var RecursiveCallbackFilterIterator $iterator */
+					if ( $iterator->hasChildren() ) {
+						return true;
 					}
 
 					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );

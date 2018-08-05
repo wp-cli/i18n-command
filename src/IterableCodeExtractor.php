@@ -8,6 +8,7 @@ use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use DirectoryIterator;
+use SplFileInfo;
 use WP_CLI;
 
 trait IterableCodeExtractor {
@@ -76,7 +77,10 @@ trait IterableCodeExtractor {
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		static::$dir = $dir;
 
-		$files = static::getFilesFromDirectory( $dir, isset( $options['exclude'] ) ? $options['exclude'] : [], $options['extensions'] );
+		$include = isset( $options['include'] ) ? $options['include'] : [];
+		$exclude = isset( $options['exclude'] ) ? $options['exclude'] : [];
+
+		$files = static::getFilesFromDirectory( $dir, $include, $exclude, $options['extensions'] );
 
 		if ( ! empty( $files ) ) {
 			static::fromFile( $files, $translations, $options );
@@ -86,47 +90,89 @@ trait IterableCodeExtractor {
 	}
 
 	/**
+	 * Determines whether a file is valid based on the include and exclude options.
+	 *
+	 * @param SplFileInfo $file File or directory.
+	 * @param array $include List of files and directories to include.
+	 * @param array $exclude List of files and directories to skip.
+	 * @return bool
+	 */
+	protected static function isValidFile( SplFileInfo $file, array $include = [], array $exclude = [] ) {
+		if ( ! empty( $include ) ) {
+			$is_valid = false;
+
+			if ( in_array( $file->getBasename(), $include, true ) ) {
+				$is_valid = true;
+			}
+
+			// Check for more complex paths, e.g. /some/sub/folder.
+			foreach ( $include as $path_or_file ) {
+				if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
+					$is_valid = true;
+				}
+			}
+
+			if ( ! $is_valid ) {
+				return false;
+			}
+		}
+
+		if ( ! empty( $exclude ) ) {
+
+			if ( in_array( $file->getBasename(), $exclude, true ) ) {
+				return false;
+			}
+
+			// Check for more complex paths, e.g. /some/sub/folder.
+			foreach ( $exclude as $path_or_file ) {
+				if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Recursively gets all PHP files within a directory.
 	 *
 	 * @param string $dir A path of a directory.
+	 * @param array $include List of files and directories to include.
 	 * @param array $exclude List of files and directories to skip.
 	 * @param array $extensions List of filename extensions to process.
 	 *
 	 * @return array File list.
 	 */
-	public static function getFilesFromDirectory( $dir, array $exclude = [], $extensions = [] ) {
+	public static function getFilesFromDirectory( $dir, array $include = [], array $exclude = [], $extensions = [] ) {
 		$filtered_files = [];
 
 		$files = new RecursiveIteratorIterator(
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
-				function ( $file, $key, $iterator ) use ( $exclude, $extensions ) {
-					/** @var DirectoryIterator $file */
-					if ( in_array( $file->getBasename(), $exclude, true ) ) {
-						return false;
-					}
-
-					// Check for more complex paths, e.g. /some/sub/folder.
-					foreach( $exclude as $path_or_file ) {
-						if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
-							return false;
-						}
-					}
+				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
+					/** @var SplFileInfo $file */
 
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					if ( $iterator->hasChildren() ) {
 						return true;
 					}
 
-					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, TRUE ) );
+					$is_valid = static::isValidFile( $file, $include, $exclude );
+
+					if ( ! $is_valid ) {
+						return false;
+					}
+
+					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );
 				}
 			),
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
 		foreach ( $files as $file ) {
-			/** @var DirectoryIterator $file */
-			if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, TRUE ) ) {
+			/** @var SplFileInfo $file */
+			if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
 				continue;
 			}
 

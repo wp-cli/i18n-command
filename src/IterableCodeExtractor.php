@@ -107,7 +107,10 @@ trait IterableCodeExtractor {
 
 			// Check for more complex paths, e.g. /some/sub/folder.
 			foreach ( $include as $path_or_file ) {
-				if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
+				$pattern = preg_quote( str_replace( '*', '__wildcard__', '/' . $path_or_file ) );
+				$pattern = str_replace( '__wildcard__', '(.+)', $pattern );
+
+				if ( false !== mb_ereg( $pattern . '$', $file->getPathname() ) ) {
 					$is_valid = true;
 				}
 			}
@@ -125,7 +128,10 @@ trait IterableCodeExtractor {
 
 			// Check for more complex paths, e.g. /some/sub/folder.
 			foreach ( $exclude as $path_or_file ) {
-				if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
+				$pattern = preg_quote( str_replace( '*', '__wildcard__', '/' . $path_or_file ) );
+				$pattern = str_replace( '__wildcard__', '(.+)', $pattern );
+
+				if ( false !== mb_ereg( $pattern . '$', $file->getPathname() ) ) {
 					return false;
 				}
 			}

@@ -671,7 +671,7 @@ Feature: Generate a POT file of a WordPress project
       Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals (foo-plugin.php:7)
       """
 
-  Scenario: Prints a warning for placeholders in different order
+  Scenario: Prints a warning for mismatched placeholders
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
@@ -681,7 +681,7 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        _n( '%1$s Comment (%2$s)', '%2$$s Comments (%1$s)', $number, 'foo-plugin' ),
+        _n( '%1$s Comment (%2$d)', '%2$s Comments (%1$s)', $number, 'foo-plugin' ),
         $number,
         $another_variable
       );
@@ -696,7 +696,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Singular and plural placeholder appear in different order. (foo-plugin.php:7)
+      Mismatched placeholders for singular and plural string. (foo-plugin.php:7)
       """
 
   Scenario: Prints a warning for multiple unordered placeholders

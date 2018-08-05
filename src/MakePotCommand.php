@@ -502,18 +502,19 @@ class MakePotCommand extends WP_CLI_Command {
 				$plural_placeholders = $plural_placeholders[0];
 
 				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals
-				if ( count( $single_placeholders ) < \count( $plural_placeholders ) ) {
+				if ( count( $single_placeholders ) < count( $plural_placeholders ) ) {
 					WP_CLI::warning( sprintf(
 						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals %s',
 						$location
 					) );
 				} else {
+					// Reordering is fine, but mismatched placeholders is probably wrong.
 					sort( $single_placeholders );
 					sort( $plural_placeholders );
 
 					if ( $single_placeholders !== $plural_placeholders ) {
 						WP_CLI::warning( sprintf(
-							'Singular and plural placeholder appear in different order. %s',
+							'Mismatched placeholders for singular and plural string. %s',
 							$location
 						) );
 					}

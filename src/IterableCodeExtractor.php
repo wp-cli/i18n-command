@@ -90,53 +90,61 @@ trait IterableCodeExtractor {
 	}
 
 	/**
-	 * Determines whether a file is valid based on the include and exclude options.
+	 * Determines whether a file is valid based on the include option.
 	 *
-	 * @param SplFileInfo $file File or directory.
-	 * @param array $include List of files and directories to include.
-	 * @param array $exclude List of files and directories to skip.
+	 * @param SplFileInfo $file    File or directory.
+	 * @param array       $include List of files and directories to include.
 	 * @return bool
 	 */
-	protected static function isValidFile( SplFileInfo $file, array $include = [], array $exclude = [] ) {
-		if ( ! empty( $include ) ) {
-			$is_valid = false;
+	protected static function isIncluded( SplFileInfo $file, array $include = [] ) {
+		if ( empty( $include ) ) {
+			return true;
+		}
 
-			if ( in_array( $file->getBasename(), $include, true ) ) {
-				$is_valid = true;
-			}
+		if ( in_array( $file->getBasename(), $include, true ) ) {
+			return true;
+		}
 
-			// Check for more complex paths, e.g. /some/sub/folder.
-			foreach ( $include as $path_or_file ) {
-				$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
-				$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
+		// Check for more complex paths, e.g. /some/sub/folder.
+		foreach ( $include as $path_or_file ) {
+			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
+			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
 
-				if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
-					$is_valid = true;
-				}
-			}
-
-			if ( ! $is_valid ) {
-				return false;
+			if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
+				return true;
 			}
 		}
 
-		if ( ! empty( $exclude ) ) {
-			if ( in_array( $file->getBasename(), $exclude, true ) ) {
-				return false;
-			}
+		return false;
+	}
 
-			// Check for more complex paths, e.g. /some/sub/folder.
-			foreach ( $exclude as $path_or_file ) {
-				$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
-				$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
+	/**
+	 * Determines whether a file is valid based on the exclude option.
+	 *
+	 * @param SplFileInfo $file    File or directory.
+	 * @param array       $exclude List of files and directories to skip.
+	 * @return bool
+	 */
+	protected static function isExcluded( SplFileInfo $file, array $exclude = [] ) {
+		if ( empty( $exclude ) ) {
+			return false;
+		}
 
-				if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
-					return false;
-				}
+		if ( in_array( $file->getBasename(), $exclude, true ) ) {
+			return true;
+		}
+
+		// Check for more complex paths, e.g. /some/sub/folder.
+		foreach ( $exclude as $path_or_file ) {
+			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
+			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
+
+			if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
+				return true;
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	/**
@@ -156,15 +164,20 @@ trait IterableCodeExtractor {
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
 				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
+					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
-					$is_valid = static::isValidFile( $file, $include, $exclude );
+					$is_included = static::isIncluded( $file, $include );
+					$is_excluded = static::isExcluded( $file, $exclude );
 
-					if ( ! $is_valid ) {
+					if ( $is_excluded ) {
 						return false;
 					}
 
-					/** @var RecursiveCallbackFilterIterator $iterator */
+					if ( ! $is_included && ! $iterator->hasChildren() ) {
+						return false;
+					}
+
 					if ( $iterator->hasChildren() ) {
 						return true;
 					}

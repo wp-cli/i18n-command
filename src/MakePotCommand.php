@@ -154,8 +154,8 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->slug             = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js          = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->headers          = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
-		$this->package_name     = Utils\get_flag_value( $assoc_args, 'package-name', $this->headers );
-		$this->copyright_holder = Utils\get_flag_value( $assoc_args, 'copyright-holder', $this->headers );
+		$this->package_name     = Utils\get_flag_value( $assoc_args, 'package-name', 'Unknown' );
+		$this->copyright_holder = Utils\get_flag_value( $assoc_args, 'copyright-holder', 'Unknown' );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -458,8 +458,8 @@ class MakePotCommand extends WP_CLI_Command {
 	protected function get_file_comment() {
 		$file_data = $this->get_main_file_data();
 
-		$author = 'Unknown';
-		$name   = 'Unknown';
+		$author = $this->copyright_holder;
+		$name   = $this->package_name;
 
 		if ( isset( $file_data['Theme Name'] ) ) {
 			$name   = $file_data['Theme Name'];
@@ -469,8 +469,8 @@ class MakePotCommand extends WP_CLI_Command {
 			$author = $name;
 		}
 
-		$author = null !== $this->copyright_holder ? $this->copyright_holder : $author;
-		$name   = null !== $this->package_name ? $this->package_name : $name;
+		$author = null === $author ? $this->copyright_holder : $author;
+		$name   = null === $name ? $this->package_name : $name;
 
 		if ( isset( $file_data['License'] ) ) {
 			return sprintf(
@@ -495,7 +495,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected function set_default_headers() {
 		$file_data = $this->get_main_file_data();
 
-		$name         = 'Unknown';
+		$name         = $this->package_name;
 		$version      = $this->get_wp_version();
 		$bugs_address = null;
 
@@ -511,7 +511,7 @@ class MakePotCommand extends WP_CLI_Command {
 			$bugs_address = sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug );
 		}
 
-		$name = null !== $this->package_name ? $this->package_name : $name;
+		$name = null === $name ? $this->package_name : $name;
 
 		$this->translations->setHeader( 'Project-Id-Version', $name . ( $version ? ' ' . $version : '' ) );
 

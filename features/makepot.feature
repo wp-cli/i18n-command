@@ -221,7 +221,7 @@ Feature: Generate a POT file of a WordPress project
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
-    And the foo-plugin.pot file should contain:
+    Then the foo-plugin.pot file should contain:
       """
       #: foo-plugin.php:15
       """
@@ -1835,4 +1835,32 @@ Feature: Generate a POT file of a WordPress project
     And the result.pot file should contain:
       """
       msgid "Bar"
+      """
+
+  Scenario: Customized copyright notice
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       __( 'Hello World' );
+
+       __( 'Foo' );
+
+       __( 'Bar' );
+      """
+
+    When I run `date +"%Y"`
+    Then STDOUT should not be empty
+    And save STDOUT as {YEAR}
+
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --copyright-holder="John Doe" --package-name="Acme"`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the result.pot file should contain:
+       """
+      # Copyright (C) {YEAR} John Doe
+      # This file is distributed under the same license as the Acme package.
       """

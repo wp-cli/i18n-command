@@ -248,8 +248,8 @@ class MakePotCommand extends WP_CLI_Command {
 				WP_CLI::debug(
 					sprintf(
 						'Merging with existing POT %s: %s',
-						implode( ',', $this->merge ),
-						WP_CLI\Utils\pluralize( 'file', count( $this->merge ) )
+						WP_CLI\Utils\pluralize( 'file', count( $this->merge ) ),
+						implode( ',', $this->merge )
 					),
 					'make-pot'
 				);

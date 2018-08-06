@@ -1936,11 +1936,11 @@ Feature: Generate a POT file of a WordPress project
       """
       <?php
 
-       __( 'Hello World' );
+       _( 'Hello World' );
 
-       __( 'Foo' );
+       _( 'Foo' );
 
-       __( 'Bar' );
+       _( 'Bar' );
       """
 
     When I try `wp i18n make-pot example-project result.pot --ignore-domain --debug`

@@ -77,8 +77,8 @@ Feature: Generate a POT file of a WordPress project
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      # Copyright (C) {YEAR} Hello World
-      # This file is distributed under the same license as the Hello World package.
+      # Copyright (C) {YEAR} YOUR NAME HERE
+      # This file is distributed under the same license as the Hello World plugin.
       """
 
   Scenario: Sets Project-Id-Version
@@ -178,24 +178,22 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Bails when no plugin files are found
     Given an empty foo-plugin directory
-    When I try `wp i18n make-pot foo-plugin foo-plugin.pot`
+    When I try `wp i18n make-pot foo-plugin foo-plugin.pot --debug`
     Then STDERR should contain:
       """
-      Error: No valid theme stylesheet or plugin file found!
+      No valid theme stylesheet or plugin file found, treating as a regular project.
       """
-    And the return code should be 1
 
   Scenario: Bails when no main plugin file is found
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
       """
-    When I try `wp i18n make-pot foo-plugin foo-plugin.pot`
+    When I try `wp i18n make-pot foo-plugin foo-plugin.pot --debug`
     Then STDERR should contain:
       """
-      Error: No valid theme stylesheet or plugin file found!
+      No valid theme stylesheet or plugin file found, treating as a regular project.
       """
-    And the return code should be 1
 
   Scenario: Adds relative paths to source file as comments.
     Given an empty foo-plugin directory
@@ -223,7 +221,7 @@ Feature: Generate a POT file of a WordPress project
       """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
-    And the foo-plugin.pot file should contain:
+    Then the foo-plugin.pot file should contain:
       """
       #: foo-plugin.php:15
       """
@@ -759,7 +757,7 @@ Feature: Generate a POT file of a WordPress project
       /**
        * Plugin Name: Foo Plugin
        * Plugin URI:  https://example.com
-       * Description:
+       * Description: Plugin Description
        * Version:     0.1.0
        * Author:
        * Author URI:
@@ -776,7 +774,16 @@ Feature: Generate a POT file of a WordPress project
        __( 'I am being ignored', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    When I try `wp i18n make-pot foo-plugin foo-plugin.pot --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Extracted 4 strings
+      """
     Then the foo-plugin.pot file should not contain:
       """
       I am being ignored
@@ -1028,6 +1035,108 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored either
       """
 
+  Scenario: Supports glob patterns for file exclusion
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/sub/foobar.php file:
+      """
+      <?php
+       __( 'I am not being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/sub/foo-bar.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/sub/foo-baz.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude="sub/foo-*.php"`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am not being ignored
+      """
+
+  Scenario: Only extract strings from included paths
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/foo/file.php file:
+      """
+      <?php
+       __( 'I am included', 'foo-plugin' );
+      """
+    And a foo-plugin/bar/file.php file:
+      """
+      <?php
+       __( 'I am also included', 'foo-plugin' );
+      """
+    And a foo-plugin/baz/included.js file:
+      """
+      __( 'I am totally included', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=foo,bar,baz/inc*.js`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am included
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am also included
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am totally included
+      """
+
   Scenario: Merges translations with the ones from an existing POT file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:
@@ -1076,6 +1185,85 @@ Feature: Generate a POT file of a WordPress project
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       msgid "Foo Plugin"
+      """
+
+  Scenario: Merges translations with the ones from multiple existing POT files
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr ""
+      """
+    And a foo-plugin/bar-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: bar-plugin.js:15
+      msgid "Bar Plugin"
+      msgstr ""
+      """
+
+    When I run `wp scaffold plugin hello-world --plugin_name="Hello World" --plugin_author="John Doe" --plugin_author_uri="https://example.com" --plugin_uri="https://foo.example.com"`
+    Then the wp-content/plugins/hello-world directory should exist
+    And the wp-content/plugins/hello-world/hello-world.php file should exist
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot,foo-plugin/bar-plugin.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      #: foo-plugin.js:15
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      #: bar-plugin.js:15
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      msgid "Bar Plugin"
       """
 
   Scenario: Merges translations with existing destination file
@@ -1165,8 +1353,8 @@ Feature: Generate a POT file of a WordPress project
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      # Copyright (C) 2018 Hello World
-      # This file is distributed under the same license as the Hello World package.
+      # Copyright (C) 2018 John Doe
+      # This file is distributed under the same license as the Hello World plugin.
       msgid ""
       msgstr ""
       "Project-Id-Version: Hello World 0.1.0\n"
@@ -1657,4 +1845,169 @@ Feature: Generate a POT file of a WordPress project
     And STDERR should contain:
       """
       Extracted 2 strings
+      """
+
+  Scenario: Ignore strings that are part of the exception list
+    Given an empty directory
+    And a exception.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      msgid "Foo Bar"
+      msgstr ""
+
+      msgid "Bar Baz"
+      msgstr ""
+
+      msgid "Some other text"
+      msgstr ""
+      """
+    And a foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Hello World', 'foo-plugin' );
+
+       __( 'Foo Bar', 'foo-plugin' );
+
+       __( 'Bar Baz', 'foo-plugin' );
+
+       __( 'Some text', 'foo-plugin' );
+
+       __( 'Some other text', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot . foo-plugin.pot --domain=foo-plugin --subtract=exception.pot`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Some text"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Foo Bar"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Bar Baz"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Some other text"
+      """
+
+  Scenario: Extract strings for a generic project
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       _( 'Hello World' );
+
+       _( 'Foo' );
+
+       _( 'Bar' );
+      """
+
+    When I try `wp i18n make-pot example-project result.pot --ignore-domain --debug`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      No valid theme stylesheet or plugin file found, treating as a regular project.
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Foo"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Bar"
+      """
+
+  Scenario: Custom package name
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       __( 'Hello World' );
+
+       __( 'Foo' );
+
+       __( 'Bar' );
+      """
+
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --package-name="Acme 1.2.3"`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the result.pot file should contain:
+      """
+      Project-Id-Version: Acme 1.2.3
+      """
+
+  Scenario: Customized file comment
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       __( 'Hello World' );
+
+       __( 'Foo' );
+
+       __( 'Bar' );
+      """
+
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --file-comment="Copyright (C) 2018 John Doe\nPowered by WP-CLI."`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the result.pot file should contain:
+       """
+      # Copyright (C) 2018 John Doe
+      # Powered by WP-CLI.
       """

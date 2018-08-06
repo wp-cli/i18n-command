@@ -24,14 +24,24 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $destination;
 
 	/**
-	 * @var string
+	 * @var array
 	 */
-	protected $merge;
+	protected $merge = [];
+
+	/**
+	 * @var Translations
+	 */
+	protected $exceptions;
 
 	/**
 	 * @var array
 	 */
-	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor', 'Gruntfile.js', 'webpack.config.js' ];
+	protected $include = [];
+
+	/**
+	 * @var array
+	 */
+	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js' ];
 
 	/**
 	 * @var string
@@ -57,6 +67,16 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @var string
 	 */
 	protected $domain;
+
+	/**
+	 * @var string
+	 */
+	protected $package_name;
+
+	/**
+	 * @var string
+	 */
+	protected $file_comment;
 
 	/**
 	 * These Regexes copied from http://php.net/manual/en/function.sprintf.php#93552
@@ -105,9 +125,10 @@ class MakePotCommand extends WP_CLI_Command {
 	)/x';
 
 	/**
-	 * Create a POT file for a WordPress plugin or theme.
+	 * Create a POT file for a WordPress project.
 	 *
-	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
+	 * Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
+	 * if the source directory is detected as either a plugin or theme.
 	 *
 	 * ## OPTIONS
 	 *
@@ -123,19 +144,34 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--domain=<domain>]
 	 * : Text domain to look for in the source code, unless the `--ignore-domain` option is used.
 	 * By default, the "Text Domain" header of the plugin or theme is used.
-	 * If none is provided, it falls back to the plugin/theme slug.
+	 * If none is provided, it falls back to the project slug.
 	 *
 	 * [--ignore-domain]
 	 * : Ignore the text domain completely and extract strings with any text domain.
 	 *
-	 * [--merge[=<file>]]
-	 * : Existing POT file file whose content should be merged with the extracted strings.
-	 * If left empty, defaults to the destination POT file.
+	 * [--merge[=<paths>]]
+	 * : Comma-separated list of POT files whose contents should be merged with the extracted strings.
+	 * If left empty, defaults to the destination POT file. POT file headers will be ignored.
+	 *
+	 * [--subtract=<paths>]
+	 * : Comma-separated list of POT files whose contents should act as some sort of blacklist for string extraction.
+	 * Any string which is found on that blacklist will not be extracted.
+	 * This can be useful when you want to create multiple POT files from the same source directory with slightly
+	 * different content and no duplicate strings between them.
+	 *
+	 * [--include=<paths>]
+	 * : Comma-separated list of files and paths that should be used for string extraction.
+	 * If provided, only these files and folders will be taken into account for string extraction.
+	 * For example, `--include="src,my-file.php` will ignore anything besides `my-file.php` and files in the `src` directory.
+	 * Simple glob patterns can be used, i.e. `--include=foo-*.php` includes any PHP file with the `foo-` prefix.
+	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
 	 * [--exclude=<paths>]
-	 * : Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
-	 * By default, the following files and folders are ignored: node_modules, .git, .svn, .CVS, .hg, vendor.
+	 * : Comma-separated list of files and paths that should be skipped for string extraction.
+	 * For example, `--exclude=".github,myfile.php` would ignore any strings found within `myfile.php` or the `.github` folder.
+	 * Simple glob patterns can be used, i.e. `--exclude=foo-*.php` excludes any PHP file with the `foo-` prefix.
 	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+	 * The following files and folders are always excluded: node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js.
 	 *
 	 * [--headers=<headers>]
 	 * : Array in JSON format of custom headers which will be added to the POT file. Defaults to empty array.
@@ -143,10 +179,33 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
+	 * [--file-comment]
+	 * : String that should be added as a comment to the top of the resulting POT file.
+	 * By default, a copyright comment is added for WordPress plugins and themes in the following manner:
+	 *
+	 * 		```
+	 * 		Copyright (C) 2018 Example Plugin Author
+	 * 		This file is distributed under the same license as the Example Plugin package.
+	 * 		```
+	 *
+	 * 		If a plugin or theme specifies a license in their main plugin file or stylesheet, the comment looks like this:
+	 *
+	 * 		```
+	 * 		Copyright (C) 2018 Example Plugin Author
+	 * 		This file is distributed under the GPLv2.
+	 * 		```
+	 *
+	 * [--package-name=<name>]
+	 * : Name to use for package name in the resulting POT file's `Project-Id-Version` header.
+	 * Overrides plugin or theme name, if applicable.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create a POT file for the WordPress plugin/theme in the current directory
 	 *     $ wp i18n make-pot . languages/my-plugin.pot
+	 *
+	 *     # Create a POT file for the continents and cities list in WordPress core.
+	 *     $ wp i18n make-pot . continents-and-cities.pot --include="wp-admin/includes/continents-cities.php" --ignore-domain
 	 *
 	 * @when before_wp_load
 	 *
@@ -158,7 +217,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$translations = $this->extract_strings();
 
 		if ( ! $translations ) {
-			WP_CLI::warning( 'No translation found' );
+			WP_CLI::warning( 'No strings found' );
 		}
 
 		$translations_count = count( $translations );
@@ -186,11 +245,14 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	public function handle_arguments( $args, $assoc_args ) {
 		$array_arguments = array( 'headers' );
-		$assoc_args      = \WP_CLI\Utils\parse_shell_arrays( $assoc_args, $array_arguments );
-		$this->source    = realpath( $args[0] );
-		$this->slug      = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->skip_js   = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->headers   = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+
+		$this->source       = realpath( $args[0] );
+		$this->slug         = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->skip_js      = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->headers      = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
+		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
+		$this->package_name = Utils\get_flag_value( $assoc_args, 'package-name' );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -198,9 +260,7 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( 'Not a valid source directory!' );
 		}
 
-		$this->retrieve_main_file_data();
-
-		$file_data = $this->get_main_file_data();
+		$this->main_file_data = $this->get_main_file_data();
 
 		if ( $ignore_domain ) {
 			WP_CLI::debug( 'Extracting all strings regardless of text domain', 'make-pot' );
@@ -209,8 +269,8 @@ class MakePotCommand extends WP_CLI_Command {
 		if ( ! $ignore_domain ) {
 			$this->domain = $this->slug;
 
-			if ( ! empty( $file_data['Text Domain'] ) ) {
-				$this->domain = $file_data['Text Domain'];
+			if ( ! empty( $this->main_file_data['Text Domain'] ) ) {
+				$this->domain = $this->main_file_data['Text Domain'];
 			}
 
 			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->domain );
@@ -221,12 +281,12 @@ class MakePotCommand extends WP_CLI_Command {
 		// Determine destination.
 		$this->destination = "{$this->source}/{$this->slug}.pot";
 
-		if ( ! empty( $file_data['Domain Path'] ) ) {
+		if ( ! empty( $this->main_file_data['Domain Path'] ) ) {
 			// Domain Path inside source folder.
 			$this->destination = sprintf(
 				'%s/%s/%s.pot',
 				$this->source,
-				$this->unslashit( $file_data['Domain Path'] ),
+				$this->unslashit( $this->main_file_data['Domain Path'] ),
 				$this->slug
 			);
 		}
@@ -247,23 +307,78 @@ class MakePotCommand extends WP_CLI_Command {
 
 		if ( isset( $assoc_args['merge'] ) ) {
 			if ( true === $assoc_args['merge'] ) {
-				$this->merge = $this->destination;
+				$this->merge = [ $this->destination ];
 			} elseif ( ! empty( $assoc_args['merge'] ) ) {
-				$this->merge = $assoc_args['merge'];
+				$this->merge = explode( ',', $assoc_args['merge'] );
 			}
 
-			if ( null !== $this->merge && ! file_exists( $this->merge ) ) {
-				WP_CLI::warning( sprintf( 'Invalid file provided to --merge: %s', $this->merge ) );
+			$this->merge = array_filter(
+				$this->merge,
+				function ( $file ) {
+					if ( ! file_exists( $file ) ) {
+						WP_CLI::warning( sprintf( 'Invalid file provided to --merge: %s', $file ) );
 
-				unset( $this->merge );
+						return false;
+					}
+
+					return true;
+				}
+			);
+
+			if ( ! empty( $this->merge ) ) {
+				WP_CLI::debug(
+					sprintf(
+						'Merging with existing POT %s: %s',
+						WP_CLI\Utils\pluralize( 'file', count( $this->merge ) ),
+						implode( ',', $this->merge )
+					),
+					'make-pot'
+				);
 			}
+		}
+
+		$this->exceptions = new Translations();
+
+		if ( isset( $assoc_args['subtract'] ) ) {
+			$exceptions = explode( ',', $assoc_args['subtract'] );
+
+			$exceptions = array_filter(
+				$exceptions,
+				function ( $exception ) {
+					if ( ! file_exists( $exception ) ) {
+						WP_CLI::warning( sprintf( 'Invalid file provided to --except: %s', $exception ) );
+
+						return false;
+					}
+
+					$exception_translations = new Translations();
+
+					Po::fromFile( $exception, $exception_translations );
+					$this->exceptions->mergeWith( $exception_translations );
+
+					return true;
+				} );
+
+			if ( ! empty( $exceptions ) ) {
+				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', implode( ',', $exceptions ) ), 'make-pot' );
+			}
+		}
+
+		if ( isset( $assoc_args['include'] ) ) {
+			$this->include = array_filter( explode( ',', $assoc_args['include'] ) );
+			$this->include = array_map( [ $this, 'unslashit' ], $this->include );
+			$this->include = array_unique( $this->include );
+
+			WP_CLI::debug( sprintf( 'Only including the following files: %s', implode( ',', $this->include ) ), 'make-pot' );
 		}
 
 		if ( isset( $assoc_args['exclude'] ) ) {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
-			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude);
+			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude );
 			$this->exclude = array_unique( $this->exclude );
 		}
+
+		WP_CLI::debug( sprintf( 'Excluding the following files: %s', implode( ',', $this->exclude ) ), 'make-pot' );
 	}
 
 	/**
@@ -273,17 +388,15 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @return string String without leading and trailing slashes.
 	 */
 	protected function unslashit( $string ) {
-		return ltrim( rtrim( $string, '/\\' ), '/\\' );
+		return ltrim( rtrim( trim( $string ), '/\\' ), '/\\' );
 	}
 
 	/**
 	 * Retrieves the main file data of the plugin or theme.
 	 *
-	 * @throws WP_CLI\ExitException
-	 *
-	 * @return void
+	 * @return array
 	 */
-	protected function retrieve_main_file_data() {
+	protected function get_main_file_data() {
 		$stylesheet = sprintf( '%s/style.css', $this->source );
 
 		if ( is_file( $stylesheet ) && is_readable( $stylesheet ) ) {
@@ -294,9 +407,7 @@ class MakePotCommand extends WP_CLI_Command {
 				WP_CLI::log( 'Theme stylesheet detected.' );
 				WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet ), 'make-pot' );
 
-				$this->main_file_data = $theme_data;
-
-				return;
+				return $theme_data;
 			}
 		}
 
@@ -319,13 +430,13 @@ class MakePotCommand extends WP_CLI_Command {
 				WP_CLI::log( 'Plugin file detected.' );
 				WP_CLI::debug( sprintf( 'Plugin file: %s', $plugin_file ), 'make-pot' );
 
-				$this->main_file_data = $plugin_data;
-
-				return;
+				return $plugin_data;
 			}
 		}
 
-		WP_CLI::error( 'No valid theme stylesheet or plugin file found!' );
+		WP_CLI::debug( 'No valid theme stylesheet or plugin file found, treating as a regular project.', 'make-pot' );
+
+		return [];
 	}
 
 	/**
@@ -366,15 +477,6 @@ class MakePotCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Returns the header data of the main plugin/theme file.
-	 *
-	 * @return array Main file data.
-	 */
-	protected function get_main_file_data() {
-		return $this->main_file_data;
-	}
-
-	/**
 	 * Creates a POT file and stores it on disk.
 	 *
 	 * @throws WP_CLI\ExitException
@@ -385,16 +487,13 @@ class MakePotCommand extends WP_CLI_Command {
 		$translations = new Translations();
 
 		// Add existing strings first but don't keep headers.
-		if ( $this->merge ) {
-			WP_CLI::debug( sprintf( 'Merging with existing POT file: %s', $this->merge ), 'make-pot' );
-
+		if ( ! empty( $this->merge ) ) {
 			$existing_translations = new Translations();
 			Po::fromFile( $this->merge, $existing_translations );
 			$translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
 		}
 
-		$meta = $this->get_meta_data();
-		PotGenerator::setCommentBeforeHeaders( $meta['comments'] );
+		PotGenerator::setCommentBeforeHeaders( $this->get_file_comment() );
 
 		$this->set_default_headers( $translations );
 
@@ -405,19 +504,17 @@ class MakePotCommand extends WP_CLI_Command {
 			$translations->setDomain( $this->domain );
 		}
 
-		$file_data = $this->get_main_file_data();
-
-		unset( $file_data['Version'], $file_data['License'], $file_data['Domain Path'], $file_data['Text Domain'] );
+		unset( $this->main_file_data['Version'], $this->main_file_data['License'], $this->main_file_data['Domain Path'], $this->main_file_data['Text Domain'] );
 
 		// Set entries from main file data.
-		foreach ( $file_data as $header => $data ) {
+		foreach ( $this->main_file_data as $header => $data ) {
 			if ( empty( $data ) ) {
 				continue;
 			}
 
 			$translation = new Translation( '', $data );
 
-			if ( isset( $file_data['Theme Name'] ) ) {
+			if ( isset( $this->main_file_data['Theme Name'] ) ) {
 				$translation->addExtractedComment( sprintf( '%s of the theme', $header ) );
 			} else {
 				$translation->addExtractedComment( sprintf( '%s of the plugin', $header ) );
@@ -429,7 +526,8 @@ class MakePotCommand extends WP_CLI_Command {
 		try {
 			PhpCodeExtractor::fromDirectory( $this->source, $translations, [
 				// Extract 'Template Name' headers in theme files.
-				'wpExtractTemplates' => isset( $file_data['Theme Name'] ),
+				'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),
+				'include'            => $this->include,
 				'exclude'            => $this->exclude,
 				'extensions'         => [ 'php' ],
 			] );
@@ -439,13 +537,20 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
-						'exclude' => $this->exclude,
+						'include'    => $this->include,
+						'exclude'    => $this->exclude,
 						'extensions' => [ 'js' ],
 					]
 				);
 			}
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );
+		}
+
+		foreach( $this->exceptions as $translation ) {
+			if ( $translations->find( $translation ) ) {
+				unset( $translations[ $translation->getId() ] );
+			}
 		}
 
 		$this->audit_strings( $translations );
@@ -547,48 +652,56 @@ class MakePotCommand extends WP_CLI_Command {
 				}
 			}
 		}
+
 	}
 
 	/**
-	 * Returns the metadata for a plugin or theme.
+	 * Returns the copyright comment for the given package.
 	 *
-	 * @return array Meta data.
+	 * @return string File comment.
 	 */
-	protected function get_meta_data() {
-		$file_data = $this->get_main_file_data();
-
-		if ( isset( $file_data['Theme Name'] ) ) {
-			$name         = $file_data['Theme Name'];
-			$author       = $file_data['Author'];
-			$bugs_address = sprintf( 'https://wordpress.org/support/theme/%s', $this->slug );
-		} else {
-			$name         = $file_data['Plugin Name'];
-			$author       = $name;
-			$bugs_address = sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug );
+	protected function get_file_comment() {
+		if ( $this->file_comment ) {
+			return implode( "\n", explode( '\n', $this->file_comment ) );
 		}
 
-		$meta = [
-			'name'               => $name,
-			'version'            => $file_data['Version'],
-			'comments'           => sprintf(
-				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s package.",
-				date( 'Y' ),
-				$author,
-				$name
-			),
-			'msgid-bugs-address' => $bugs_address,
-		];
+		if ( isset( $this->main_file_data['Theme Name'] ) ) {
+			if ( isset( $this->main_file_data['License'] ) ) {
+				return sprintf(
+					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
+					date( 'Y' ),
+					$this->main_file_data['Author'],
+					$this->main_file_data['License']
+				);
+			}
 
-		if ( isset( $file_data['License'] ) ) {
-			$meta['comments'] = sprintf(
-				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
+			return sprintf(
+				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s theme.",
 				date( 'Y' ),
-				$author,
-				$file_data['License']
+				$this->main_file_data['Author'],
+				$this->main_file_data['Theme Name']
 			);
 		}
 
-		return $meta;
+		if ( isset( $this->main_file_data['Plugin Name'] ) ) {
+			if ( isset( $this->main_file_data['License'] ) ) {
+				return sprintf(
+					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
+					date( 'Y' ),
+					$this->main_file_data['Author'],
+					$this->main_file_data['License']
+				);
+			}
+
+			return sprintf(
+				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s plugin.",
+				date( 'Y' ),
+				$this->main_file_data['Author'],
+				$this->main_file_data['Plugin Name']
+			);
+		}
+
+		return '';
 	}
 
 	/**
@@ -597,17 +710,55 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @param Translations $translations Translations object.
 	 */
 	protected function set_default_headers( $translations ) {
-		$meta = $this->get_meta_data();
+		$name         = null;
+		$version      = $this->get_wp_version();
+		$bugs_address = null;
 
-		$translations->setHeader( 'Project-Id-Version', $meta['name'] . ' ' . $meta['version'] );
-		$translations->setHeader( 'Report-Msgid-Bugs-To', $meta['msgid-bugs-address'] );
+		if ( ! $version && isset( $this->main_file_data['Version'] ) ) {
+			$version = $this->main_file_data['Version'];
+		}
+
+		if ( isset( $this->main_file_data['Theme Name'] ) ) {
+			$name         = $this->main_file_data['Theme Name'];
+			$bugs_address = sprintf( 'https://wordpress.org/support/theme/%s', $this->slug );
+		} elseif ( isset( $this->main_file_data['Plugin Name'] ) ) {
+			$name         = $this->main_file_data['Plugin Name'];
+			$bugs_address = sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug );
+		}
+
+		if ( null !== $this->package_name ) {
+			$name = $this->package_name;
+		}
+
+		if ( null !== $name ) {
+			$translations->setHeader( 'Project-Id-Version', $name . ( $version ? ' ' . $version : '' ) );
+		}
+
+		if ( null !== $bugs_address ) {
+			$translations->setHeader( 'Report-Msgid-Bugs-To', $bugs_address );
+		}
+
 		$translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
 		$translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
 		$translations->setHeader( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
 
-		foreach( $this->headers as $key => $value ) {
+		foreach ( $this->headers as $key => $value ) {
 			$translations->setHeader( $key, $value );
 		}
+	}
+
+	/**
+	 * Extracts the WordPress version number from wp-includes/version.php.
+	 *
+	 * @return string|false Version number on success, false otherwise.
+	 */
+	private function get_wp_version() {
+		$version_php = $this->source . '/wp-includes/version.php';
+		if ( ! file_exists( $version_php) || ! is_readable( $version_php ) ) {
+			return false;
+		}
+
+		return preg_match( '/\$wp_version\s*=\s*\'(.*?)\';/', file_get_contents( $version_php ), $matches ) ? $matches[1] : false;
 	}
 
 	/**

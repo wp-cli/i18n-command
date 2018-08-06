@@ -8,6 +8,7 @@ use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use DirectoryIterator;
+use SplFileInfo;
 use WP_CLI;
 
 trait IterableCodeExtractor {
@@ -76,7 +77,10 @@ trait IterableCodeExtractor {
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		static::$dir = $dir;
 
-		$files = static::getFilesFromDirectory( $dir, isset( $options['exclude'] ) ? $options['exclude'] : [], $options['extensions'] );
+		$include = isset( $options['include'] ) ? $options['include'] : [];
+		$exclude = isset( $options['exclude'] ) ? $options['exclude'] : [];
+
+		$files = static::getFilesFromDirectory( $dir, $include, $exclude, $options['extensions'] );
 
 		if ( ! empty( $files ) ) {
 			static::fromFile( $files, $translations, $options );
@@ -86,47 +90,107 @@ trait IterableCodeExtractor {
 	}
 
 	/**
+	 * Determines whether a file is valid based on the include option.
+	 *
+	 * @param SplFileInfo $file    File or directory.
+	 * @param array       $include List of files and directories to include.
+	 * @return bool
+	 */
+	protected static function isIncluded( SplFileInfo $file, array $include = [] ) {
+		if ( empty( $include ) ) {
+			return true;
+		}
+
+		if ( in_array( $file->getBasename(), $include, true ) ) {
+			return true;
+		}
+
+		// Check for more complex paths, e.g. /some/sub/folder.
+		foreach ( $include as $path_or_file ) {
+			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
+			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern );
+
+			if (
+				false !== mb_ereg( $pattern, $file->getPathname() . '$' ) &&
+				false !== mb_ereg( $pattern, $file->getPathname() . '/' )
+			) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Determines whether a file is valid based on the exclude option.
+	 *
+	 * @param SplFileInfo $file    File or directory.
+	 * @param array       $exclude List of files and directories to skip.
+	 * @return bool
+	 */
+	protected static function isExcluded( SplFileInfo $file, array $exclude = [] ) {
+		if ( empty( $exclude ) ) {
+			return false;
+		}
+
+		if ( in_array( $file->getBasename(), $exclude, true ) ) {
+			return true;
+		}
+
+		// Check for more complex paths, e.g. /some/sub/folder.
+		foreach ( $exclude as $path_or_file ) {
+			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
+			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
+
+			if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Recursively gets all PHP files within a directory.
 	 *
 	 * @param string $dir A path of a directory.
+	 * @param array $include List of files and directories to include.
 	 * @param array $exclude List of files and directories to skip.
 	 * @param array $extensions List of filename extensions to process.
 	 *
 	 * @return array File list.
 	 */
-	public static function getFilesFromDirectory( $dir, array $exclude = [], $extensions = [] ) {
+	public static function getFilesFromDirectory( $dir, array $include = [], array $exclude = [], $extensions = [] ) {
 		$filtered_files = [];
 
 		$files = new RecursiveIteratorIterator(
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
-				function ( $file, $key, $iterator ) use ( $exclude, $extensions ) {
-					/** @var DirectoryIterator $file */
-					if ( in_array( $file->getBasename(), $exclude, true ) ) {
+				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
+					/** @var RecursiveCallbackFilterIterator $iterator */
+					/** @var SplFileInfo $file */
+
+					if ( static::isExcluded( $file, $exclude ) ) {
 						return false;
 					}
 
-					// Check for more complex paths, e.g. /some/sub/folder.
-					foreach( $exclude as $path_or_file ) {
-						if ( false !== mb_ereg( preg_quote( '/' . $path_or_file ) . '$', $file->getPathname() ) ) {
-							return false;
-						}
+					if ( ! static::isIncluded( $file, $include ) && ! $iterator->hasChildren() ) {
+						return false;
 					}
 
-					/** @var RecursiveCallbackFilterIterator $iterator */
 					if ( $iterator->hasChildren() ) {
 						return true;
 					}
 
-					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, TRUE ) );
+					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );
 				}
 			),
 			RecursiveIteratorIterator::CHILD_FIRST
 		);
 
 		foreach ( $files as $file ) {
-			/** @var DirectoryIterator $file */
-			if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, TRUE ) ) {
+			/** @var SplFileInfo $file */
+			if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
 				continue;
 			}
 

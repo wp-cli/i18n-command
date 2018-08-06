@@ -1,11 +1,8 @@
 {
     "name": "wp-cli/i18n-command",
-    "description": "Provides internationalization tools for WordPress projects.",
     "type": "wp-cli-package",
+    "description": "Provides internationalization tools for WordPress projects.",
     "homepage": "https://github.com/wp-cli/i18n-command",
-    "support": {
-        "issues": "https://github.com/wp-cli/i18n-command/issues"
-    },
     "license": "MIT",
     "authors": [
         {
@@ -13,8 +10,25 @@
             "homepage": "https://pascalbirchler.com/"
         }
     ],
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "require": {
+        "gettext/gettext": "^4.6",
+        "mck89/peast": "^1.8"
+    },
+    "require-dev": {
+        "wp-cli/scaffold-command": "^1.2 || ^2",
+        "wp-cli/wp-cli": "^2",
+        "wp-cli/wp-cli-tests": "^2"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.x-dev"
+        },
+        "bundled": true,
+        "commands": [
+            "i18n",
+            "i18n make-pot"
+        ]
+    },
     "autoload": {
         "psr-4": {
             "WP_CLI\\I18n\\": "src/"
@@ -23,30 +37,13 @@
             "i18n-command.php"
         ]
     },
-    "require": {
-        "gettext/gettext": "dev-master#37882dc3b58c2357fc6ddc204c1f22f7bb2b6601",
-        "mck89/peast": "^1.8"
-    },
-    "require-dev": {
-        "wp-cli/wp-cli": "^2",
-        "wp-cli/wp-cli-tests": "^0",
-        "wp-cli/scaffold-command": "^1.2"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.x-dev"
-        },
-        "bundled": true,
-        "commands": [
-            "i18n",
-            "i18n make-pot"
-        ]
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
+        "behat": "run-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
         "phpunit": "run-php-unit-tests",
-        "behat": "run-behat-tests",
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
@@ -54,5 +51,8 @@
             "@phpunit",
             "@behat"
         ]
+    },
+    "support": {
+        "issues": "https://github.com/wp-cli/i18n-command/issues"
     }
 }

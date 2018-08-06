@@ -466,12 +466,14 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		foreach( $this->translations as $translation ) {
-			/** @var Translation $translation */
-
-			if ( $this->exceptions->find( $translation ) ) {
+		foreach( $this->exceptions as $translation ) {
+			if ( $this->translations->find( $translation ) ) {
 				unset( $this->translations[ $translation->getId() ] );
 			}
+		}
+
+		foreach( $this->translations as $translation ) {
+			/** @var Translation $translation */
 
 			if ( ! $translation->hasExtractedComments() ) {
 				continue;

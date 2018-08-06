@@ -907,6 +907,51 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored either
       """
 
+  Scenario: Supports glob patterns for file exclusion
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/sub/foobar.php file:
+      """
+      <?php
+       __( 'I am not being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/sub/foo-bar.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/sub/foo-baz.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --exclude="sub/foo-*.php"`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am not being ignored
+      """
+
   Scenario: Merges translations with the ones from an existing POT file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:

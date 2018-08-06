@@ -629,7 +629,7 @@ Feature: Generate a POT file of a WordPress project
        * Plugin Name: Plugin name
        */
 
-      sprintf( __( '"%s"', 'foo-plugin' ) );
+      sprintf( __( '"%s"', 'foo-plugin' ), $some_variable );
 
       """
 
@@ -642,6 +642,30 @@ Feature: Generate a POT file of a WordPress project
     And STDERR should contain:
       """
       Warning: Found string without translatable content. (foo-plugin.php:6)
+      """
+
+  Scenario: Prints a warning for a string with missing translator comment
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      sprintf( __( 'Hello, %s', 'foo-plugin' ), $some_variable );
+
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      Warning: The string "Hello, %s" contains placeholders but has no "translators:" comment to clarify their meaning. (foo-plugin.php:6)
       """
 
   Scenario: Prints a warning for missing singular placeholder

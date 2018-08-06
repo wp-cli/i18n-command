@@ -79,6 +79,52 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $package_name;
 
 	/**
+	 * These Regexes copied from http://php.net/manual/en/function.sprintf.php#93552
+	 * and adjusted for better precision and updated specs.
+	 */
+	const SPRINTF_PLACEHOLDER_REGEX = '/(?:
+		(?<!%)                     # Don\'t match a literal % (%%).
+		(
+			%                          # Start of placeholder.
+			(?:[0-9]+\$)?              # Optional ordering of the placeholders.
+			[+-]?                      # Optional sign specifier.
+			(?:
+				(?:0|\'.)?                 # Optional padding specifier - excluding the space.
+				-?                         # Optional alignment specifier.
+				[0-9]*                     # Optional width specifier.
+				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+				|                      # Only recognize the space as padding in combination with a width specifier.
+				(?:[ ])?                   # Optional space padding specifier.
+				-?                         # Optional alignment specifier.
+				[0-9]+                     # Width specifier.
+				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+			)
+			[bcdeEfFgGosuxX]           # Type specifier.
+		)
+	)/x';
+
+	/**
+	 * "Unordered" means there's no position specifier: '%s', not '%2$s'.
+	 */
+	const UNORDERED_SPRINTF_PLACEHOLDER_REGEX = '/(?:
+		(?<!%)                     # Don\'t match a literal % (%%).
+		%                          # Start of placeholder.
+		[+-]?                      # Optional sign specifier.
+		(?:
+			(?:0|\'.)?                 # Optional padding specifier - excluding the space.
+			-?                         # Optional alignment specifier.
+			[0-9]*                     # Optional width specifier.
+			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+			|                      # Only recognize the space as padding in combination with a width specifier.
+			(?:[ ])?                   # Optional space padding specifier.
+			-?                         # Optional alignment specifier.
+			[0-9]+                     # Width specifier.
+			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+		)
+		[bcdeEfFgGosuxX]           # Type specifier.
+	)/x';
+
+	/**
 	 * Create a POT file for a WordPress plugin or theme.
 	 *
 	 * Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -322,6 +368,8 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Retrieves the main file data of the plugin or theme.
 	 *
+	 * @throws WP_CLI\ExitException
+	 *
 	 * @return array
 	 */
 	protected function get_main_file_data() {
@@ -481,25 +529,106 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 		}
 
+		$this->audit_strings( $translations );
+
+		return $translations;
+	}
+
+	/**
+	 * Audits strings.
+	 *
+	 * Goes through all extracted strings to find possible mistakes.
+	 *
+	 * @param Translations $translations Translations object.
+	 */
+	protected function audit_strings( $translations ) {
 		foreach( $translations as $translation ) {
 			/** @var Translation $translation */
-			if ( ! $translation->hasExtractedComments() ) {
-				continue;
+
+			$references = $translation->getReferences();
+
+			// File headers don't have any file references.
+			$location = $translation->hasReferences() ? '(' . implode( ':', array_shift( $references ) ) . ')' : '';
+
+			// Check 1: Flag strings with placeholders that should have translator comments.
+			if (
+				! $translation->hasExtractedComments() &&
+				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $placeholders ) >= 1
+			) {
+				WP_CLI::warning( sprintf(
+					'The string "%1$s" contains placeholders but has no "translators:" comment to clarify their meaning. %2$s',
+					$translation->getOriginal(),
+					$location
+				) );
 			}
 
-			$comments = $translation->getExtractedComments();
-			$comments_count = count( $comments );
+			// Check 2: Flag strings with different translator comments.
+			if ( $translation->hasExtractedComments() ) {
+				$comments = $translation->getExtractedComments();
+				$comments_count = count( $comments );
 
-			if ( $comments_count > 1 ) {
+				if ( $comments_count > 1 ) {
+					WP_CLI::warning( sprintf(
+						'The string "%1$s" has %2$d different translator comments. %3$s',
+						$translation->getOriginal(),
+						$comments_count,
+						$location
+					) );
+				}
+			}
+
+			$non_placeholder_content = trim( preg_replace( '`^([\'"])(.*)\1$`Ds', '$2', $translation->getOriginal() ) );
+			$non_placeholder_content = preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $non_placeholder_content );
+
+			// Check 3: Flag empty strings without any translatable content.
+			if ( '' === $non_placeholder_content ) {
 				WP_CLI::warning( sprintf(
-					'The string "%1$s" has %2$d different translator comments.',
-					$translation->getOriginal(),
-					$comments_count
+					'Found string without translatable content. %s',
+					$location
 				) );
+			}
+
+			// Check 4: Flag strings with multiple unordered placeholders (%s %s %s vs. %1$s %2$s %3$s).
+			$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
+			$unordered_matches = $unordered_matches[0];
+
+			if ( $unordered_matches_count >= 2 ) {
+				WP_CLI::warning( sprintf(
+					'Multiple placeholders should be ordered. %s',
+					$location
+				) );
+			}
+
+			if ( $translation->hasPlural() ) {
+				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
+				$single_placeholders = $single_placeholders[0];
+
+				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getPlural(), $plural_placeholders );
+				$plural_placeholders = $plural_placeholders[0];
+
+				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals
+				if ( count( $single_placeholders ) < count( $plural_placeholders ) ) {
+					// Check 5: Flag things like _n( 'One comment', '%s Comments' )
+					WP_CLI::warning( sprintf(
+						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals %s',
+						$location
+					) );
+				} else {
+					// Reordering is fine, but mismatched placeholders is probably wrong.
+					sort( $single_placeholders );
+					sort( $plural_placeholders );
+
+					// Check 6: Flag things like _n( '%s Comment (%d)', '%s Comments (%s)' )
+					if ( $single_placeholders !== $plural_placeholders ) {
+						WP_CLI::warning( sprintf(
+							'Mismatched placeholders for singular and plural string. %s',
+							$location
+						) );
+					}
+				}
 			}
 		}
 
-		return $translations;
 	}
 
 	/**

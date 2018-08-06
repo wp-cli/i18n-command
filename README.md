@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress plugin or theme.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<file>]] [--exclude=<paths>] [--skip-js]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<files>]] [--except=<files>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--skip-js] [--copyright-holder=<name>] [--package-name=<name>]
 ~~~
 
 Scans PHP and JavaScript files, as well as theme stylesheets for translatable strings.
@@ -55,9 +55,16 @@ Scans PHP and JavaScript files, as well as theme stylesheets for translatable st
 	[--ignore-domain]
 		Ignore the text domain completely and extract strings with any text domain.
 
-	[--merge[=<file>]]
-		Existing POT file file whose content should be merged with the extracted strings.
+	[--merge[=<files>]]
+		One or more existing POT files whose contents should be merged with the extracted strings.
 		If left empty, defaults to the destination POT file.
+
+	[--except=<files>]
+		If set, only strings not already existing in one of the passed POT files will be extracted.
+
+	[--include=<paths>]
+		Only take specific files and folders into account for the string extraction.
+		Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 
 	[--exclude=<paths>]
 		Include additional ignored paths as CSV (e.g. 'tests,bin,.github').
@@ -69,6 +76,12 @@ Scans PHP and JavaScript files, as well as theme stylesheets for translatable st
 
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
+
+	[--copyright-holder=<name>]
+		Name to use for the copyright comment in the resulting POT file.
+
+	[--package-name=<name>]
+		Name to use for package name in the resulting POT file. Overrides anything found in a plugin or theme.
 
 **EXAMPLES**
 

@@ -108,9 +108,12 @@ trait IterableCodeExtractor {
 		// Check for more complex paths, e.g. /some/sub/folder.
 		foreach ( $include as $path_or_file ) {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
-			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
+			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern );
 
-			if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
+			if (
+				false !== mb_ereg( $pattern, $file->getPathname() . '$' ) &&
+				false !== mb_ereg( $pattern, $file->getPathname() . '/' )
+			) {
 				return true;
 			}
 		}
@@ -167,14 +170,11 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
-					$is_included = static::isIncluded( $file, $include );
-					$is_excluded = static::isExcluded( $file, $exclude );
-
-					if ( $is_excluded ) {
+					if ( static::isExcluded( $file, $exclude ) ) {
 						return false;
 					}
 
-					if ( ! $is_included && ! $iterator->hasChildren() ) {
+					if ( ! static::isIncluded( $file, $include ) && ! $iterator->hasChildren() ) {
 						return false;
 					}
 

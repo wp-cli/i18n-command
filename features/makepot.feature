@@ -952,6 +952,63 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored
       """
 
+  Scenario: Only extract strings from included paths
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/vendor/ignored.php file:
+      """
+      <?php
+       __( 'I am being ignored', 'foo-plugin' );
+      """
+    And a foo-plugin/foo/file.php file:
+      """
+      <?php
+       __( 'I am included', 'foo-plugin' );
+      """
+    And a foo-plugin/bar/file.php file:
+      """
+      <?php
+       __( 'I am also included', 'foo-plugin' );
+      """
+    And a foo-plugin/baz/included.js file:
+      """
+      __( 'I am totally included', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=foo,bar,baz/inc*.js`
+    Then the foo-plugin.pot file should not contain:
+      """
+      I am being ignored
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am included
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am also included
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      I am totally included
+      """
+
   Scenario: Merges translations with the ones from an existing POT file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:

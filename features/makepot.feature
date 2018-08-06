@@ -1801,3 +1801,38 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "Some other text"
       """
+
+  Scenario: Extract strings for a generic project
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       __( 'Hello World' );
+
+       __( 'Foo' );
+
+       __( 'Bar' );
+      """
+
+    When I try `wp i18n make-pot example-project result.pot --ignore-domain --debug`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And STDERR should contain:
+      """
+      No valid theme stylesheet or plugin file found, treating as a regular project.
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Foo"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Bar"
+      """

@@ -77,8 +77,8 @@ Feature: Generate a POT file of a WordPress project
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      # Copyright (C) {YEAR} Hello World
-      # This file is distributed under the same license as the Hello World package.
+      # Copyright (C) {YEAR} YOUR NAME HERE
+      # This file is distributed under the same license as the Hello World plugin.
       """
 
   Scenario: Sets Project-Id-Version
@@ -1353,8 +1353,8 @@ Feature: Generate a POT file of a WordPress project
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      # Copyright (C) 2018 Hello World
-      # This file is distributed under the same license as the Hello World package.
+      # Copyright (C) 2018 John Doe
+      # This file is distributed under the same license as the Hello World plugin.
       msgid ""
       msgstr ""
       "Project-Id-Version: Hello World 0.1.0\n"
@@ -1902,7 +1902,7 @@ Feature: Generate a POT file of a WordPress project
        __( 'Some other text', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot . foo-plugin.pot --domain=foo-plugin --except=exception.pot`
+    When I run `wp i18n make-pot . foo-plugin.pot --domain=foo-plugin --subtract=exception.pot`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -1965,7 +1965,7 @@ Feature: Generate a POT file of a WordPress project
       msgid "Bar"
       """
 
-  Scenario: Customized copyright notice
+  Scenario: Custom package name
     Given an empty example-project directory
     And a example-project/stuff.php file:
       """
@@ -1978,17 +1978,36 @@ Feature: Generate a POT file of a WordPress project
        __( 'Bar' );
       """
 
-    When I run `date +"%Y"`
-    Then STDOUT should not be empty
-    And save STDOUT as {YEAR}
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --package-name="Acme 1.2.3"`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the result.pot file should contain:
+      """
+      Project-Id-Version: Acme 1.2.3
+      """
 
-    When I run `wp i18n make-pot example-project result.pot --ignore-domain --copyright-holder="John Doe" --package-name="Acme"`
+  Scenario: Customized file comment
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       __( 'Hello World' );
+
+       __( 'Foo' );
+
+       __( 'Bar' );
+      """
+
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --file-comment="Copyright (C) 2018 John Doe\nPowered by WP-CLI."`
     Then STDOUT should be:
       """
       Success: POT file successfully generated!
       """
     And the result.pot file should contain:
        """
-      # Copyright (C) {YEAR} John Doe
-      # This file is distributed under the same license as the Acme package.
+      # Copyright (C) 2018 John Doe
+      # Powered by WP-CLI.
       """

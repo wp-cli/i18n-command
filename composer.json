@@ -19,6 +19,10 @@
         "wp-cli/wp-cli": "^2",
         "wp-cli/wp-cli-tests": "^2"
     },
+    "config": {
+        "process-timeout": 7200,
+        "sort-packages": true
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "2.x-dev"

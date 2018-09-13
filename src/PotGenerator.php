@@ -19,13 +19,15 @@ class PotGenerator extends Po {
 	 *
 	 * Doesn't need to include # in the beginning of lines, these are added automatically.
 	 *
-	 * @param array $comment
+	 * @param string $comment File comment.
 	 */
 	public static function setCommentBeforeHeaders( $comment ) {
 		$comments = explode( "\n", $comment );
 
 		foreach( $comments as $line ) {
-			static::$comments_before_headers[] = '# ' . $line;
+			if ( '' !== trim( $line ) ) {
+				static::$comments_before_headers[] = '# ' . $line;
+			}
 		}
 	}
 
@@ -33,6 +35,12 @@ class PotGenerator extends Po {
 	 * {@parentDoc}.
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		return implode( "\n", static::$comments_before_headers ) . "\n" . parent::toString( $translations, $options );
+		$result = '';
+
+		if ( ! empty( static::$comments_before_headers ) ) {
+			$result = implode( "\n", static::$comments_before_headers ) . "\n";
+		}
+
+		return $result . parent::toString( $translations, $options );
 	}
 }

@@ -652,7 +652,6 @@ class MakePotCommand extends WP_CLI_Command {
 				}
 			}
 		}
-
 	}
 
 	/**
@@ -661,7 +660,11 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @return string File comment.
 	 */
 	protected function get_file_comment() {
-		if ( $this->file_comment ) {
+		if ( '' === $this->file_comment ) {
+			return '';
+		}
+
+		if ( isset( $this->file_comment ) ) {
 			return implode( "\n", explode( '\n', $this->file_comment ) );
 		}
 

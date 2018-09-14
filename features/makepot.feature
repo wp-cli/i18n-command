@@ -2011,3 +2011,33 @@ Feature: Generate a POT file of a WordPress project
       # Copyright (C) 2018 John Doe
       # Powered by WP-CLI.
       """
+
+  Scenario: Empty file comment
+    Given an empty example-project directory
+    And a example-project/stuff.php file:
+      """
+      <?php
+
+       /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --file-comment=""`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the contents of the result.pot file should match /^msgid/

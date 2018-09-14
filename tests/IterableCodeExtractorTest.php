@@ -8,7 +8,15 @@ use WP_CLI\I18n\IterableCodeExtractor;
 
 class Extractor_Test extends PHPUnit_Framework_TestCase {
 
-	private static $base = __DIR__ . '/data/';
+	/** @var string A path files are located */
+	private static $base;
+
+	public function setUp() {
+		/**
+		 * PHP5.4 cannot set property with __DIR__ constant.
+		 */
+		self::$base = __DIR__ . '/data/';
+	}
 
 	public function test_can_include_files() {
 		$includes = [ 'foo', 'bar', 'baz/inc*.js' ];

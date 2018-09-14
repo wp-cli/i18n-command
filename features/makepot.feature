@@ -2034,7 +2034,7 @@ Feature: Generate a POT file of a WordPress project
        __( 'Hello World', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot example-project result.pot --ignore-domain --file-comment="d"`
+    When I run `wp i18n make-pot example-project result.pot --ignore-domain --file-comment=""`
     Then STDOUT should be:
       """
       Plugin file detected.

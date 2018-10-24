@@ -56,6 +56,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		$traverser->addFunction( function ( $node ) use ( &$translations, $options, &$all_comments ) {
 			$functions = $options['functions'];
 			$file      = $options['file'];
+			$callee    = false;
 
 			/** @var Node\Node $node */
 			foreach( $node->getLeadingComments() as $comment ) {
@@ -63,7 +64,21 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			}
 
 			/** @var Node\CallExpression $node */
-			if ( 'CallExpression' !== $node->getType() || 'Identifier' !== $node->getCallee()->getType() ) {
+			if ( 'CallExpression' !== $node->getType() ) {
+				return;
+			}
+
+			if ( 'Identifier' === $node->getCallee()->getType() ) {
+				$callee = $node->getCallee();
+			} else if (
+				'CallExpression' ===  $node->getCallee()->getType() &&
+				'Identifier' ===  $node->getCallee()->getCallee()->getType() &&
+				'Object' === $node->getCallee()->getCallee()->getName()
+			) {
+				$callee = $node->getCallee()->getArguments()[0]->getProperty();
+			}
+
+			if ( ! $callee || ! isset( $functions[ $callee->getName() ] ) ) {
 				return;
 			}
 
@@ -71,13 +86,6 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			foreach ( $node->getArguments() as $argument ) {
 				// Support nested function calls.
 				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
-			}
-
-			/** @var Node\Identifier $callee */
-			$callee = $node->getCallee();
-
-			if ( ! isset( $functions[ $callee->getName() ] ) ) {
-				return;
 			}
 
 			foreach( $callee->getLeadingComments() as $comment ) {

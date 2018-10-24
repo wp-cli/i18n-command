@@ -73,9 +73,17 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			} else if (
 				'CallExpression' ===  $node->getCallee()->getType() &&
 				'Identifier' ===  $node->getCallee()->getCallee()->getType() &&
-				'Object' === $node->getCallee()->getCallee()->getName()
+				'Object' === $node->getCallee()->getCallee()->getName() &&
+				! empty( $node->getCallee()->getArguments() ) &&
+				'MemberExpression' === $node->getCallee()->getArguments()[0]->getType() &&
+				'Identifier' === $node->getCallee()->getArguments()[0]->getProperty()->getType()
 			) {
 				$callee = $node->getCallee()->getArguments()[0]->getProperty();
+			} else if (
+				'MemberExpression' === $node->getCallee()->getType() &&
+				'Identifier' === $node->getCallee()->getProperty()->getType()
+			) {
+				$callee = $node->getCallee()->getProperty();
 			}
 
 			if ( ! $callee || ! isset( $functions[ $callee->getName() ] ) ) {

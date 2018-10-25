@@ -1429,6 +1429,13 @@ Feature: Generate a POT file of a WordPress project
         <h1>{__( 'Hello JSX', 'foo-plugin' )}</h1>,
         document.getElementById('root')
       );
+
+      wp.i18n.__( 'wp.i18n.__', 'foo-plugin' );
+
+      const translate = wp.i18n;
+      translate.__( 'translate.__', 'foo-plugin' );
+
+      Object(u.__)( 'minified.__', 'foo-plugin' );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -1473,6 +1480,18 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "Hello JSX"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "wp.i18n.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "translate.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "minified.__"
       """
     And the foo-plugin/foo-plugin.pot file should not contain:
       """

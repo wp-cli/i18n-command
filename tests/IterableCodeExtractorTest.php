@@ -93,17 +93,16 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 	public function test_can_exclude_files() {
 		$excludes = [ 'hoge' ];
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, [], $excludes, [ 'php', 'js' ] );
-		$expected = 'hoge/should_NOT_be_included.js';
+		$expected = static::$base . 'hoge/should_NOT_be_included.js';
 		$this->assertNotContains( $expected, $result );
 	}
 
-	public function test_can_override_include_by_exclude() {
+	public function test_can_override_exclude_by_include() {
 		// Overrides include option
-		$includes = [ 'foo', 'bar', 'baz/inc*.js', 'hoge' ];
-		$excludes = [ 'hoge' ];
+		$includes = [ 'excluded' ];
+		$excludes = [ 'excluded/ignored.js' ];
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
-		$expected = 'hoge/should_NOT_be_included.js';
-		$this->assertNotContains( $expected, $result );
-
+		$expected = static::$base . 'foo/bar/excluded/ignored.js';
+		$this->assertContains( $expected, $result );
 	}
 }

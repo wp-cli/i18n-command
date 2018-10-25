@@ -170,7 +170,7 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
-					if ( static::isExcluded( $file, $exclude ) ) {
+					if ( static::isExcluded( $file, $exclude ) && ( empty( $include ) || ! static::isIncluded( $file, $include ) ) ) {
 						return false;
 					}
 

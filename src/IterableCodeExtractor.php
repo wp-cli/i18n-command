@@ -106,13 +106,14 @@ trait IterableCodeExtractor {
 		}
 
 		// Check for more complex paths, e.g. /some/sub/folder.
+		$root_relative_path = str_replace( static::$dir, '', $file->getPathname() );
 		foreach ( $include as $path_or_file ) {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
 			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern );
 
 			if (
-				false !== mb_ereg( $pattern, $file->getPathname() . '$' ) &&
-				false !== mb_ereg( $pattern, $file->getPathname() . '/' )
+				false !== mb_ereg( $pattern, $root_relative_path . '$' ) &&
+				false !== mb_ereg( $pattern, $root_relative_path . '/' )
 			) {
 				return true;
 			}
@@ -142,7 +143,8 @@ trait IterableCodeExtractor {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
 			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
 
-			if ( false !== mb_ereg( $pattern, $file->getPathname() ) ) {
+			$root_relative_path = str_replace( static::$dir, '', $file->getPathname() );
+			if ( false !== mb_ereg( $pattern, $root_relative_path ) ) {
 				return true;
 			}
 		}

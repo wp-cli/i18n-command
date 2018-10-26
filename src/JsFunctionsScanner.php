@@ -160,32 +160,34 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * @return Node\Identifier|bool The identifier if resolved. False if not.
 	 */
 	private function resolveExpressionCallee( Node\CallExpression $node ) {
+		$callee = $node->getCallee();
+
 		// If the callee is a simple identifier it can simply be returned.
 		// For example: __( "translation" ).
-		if ( 'Identifier' === $node->getCallee()->getType() ) {
-			return $node->getCallee();
+		if ( 'Identifier' === $callee->getType() ) {
+			return $callee;
 		}
 
 		// If the callee is a member expression resolve it to the property.
 		// For example: wp.i18n.__( "translation" ) or u.__( "translation" ).
 		if (
-			'MemberExpression' === $node->getCallee()->getType() &&
-			'Identifier' === $node->getCallee()->getProperty()->getType()
+			'MemberExpression' === $callee->getType() &&
+			'Identifier' === $callee->getProperty()->getType()
 		) {
-			return $node->getCallee()->getProperty();
+			return $callee->getProperty();
 		}
 
 		// If the callee is a call expression as created by Webpack resolve it.
 		// For example: Object(u.__)( "translation" ).
 		if (
-			'CallExpression' ===  $node->getCallee()->getType() &&
-			'Identifier' ===  $node->getCallee()->getCallee()->getType() &&
-			'Object' === $node->getCallee()->getCallee()->getName() &&
-			array() !== $node->getCallee()->getArguments() &&
-			'MemberExpression' === $node->getCallee()->getArguments()[0]->getType() &&
-			'Identifier' === $node->getCallee()->getArguments()[0]->getProperty()->getType()
+			'CallExpression' ===  $callee->getType() &&
+			'Identifier' ===  $callee->getCallee()->getType() &&
+			'Object' === $callee->getCallee()->getName() &&
+			array() !== $callee->getArguments() &&
+			'MemberExpression' === $callee->getArguments()[0]->getType() &&
+			'Identifier' === $callee->getArguments()[0]->getProperty()->getType()
 		) {
-			return $node->getCallee()->getArguments()[0]->getProperty();
+			return $callee->getArguments()[0]->getProperty();
 		}
 
 		// Unknown format.

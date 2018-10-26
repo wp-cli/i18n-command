@@ -175,7 +175,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			return $node->getCallee()->getProperty();
 		}
 
-		// If the callee is a call expression as created by WebPack resolve it.
+		// If the callee is a call expression as created by Webpack resolve it.
 		// For example: Object(u.__)( "translation" ).
 		if (
 			'CallExpression' ===  $node->getCallee()->getType() &&

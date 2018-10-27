@@ -187,7 +187,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-audit]
 	 * : Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an automated environment.
 	 *
-	 * [--file-comment]
+	 * [--file-comment=<file-comment>]
 	 * : String that should be added as a comment to the top of the resulting POT file.
 	 * By default, a copyright comment is added for WordPress plugins and themes in the following manner:
 	 *
@@ -508,6 +508,9 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// POT files have no Language header.
 		$translations->deleteHeader( Translations::HEADER_LANGUAGE );
+
+		// Only relevant for PO files, not POT files.
+		$translations->setHeader( 'PO-Revision-Date', 'YEAR-MO-DA HO:MI+ZONE' );
 
 		if ( $this->domain ) {
 			$translations->setDomain( $this->domain );

@@ -121,6 +121,15 @@ Feature: Generate a POT file of a WordPress project
       "X-Poedit-Basepath: ..\n"
       """
 
+  Scenario: Sets a placeholder PO-Revision-Date header
+    When I run `wp scaffold plugin hello-world`
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+      """
+
   Scenario: Sets the last translator and the language team
     When I run `wp scaffold plugin hello-world`
 
@@ -1405,6 +1414,10 @@ Feature: Generate a POT file of a WordPress project
       """
       "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
       "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
       """
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """

@@ -179,7 +179,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
-	 * [--file-comment]
+	 * [--file-comment=<file-comment>]
 	 * : String that should be added as a comment to the top of the resulting POT file.
 	 * By default, a copyright comment is added for WordPress plugins and themes in the following manner:
 	 *

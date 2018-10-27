@@ -500,6 +500,9 @@ class MakePotCommand extends WP_CLI_Command {
 		// POT files have no Language header.
 		$translations->deleteHeader( Translations::HEADER_LANGUAGE );
 
+		// Only relevant for PO files, not POT files.
+		$translations->setHeader( 'PO-Revision-Date', 'YEAR-MO-DA HO:MI+ZONE' );
+
 		if ( $this->domain ) {
 			$translations->setDomain( $this->domain );
 		}

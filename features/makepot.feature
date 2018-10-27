@@ -749,6 +749,33 @@ Feature: Generate a POT file of a WordPress project
       Multiple placeholders should be ordered. (foo-plugin.php:7)
       """
 
+  Scenario: Prints no warnings when audit is being skipped.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      /* translators: Translators 1! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* Translators: Translators 2! */
+      __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug --skip-audit`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should not contain:
+      """
+      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      """
+
   Scenario: Skips excluded folders
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

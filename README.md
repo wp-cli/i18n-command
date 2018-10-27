@@ -86,6 +86,9 @@ if the source directory is detected as either a plugin or theme.
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 
+	[--skip-audit]
+		Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an automated environment.
+
 	[--file-comment]
 		String that should be added as a comment to the top of the resulting POT file.
 		By default, a copyright comment is added for WordPress plugins and themes in the following manner:

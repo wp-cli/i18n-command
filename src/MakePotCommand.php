@@ -59,6 +59,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $skip_js = false;
 
 	/**
+	 * @var bool
+	 */
+	protected $skip_audit = false;
+
+	/**
 	 * @var array
 	 */
 	protected $headers = [];
@@ -179,6 +184,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
+	 * [--skip-audit]
+	 * : Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an automated environment.
+	 *
 	 * [--file-comment]
 	 * : String that should be added as a comment to the top of the resulting POT file.
 	 * By default, a copyright comment is added for WordPress plugins and themes in the following manner:
@@ -250,6 +258,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->source       = realpath( $args[0] );
 		$this->slug         = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js      = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->skip_audit   = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
 		$this->headers      = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
 		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
 		$this->package_name = Utils\get_flag_value( $assoc_args, 'package-name' );
@@ -553,7 +562,9 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 		}
 
-		$this->audit_strings( $translations );
+		if ( ! $this->skip_audit ) {
+			$this->audit_strings( $translations );
+		}
 
 		return $translations;
 	}

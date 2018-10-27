@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress project.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--skip-js] [--file-comment=<file-comment>] [--package-name=<name>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--skip-js] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
 ~~~
 
 Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
@@ -85,6 +85,9 @@ if the source directory is detected as either a plugin or theme.
 
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
+
+	[--skip-audit]
+		Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an automated environment.
 
 	[--file-comment=<file-comment>]
 		String that should be added as a comment to the top of the resulting POT file.

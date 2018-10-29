@@ -37,6 +37,9 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * {@inheritdoc}
 	 */
 	public function saveGettextFunctions( Translations $translations, array $options ) {
+		// Replace unparseable regexes
+		$this->code = str_replace( '/"/g', '/\"/g', $this->code );
+
 		$ast = Peast::latest( $this->code, [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
 			'comments'   => false !== $this->extractComments,

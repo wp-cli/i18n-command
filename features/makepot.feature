@@ -1436,6 +1436,8 @@ Feature: Generate a POT file of a WordPress project
       const translate = wp.i18n;
       translate.__( 'translate.__', 'foo-plugin' );
 
+      Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["__"])( 'webpack.__', 'foo-plugin' );
+
       Object(u.__)( 'minified.__', 'foo-plugin' );
       Object(j._x)( 'minified._x', 'minified._x_context', 'foo-plugin' );
       """
@@ -1498,6 +1500,10 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "translate.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "webpack.__"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """

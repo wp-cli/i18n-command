@@ -1648,6 +1648,12 @@ Feature: Generate a POT file of a WordPress project
         <h1>{__( 'Hello JSX', 'foo-plugin' )}</h1>,
         document.getElementById('root')
       );
+
+      // translators: this is wp.i18n
+      wp.i18n.__( 'Hello wp.i18n', 'foo-plugin' );
+
+      message = Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["sprintf"])( // translators: this is Webpack
+      Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["__"])('Hello webpack.', 'foo-plugin'), mediaFile.name);
       """
 
     When I try `wp i18n make-pot foo-plugin`
@@ -1708,6 +1714,14 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       #. translators: this is JSX
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this is wp.i18n
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this is Webpack
       """
 
   Scenario: Ignores any other text domain in JavaScript file

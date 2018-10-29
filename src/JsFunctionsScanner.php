@@ -131,11 +131,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 				/** @var Node\Comment $comment */
 				foreach ( $all_comments as $comment ) {
-					if ( $node->getLocation()->getStart()->getLine() - $comment->getLocation()->getEnd()->getLine() > 1 ) {
-						continue;
-					}
-
-					if ( $node->getLocation()->getStart()->getColumn() < $comment->getLocation()->getStart()->getColumn() ) {
+					// Comments should be before the translation.
+					if ( ! $this->commentPrecedesNode( $comment, $node ) ) {
 						continue;
 					}
 
@@ -181,9 +178,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			'MemberExpression' === $callee->getType() &&
 			'Identifier' === $callee->getProperty()->getType()
 		) {
+			// Make sure to unpack wp.i18n which is a nested MemberExpression.
+			$comments = 'MemberExpression' === $callee->getObject()->getType()
+				? $callee->getObject()->getObject()->getLeadingComments()
+				: $callee->getObject()->getLeadingComments();
+
 			return [
 				'name'     => $callee->getProperty()->getName(),
-				'comments' => $callee->getProperty()->getLeadingComments()
+				'comments' => $comments,
 			];
 		}
 
@@ -202,7 +204,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			if ( 'Identifier' === $property->getType() ) {
 				return [
 					'name'     => $property->getName(),
-					'comments' => $property->getLeadingComments()
+					'comments' => $callee->getCallee()->getLeadingComments(),
 				];
 			}
 
@@ -211,12 +213,38 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			if ( 'Literal' === $property->getType() ) {
 				return [
 					'name'     => $property->getValue(),
-					'comments' => $property->getLeadingComments()
+					'comments' => $callee->getCallee()->getLeadingComments(),
 				];
 			}
 		}
 
 		// Unknown format.
 		return false;
+	}
+
+	/**
+	 * Returns wether or not a comment precedes a node.
+	 * The comment must be before the node and on the same line or the one before.
+	 *
+	 * @param Node\Comment $comment The comment.
+	 * @param Node\Node    $node    The node.
+	 *
+	 * @return bool Whether or not the comment precedes the node.
+	 */
+	private function commentPrecedesNode( Node\Comment $comment, Node\Node $node ) {
+		// Comments should be on the same or an earlier line than the translation.
+		if ( $node->getLocation()->getStart()->getLine() - $comment->getLocation()->getEnd()->getLine() > 1 ) {
+			return false;
+		}
+
+		// Comments on the same line should be before the translation.
+		if (
+			$node->getLocation()->getStart()->getLine() === $comment->getLocation()->getEnd()->getLine() &&
+			$node->getLocation()->getStart()->getColumn() < $comment->getLocation()->getStart()->getColumn()
+		) {
+			return false;
+		}
+
+		return true;
 	}
 }

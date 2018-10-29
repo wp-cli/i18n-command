@@ -1474,6 +1474,10 @@ Feature: Generate a POT file of a WordPress project
       """
     And a foo-plugin/foo-plugin.js file:
       """
+      // Included to test if peast correctly parses regexes containing a quote.
+      // See: https://github.com/wp-cli/i18n-command/issues/98
+      n = n.replace(/"/g, '&quot;');
+
       __( '__', 'foo-plugin' );
       _x( '_x', '_x_context', 'foo-plugin' );
       _n( '_n_single', '_n_plural', number, 'foo-plugin' );

@@ -183,7 +183,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			'CallExpression' ===  $callee->getType() &&
 			'Identifier' ===  $callee->getCallee()->getType() &&
 			'Object' === $callee->getCallee()->getName() &&
-			array() !== $callee->getArguments() &&
+			[] !== $callee->getArguments() &&
 			'MemberExpression' === $callee->getArguments()[0]->getType() &&
 			'Identifier' === $callee->getArguments()[0]->getProperty()->getType()
 		) {

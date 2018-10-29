@@ -69,7 +69,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 			$callee = $this->resolveExpressionCallee( $node );
 
-			if ( ! $callee || ! isset( $functions[ $callee->getName() ] ) ) {
+			if ( ! $callee || ! isset( $functions[ $callee['name'] ] ) ) {
 				return;
 			}
 
@@ -79,7 +79,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
 			}
 
-			foreach( $callee->getLeadingComments() as $comment ) {
+			foreach( $callee['comments'] as $comment ) {
 				$all_comments[] = $comment;
 			}
 
@@ -102,7 +102,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 			}
 
-			switch ( $functions[ $callee->getName() ] ) {
+			switch ( $functions[ $callee['name'] ] ) {
 				case 'text_domain':
 				case 'gettext':
 					list( $original, $domain ) = array_pad( $args, 2, null );
@@ -157,7 +157,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @param Node\CallExpression $node The call expression whose callee to resolve.
 	 *
-	 * @return Node\Identifier|bool The identifier if resolved. False if not.
+	 * @return array|bool Array containing the name and comments of the identifier if resolved. False if not.
 	 */
 	private function resolveExpressionCallee( Node\CallExpression $node ) {
 		$callee = $node->getCallee();
@@ -165,7 +165,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		// If the callee is a simple identifier it can simply be returned.
 		// For example: __( "translation" ).
 		if ( 'Identifier' === $callee->getType() ) {
-			return $callee;
+			return [
+				'name'     => $callee->getName(),
+				'comments' => $callee->getLeadingComments()
+			];
 		}
 
 		// If the callee is a member expression resolve it to the property.
@@ -174,7 +177,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			'MemberExpression' === $callee->getType() &&
 			'Identifier' === $callee->getProperty()->getType()
 		) {
-			return $callee->getProperty();
+			return [
+				'name'     => $callee->getProperty()->getName(),
+				'comments' => $callee->getProperty()->getLeadingComments()
+			];
 		}
 
 		// If the callee is a call expression as created by Webpack resolve it.
@@ -184,10 +190,26 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			'Identifier' ===  $callee->getCallee()->getType() &&
 			'Object' === $callee->getCallee()->getName() &&
 			[] !== $callee->getArguments() &&
-			'MemberExpression' === $callee->getArguments()[0]->getType() &&
-			'Identifier' === $callee->getArguments()[0]->getProperty()->getType()
+			'MemberExpression' === $callee->getArguments()[0]->getType()
 		) {
-			return $callee->getArguments()[0]->getProperty();
+			$property = $callee->getArguments()[0]->getProperty();
+
+			// Matches minified webpack statements: Object(u.__)( "translation" ).
+			if ( 'Identifier' === $property->getType() ) {
+				return [
+					'name'     => $property->getName(),
+					'comments' => $property->getLeadingComments()
+				];
+			}
+
+			// Matches unminified webpack statements:
+			// Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["__"])( "translation" );
+			if ( 'Literal' === $property->getType() ) {
+				return [
+					'name'     => $property->getValue(),
+					'comments' => $property->getLeadingComments()
+				];
+			}
 		}
 
 		// Unknown format.

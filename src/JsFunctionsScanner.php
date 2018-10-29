@@ -37,6 +37,9 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * {@inheritdoc}
 	 */
 	public function saveGettextFunctions( Translations $translations, array $options ) {
+		// Temporary workaround for https://github.com/wp-cli/i18n-command/issues/98.
+		$this->code = str_replace( '/"/', '/\"/', $this->code );
+
 		$ast = Peast::latest( $this->code, [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
 			'comments'   => false !== $this->extractComments,

@@ -63,7 +63,13 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			}
 
 			/** @var Node\CallExpression $node */
-			if ( 'CallExpression' !== $node->getType() || 'Identifier' !== $node->getCallee()->getType() ) {
+			if ( 'CallExpression' !== $node->getType() ) {
+				return;
+			}
+
+			$callee = $this->resolveExpressionCallee( $node );
+
+			if ( ! $callee || ! isset( $functions[ $callee['name'] ] ) ) {
 				return;
 			}
 
@@ -73,14 +79,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
 			}
 
-			/** @var Node\Identifier $callee */
-			$callee = $node->getCallee();
-
-			if ( ! isset( $functions[ $callee->getName() ] ) ) {
-				return;
-			}
-
-			foreach( $callee->getLeadingComments() as $comment ) {
+			foreach( $callee['comments'] as $comment ) {
 				$all_comments[] = $comment;
 			}
 
@@ -103,7 +102,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 			}
 
-			switch ( $functions[ $callee->getName() ] ) {
+			switch ( $functions[ $callee['name'] ] ) {
 				case 'text_domain':
 				case 'gettext':
 					list( $original, $domain ) = array_pad( $args, 2, null );
@@ -151,5 +150,69 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		} );
 
 		$traverser->traverse( $ast );
+	}
+
+	/**
+	 * Resolve the callee of a call expression using known formats.
+	 *
+	 * @param Node\CallExpression $node The call expression whose callee to resolve.
+	 *
+	 * @return array|bool Array containing the name and comments of the identifier if resolved. False if not.
+	 */
+	private function resolveExpressionCallee( Node\CallExpression $node ) {
+		$callee = $node->getCallee();
+
+		// If the callee is a simple identifier it can simply be returned.
+		// For example: __( "translation" ).
+		if ( 'Identifier' === $callee->getType() ) {
+			return [
+				'name'     => $callee->getName(),
+				'comments' => $callee->getLeadingComments()
+			];
+		}
+
+		// If the callee is a member expression resolve it to the property.
+		// For example: wp.i18n.__( "translation" ) or u.__( "translation" ).
+		if (
+			'MemberExpression' === $callee->getType() &&
+			'Identifier' === $callee->getProperty()->getType()
+		) {
+			return [
+				'name'     => $callee->getProperty()->getName(),
+				'comments' => $callee->getProperty()->getLeadingComments()
+			];
+		}
+
+		// If the callee is a call expression as created by Webpack resolve it.
+		// For example: Object(u.__)( "translation" ).
+		if (
+			'CallExpression' ===  $callee->getType() &&
+			'Identifier' ===  $callee->getCallee()->getType() &&
+			'Object' === $callee->getCallee()->getName() &&
+			[] !== $callee->getArguments() &&
+			'MemberExpression' === $callee->getArguments()[0]->getType()
+		) {
+			$property = $callee->getArguments()[0]->getProperty();
+
+			// Matches minified webpack statements: Object(u.__)( "translation" ).
+			if ( 'Identifier' === $property->getType() ) {
+				return [
+					'name'     => $property->getName(),
+					'comments' => $property->getLeadingComments()
+				];
+			}
+
+			// Matches unminified webpack statements:
+			// Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["__"])( "translation" );
+			if ( 'Literal' === $property->getType() ) {
+				return [
+					'name'     => $property->getValue(),
+					'comments' => $property->getLeadingComments()
+				];
+			}
+		}
+
+		// Unknown format.
+		return false;
 	}
 }

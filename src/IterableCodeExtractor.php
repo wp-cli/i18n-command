@@ -92,64 +92,36 @@ trait IterableCodeExtractor {
 	/**
 	 * Determines whether a file is valid based on the include option.
 	 *
-	 * @param SplFileInfo $file    File or directory.
-	 * @param array       $include List of files and directories to include.
-	 * @return bool
+	 * @param SplFileInfo $file     File or directory.
+	 * @param array       $matchers List of files and directories to match.
+	 * @return int How strongly the file is matched.
+	 *             0 for not matched.
+	 *             1 for matched by wildcard.
+	 *             2 for matched by direct match on filename.
+	 *             3 for matched by direct match on path.
 	 */
-	protected static function isIncluded( SplFileInfo $file, array $include = [] ) {
-		if ( empty( $include ) ) {
-			return true;
+	protected static function calculateMatchScore( SplFileInfo $file, array $matchers = [] ) {
+		if ( empty( $matchers ) ) {
+			return 0;
 		}
 
-		if ( in_array( $file->getBasename(), $include, true ) ) {
-			return true;
+		if ( in_array( $file->getBasename(), $matchers, true ) ) {
+			return 2;
 		}
 
 		// Check for more complex paths, e.g. /some/sub/folder.
 		$root_relative_path = str_replace( static::$dir, '', $file->getPathname() );
-		foreach ( $include as $path_or_file ) {
+
+		foreach ( $matchers as $path_or_file ) {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
-			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern );
+			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern ) . '($|/)';
 
-			if (
-				false !== mb_ereg( $pattern, $root_relative_path . '$' ) &&
-				false !== mb_ereg( $pattern, $root_relative_path . '/' )
-			) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Determines whether a file is valid based on the exclude option.
-	 *
-	 * @param SplFileInfo $file    File or directory.
-	 * @param array       $exclude List of files and directories to skip.
-	 * @return bool
-	 */
-	protected static function isExcluded( SplFileInfo $file, array $exclude = [] ) {
-		if ( empty( $exclude ) ) {
-			return false;
-		}
-
-		if ( in_array( $file->getBasename(), $exclude, true ) ) {
-			return true;
-		}
-
-		// Check for more complex paths, e.g. /some/sub/folder.
-		foreach ( $exclude as $path_or_file ) {
-			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
-			$pattern = '/' . str_replace( '__wildcard__', '(.+)', $pattern ) . '$';
-
-			$root_relative_path = str_replace( static::$dir, '', $file->getPathname() );
 			if ( false !== mb_ereg( $pattern, $root_relative_path ) ) {
-				return true;
+				return false === strpos( $path_or_file, '*' ) ? 3 : 1;
 			}
 		}
 
-		return false;
+		return 0;
 	}
 
 	/**
@@ -172,16 +144,16 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
-					if ( static::isExcluded( $file, $exclude ) && ( empty( $include ) || ! static::isIncluded( $file, $include ) ) ) {
-						return false;
-					}
-
-					if ( ! static::isIncluded( $file, $include ) && ! $iterator->hasChildren() ) {
-						return false;
-					}
-
 					if ( $iterator->hasChildren() ) {
 						return true;
+					}
+
+					// If no $include is passed everything gets the weakest possible matching score.
+					$inclusion_score = empty( $include ) ? 0.1 : static::calculateMatchScore( $file, $include );
+					$exclusion_score = static::calculateMatchScore( $file, $exclude );
+
+					if ( $inclusion_score === 0 || $exclusion_score > $inclusion_score ) {
+						return false;
 					}
 
 					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );

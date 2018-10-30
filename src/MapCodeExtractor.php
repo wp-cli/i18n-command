@@ -25,6 +25,11 @@ final class MapCodeExtractor extends JsCode {
 	 * {@inheritdoc}
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
+		if ( ! array_key_exists( 'file', $options ) || substr( $options['file'], -7 ) !==  '.js.map' ) {
+			return;
+		}
+		$options['file'] = substr( $options['file'], 0, -7 ) . '.js';
+
 		try {
 			$options += static::$options;
 
@@ -35,10 +40,6 @@ final class MapCodeExtractor extends JsCode {
 			}
 
 			$string = implode( "\n", $mapObject->sourcesContent );
-
-			if ( array_key_exists( 'file', $options ) ) {
-				$options['file'] = preg_replace( '/\.js\.map$/', '.js', $options['file'] );
-			}
 
 			$functions = new JsFunctionsScanner( $string );
 

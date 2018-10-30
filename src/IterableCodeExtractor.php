@@ -112,7 +112,16 @@ trait IterableCodeExtractor {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
 			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern );
 
-			$base_score = count( explode( '/', $path_or_file ) );
+			$base_score = count(
+				array_filter(
+					explode( '/', $path_or_file ),
+					function ( $component) { return $component !== '*'; }
+				)
+			);
+			if ( $base_score === 0 ) {
+				$base_score = 0.2;
+			}
+
 
 			if (
 				false === strpos( $path_or_file, '*' ) &&

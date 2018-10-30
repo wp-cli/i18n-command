@@ -119,6 +119,7 @@ trait IterableCodeExtractor {
 				)
 			);
 			if ( $base_score === 0 ) {
+				// If the matcher is simply * it gets a score above the implicit score but below 1.
 				$base_score = 0.2;
 			}
 

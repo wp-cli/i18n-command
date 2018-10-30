@@ -95,10 +95,6 @@ trait IterableCodeExtractor {
 	 * @param SplFileInfo $file     File or directory.
 	 * @param array       $matchers List of files and directories to match.
 	 * @return int How strongly the file is matched.
-	 *             0 for not matched.
-	 *             1 for matched by wildcard.
-	 *             2 for matched by direct match on filename.
-	 *             3 for matched by direct match on path.
 	 */
 	protected static function calculateMatchScore( SplFileInfo $file, array $matchers = [] ) {
 		if ( empty( $matchers ) ) {
@@ -106,7 +102,7 @@ trait IterableCodeExtractor {
 		}
 
 		if ( in_array( $file->getBasename(), $matchers, true ) ) {
-			return 2;
+			return 10;
 		}
 
 		// Check for more complex paths, e.g. /some/sub/folder.
@@ -114,10 +110,19 @@ trait IterableCodeExtractor {
 
 		foreach ( $matchers as $path_or_file ) {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
-			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern ) . '($|/)';
+			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern );
 
-			if ( false !== mb_ereg( $pattern, $root_relative_path ) ) {
-				return false === strpos( $path_or_file, '*' ) ? 3 : 1;
+			$base_score = count( explode( '/', $path_or_file ) );
+
+			if (
+				false === strpos( $path_or_file, '*' ) &&
+				false !== mb_ereg( $pattern . '$', $root_relative_path )
+			) {
+				return $base_score * 10;
+			}
+
+			if ( false !== mb_ereg( $pattern . '(/|$)', $root_relative_path ) ) {
+				return $base_score;
 			}
 		}
 

@@ -48,7 +48,7 @@ final class MapCodeExtractor extends JsCode {
 		} catch ( PeastException $e ) {
 			WP_CLI::debug(
 				sprintf(
-					'Could not parse file %1$s: %2$s (line %3$d, column %4$d)',
+					'Could not parse file %1$s.map: %2$s (line %3$d, column %4$d in the concatenated sourcesContent)',
 					$options['file'],
 					$e->getMessage(),
 					$e->getPosition()->getLine(),

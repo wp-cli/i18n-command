@@ -1770,6 +1770,39 @@ Feature: Generate a POT file of a WordPress project
       msgid "Hello JSX"
       """
 
+  Scenario: Extract translator comments from JavaScript map file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js.map file:
+      """
+      {"version":3,"sources":["webpack:some-path/foo-plugin.js"],"sourcesContent":["/* Translators: foo */\n const foo = __( 'foo', 'foo-plugin' );"]}
+      """
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "foo"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. Translators: foo
+      """
+
   Scenario: Skips JavaScript file altogether
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

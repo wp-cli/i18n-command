@@ -16,10 +16,15 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		 * PHP5.4 cannot set property with __DIR__ constant.
 		 */
 		self::$base = __DIR__ . '/data/';
+
+		$property = new \ReflectionProperty( 'WP_CLI\I18n\IterableCodeExtractor', 'dir' );
+		$property->setAccessible( true );
+		$property->setValue( null, self::$base );
+		$property->setAccessible( false );
 	}
 
 	public function test_can_include_files() {
-		$includes = [ 'foo', 'bar', 'baz/inc*.js' ];
+		$includes = [ 'foo-plugin', 'bar', 'baz/inc*.js' ];
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, [], [ 'php', 'js' ] );
 		$expected = static::$base . 'foo-plugin/foo-plugin.php';
 		$this->assertContains( $expected, $result );
@@ -62,7 +67,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 	}
 
 	public function test_can_exclude_override_wildcard() {
-		$result     = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ 'foo/bar/*' ], ['foo/bar/excluded/*'], [ 'php' ] );
+		$result     = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ 'foo/bar/*' ], [ 'foo/bar/excluded/*' ], [ 'php' ] );
 		$expected_1 = static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php';
 		$expected_2 = static::$base . 'foo/bar/excluded/excluded.js';
 		$this->assertContains( $expected_1, $result );
@@ -70,7 +75,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 	}
 
 	public function test_can_exclude_override_matching_directory() {
-		$result     = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ 'foo/bar/*' ], ['excluded'], [ 'php' ] );
+		$result     = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ 'foo/bar/*' ], [ 'foo/bar/excluded/*' ], [ 'php' ] );
 		$expected_1 = static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php';
 		$expected_2 = static::$base . 'foo/bar/excluded/excluded.js';
 		$this->assertContains( $expected_1, $result );
@@ -78,10 +83,10 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 	}
 
 	public function test_can_not_exclude_partially_directory() {
-		$result     = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ 'foo/bar/*' ], ['exc'], [ 'js' ] );
+		$result     = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ 'foo/bar/*' ], [ 'exc' ], [ 'js' ] );
 		$expected_1 = static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php';
 		$expected_2 = static::$base . 'foo/bar/excluded/ignored.js';
-		//$this->assertContains( $expected_1, $result );
+		$this->assertNotContains( $expected_1, $result );
 		$this->assertContains( $expected_2, $result );
 	}
 
@@ -99,8 +104,8 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 
 	public function test_can_override_exclude_by_include() {
 		// Overrides include option
-		$includes = [ 'excluded' ];
-		$excludes = [ 'excluded/ignored.js' ];
+		$includes = [ 'excluded/ignored.js' ];
+		$excludes = [ 'excluded/*.js' ];
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
 		$expected = static::$base . 'foo/bar/excluded/ignored.js';
 		$this->assertContains( $expected, $result );

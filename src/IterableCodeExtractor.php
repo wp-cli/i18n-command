@@ -112,6 +112,7 @@ trait IterableCodeExtractor {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ) );
 			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern );
 
+			// Base score is the amount of nested directories, discounting wildcards.
 			$base_score = count(
 				array_filter(
 					explode( '/', $path_or_file ),
@@ -123,7 +124,7 @@ trait IterableCodeExtractor {
 				$base_score = 0.2;
 			}
 
-
+			// If the matcher contains no wildcards and matches the end of the path.
 			if (
 				false === strpos( $path_or_file, '*' ) &&
 				false !== mb_ereg( $pattern . '$', $root_relative_path )
@@ -131,6 +132,7 @@ trait IterableCodeExtractor {
 				return $base_score * 10;
 			}
 
+			// If the matcher matches the end of the path or a full directory contained.
 			if ( false !== mb_ereg( $pattern . '(/|$)', $root_relative_path ) ) {
 				return $base_score;
 			}
@@ -154,6 +156,7 @@ trait IterableCodeExtractor {
 		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
 
 		foreach ( $matchers as $path_or_file ) {
+			// If the matcher contains no wildcards and the path matches the start of the matcher.
 			if (
 				false === strpos( $path_or_file, '*' ) &&
 				0 === strpos( $path_or_file . '/', $root_relative_path )
@@ -163,6 +166,8 @@ trait IterableCodeExtractor {
 
 			$base = current( explode( '*', $path_or_file ) );
 
+			// If start of the path matches the start of the matcher until the first wildcard.
+			// Or the start of the matcher until the first wildcard matches the start of the path.
 			if (
 				0 === strpos( $base, $root_relative_path ) ||
 				0 === strpos( $root_relative_path, $base )

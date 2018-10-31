@@ -554,6 +554,16 @@ class MakePotCommand extends WP_CLI_Command {
 						'extensions' => [ 'js' ],
 					]
 				);
+
+				MapCodeExtractor::fromDirectory(
+					$this->source,
+					$translations,
+					[
+						'include'    => $this->include,
+						'exclude'    => $this->exclude,
+						'extensions' => [ 'map' ],
+					]
+				);
 			}
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );

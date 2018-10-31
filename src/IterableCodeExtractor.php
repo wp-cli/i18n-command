@@ -90,7 +90,7 @@ trait IterableCodeExtractor {
 	}
 
 	/**
-	 * Determines whether a file is valid based on the include option.
+	 * Determines whether a file is valid based on given matchers.
 	 *
 	 * @param SplFileInfo $file     File or directory.
 	 * @param array       $matchers List of files and directories to match.
@@ -118,7 +118,7 @@ trait IterableCodeExtractor {
 					function ( $component) { return $component !== '*'; }
 				)
 			);
-			if ( $base_score === 0 ) {
+			if ( 0 === $base_score ) {
 				// If the matcher is simply * it gets a score above the implicit score but below 1.
 				$base_score = 0.2;
 			}
@@ -137,6 +137,41 @@ trait IterableCodeExtractor {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Determines whether or not a directory has children that may be matched.
+	 *
+	 * @param SplFileInfo $dir      Directory.
+	 * @param array       $matchers List of files and directories to match.
+	 * @return bool Whether or not there are any matchers for children of this directory.
+	 */
+	protected static function containsMatchingChildren( SplFileInfo $dir, array $matchers = [] ) {
+		if ( empty( $matchers ) ) {
+			return false;
+		}
+
+		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
+
+		foreach ( $matchers as $path_or_file ) {
+			if (
+				false === strpos( $path_or_file, '*' ) &&
+				0 === strpos( $path_or_file . '/', $root_relative_path )
+			) {
+				return true;
+			}
+
+			$base = current( explode( '*', $path_or_file ) );
+
+			if (
+				0 === strpos( $base, $root_relative_path ) ||
+				0 === strpos( $root_relative_path, $base )
+			) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -159,16 +194,18 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
-					if ( $iterator->hasChildren() ) {
-						return true;
-					}
-
 					// If no $include is passed everything gets the weakest possible matching score.
 					$inclusion_score = empty( $include ) ? 0.1 : static::calculateMatchScore( $file, $include );
 					$exclusion_score = static::calculateMatchScore( $file, $exclude );
 
-					if ( $inclusion_score === 0 || $exclusion_score > $inclusion_score ) {
-						return false;
+					// Always include directories that aren't excluded.
+					if ( 0 === $exclusion_score && $iterator->hasChildren() ) {
+						return true;
+					}
+
+					if ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) {
+						// Always include directories that may have matching children even if they are excluded.
+						return $iterator->hasChildren() && static::containsMatchingChildren( $file, $include );
 					}
 
 					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );

@@ -22,3 +22,12 @@ WP_CLI::add_command( 'i18n make-pot', '\WP_CLI\I18n\MakePotCommand', array(
 		}
 	}
 ) );
+
+WP_CLI::add_command( 'i18n po2json', '\WP_CLI\I18n\Po2JsonCommand', array(
+	'before_invoke' => function() {
+		$min_version = '5.4';
+		if ( version_compare( PHP_VERSION, $min_version, '<' ) ) {
+			WP_CLI::error( "The `wp i18n po2json` command requires PHP {$min_version} or newer." );
+		}
+	}
+) );

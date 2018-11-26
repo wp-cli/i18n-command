@@ -154,6 +154,9 @@ class Po2JsonCommand extends WP_CLI_Command {
 				if ( ! isset( $mapping[ $source ] ) ) {
 					$mapping[ $source ] = new Translations();
 					$mapping[ $source ]->setDomain( $translations->getDomain() );
+					$mapping[ $source ]->setLanguage( $translations->getLanguage() );
+					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
+					$mapping[ $source ]->setPluralForms( $translations->getPluralForms()[0], $translations->getPluralForms()[1] );
 				}
 
 				$mapping[ $source ][] = $translation;
@@ -193,7 +196,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 			$hash             = md5( $file );
 			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";
 
-			$success = Jed::toFile( $translations, $destination_file );
+			$success = JedGenerator::toFile( $translations, $destination_file );
 
 			if ( ! $success ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', basename( $destination_file, '.json' ) ) );

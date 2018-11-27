@@ -3,9 +3,9 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Extractors\Po;
-use Gettext\Generators\Jed;
 use Gettext\Translation;
 use Gettext\Translations;
+use Symfony\Component\Finder\SplFileInfo;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -64,52 +64,52 @@ class Po2JsonCommand extends WP_CLI_Command {
 		}
 
 		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( dirname( $destination ) ) &&
-		     ! mkdir( dirname( $destination ), 0777, true ) &&
-		     ! is_dir( dirname( $destination ) )
+		if ( ! is_dir( $destination ) &&
+		     ! mkdir( $destination, 0777, true ) &&
+		     ! is_dir( $destination )
 		) {
 			WP_CLI::error( 'Could not create destination directory!' );
-		}
-
-		if ( is_file( $source ) ) {
-			$result = $this->po2json( $source, $destination, $keep_source_strings );
-
-			if ( ! empty( $result ) ) {
-				WP_CLI::success( 'Created 1 file.', 'po2json' );
-			}
-
-			return;
 		}
 
 		$result_count = 0;
 
 		$files = new IteratorIterator( new DirectoryIterator( $source ) );
 
+		if ( is_file( $source ) ) {
+			$files = [ new SplFileInfo( $source ) ];
+		}
+
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension()) {
-				$result = $this->po2json( $file->getRealPath(), $destination, $keep_source_strings );
+				$result = $this->po2json( $file->getRealPath(), $destination );
 				$result_count += count( $result );
+
+				if ( ! $keep_source_strings ) {
+					$removed = $this->remove_js_strings_from_po_file( $file->getRealPath() );
+
+					if ( ! $removed ) {
+						WP_CLI::warning( sprintf( 'Could not update file %s', basename( $source ) ) );
+					}
+				}
 			}
 		}
 
 		if ( 1 === $result_count ) {
 			WP_CLI::success( sprintf( 'Created %d file.', $result_count ), 'po2json' );
 		} else {
-			WP_CLI::success( sprintf( 'Created %d files', $result_count ), 'po2json' );
+			WP_CLI::success( sprintf( 'Created %d files.', $result_count ), 'po2json' );
 		}
 	}
 
 	/**
 	 * Splits a single PO file into multiple JSON files.
 	 *
-	 * @param string $source_file         Path to the source file.
-	 * @param string $destination         Path to the destination directory.
-	 * @param bool   $keep_source_strings Whether to keep JavaScript-only strings inside the PO file instead of
-	 *                                    removing them.
+	 * @param string $source_file Path to the source file.
+	 * @param string $destination Path to the destination directory.
 	 * @return array List of created JSON files.
 	 */
-	protected function po2json( $source_file, $destination, $keep_source_strings ) {
+	protected function po2json( $source_file, $destination ) {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
 		$translations = new Translations();
@@ -135,22 +135,14 @@ class Po2JsonCommand extends WP_CLI_Command {
 						return $file;
 					}
 
-					return 'php';
+					return null;
 				},
 				$translation->getReferences()
 			);
 
-			$sources = array_unique( $sources );
-
-			if ( ! $keep_source_strings && ! in_array( 'php', $sources, true ) && $translation->hasReferences() ) {
-				unset( $translations[ $index ] );
-			}
+			$sources = array_unique( array_filter( $sources ) );
 
 			foreach ( $sources as $source ) {
-				if ( 'php' === $source ) {
-					continue;
-				}
-
 				if ( ! isset( $mapping[ $source ] ) ) {
 					$mapping[ $source ] = new Translations();
 					$mapping[ $source ]->setDomain( $translations->getDomain() );
@@ -165,14 +157,6 @@ class Po2JsonCommand extends WP_CLI_Command {
 
 		$result += $this->build_json_files( $mapping, $base_file_name, $destination );
 
-		if ( ! $keep_source_strings ) {
-			$success = \Gettext\Generators\Po::toFile( $translations, $source_file );
-
-			if ( ! $success ) {
-				WP_CLI::warning( sprintf( 'Could not update file %s', basename( $source_file ) ) );
-			}
-		}
-		
 		return $result;
 	}
 
@@ -208,5 +192,44 @@ class Po2JsonCommand extends WP_CLI_Command {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Removes strings from PO file that only occur in JavaScript file.
+	 *
+	 * @param string $source_file Path to the PO file.
+	 * @return bool True on success, false otherwise.
+	 */
+	protected function remove_js_strings_from_po_file( $source_file ) {
+		/** @var Translations[] $mapping */
+		$translations = new Translations();
+
+		Po::fromFile( $source_file, $translations );
+
+		$translations_to_remove = [];
+
+		foreach ( $translations as $translation ) {
+			/** @var Translation $translation */
+
+			if ( ! $translation->hasReferences() ) {
+				continue;
+			}
+
+			foreach ( $translation->getReferences() as $reference ) {
+				$file = $reference[0];
+
+				if ( substr( $file, - 4 ) === '.php' ) {
+					continue 2;
+				}
+			}
+
+			$translations_to_remove[] = $translation->getId();
+		}
+
+		foreach ( $translations_to_remove as $id ) {
+			unset( $translations[ $id ] );
+		}
+
+		return \Gettext\Generators\Po::toFile( $translations, $source_file );
 	}
 }

@@ -117,6 +117,47 @@ if the source directory is detected as either a plugin or theme.
     # Create a POT file for the continents and cities list in WordPress core.
     $ wp i18n make-pot . continents-and-cities.pot --include="wp-admin/includes/continents-cities.php" --ignore-domain
 
+
+
+### wp i18n po2json
+
+Extract JavaScript strings from PO files and add them to individual JSON files.
+
+~~~
+wp i18n po2json <source> [<destination>] [--keep-source-strings] [--pretty-print]
+~~~
+
+For JavaScript internationalization purposes, WordPress requires translations to be split up into
+one Jed-formatted JSON file per JavaScript source file.
+
+Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
+if the source directory is detected as either a plugin or theme.
+
+See https://make.wordpress.org/core/2018/11/09/new-javascript-i18n-support-in-wordpress/ to learn more
+about WordPress JavaScript internationalization.
+
+**OPTIONS**
+
+	<source>
+		Path to an existing PO file or a directory containing multiple PO files.
+
+	[<destination>]
+		Path to the destination directory for the resulting JSON files. Defaults to the source directory.
+
+	[--keep-source-strings]
+		Keep JavaScript-only strings inside the PO file instead of removing them.
+
+	[--pretty-print]
+		Pretty-print resulting JSON files.
+
+**EXAMPLES**
+
+    # Create JSON files for all PO files in the languages directory
+    $ wp i18n po2json languages
+
+    # Create JSON files for my-plugin-de_DE.po and leave the PO file untouched.
+    $ wp i18n po2json my-plugin-de_DE.po /tmp --keep-source-strings
+
 ## Installing
 
 This package is included with WP-CLI itself, no additional installation necessary.

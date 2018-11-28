@@ -30,7 +30,8 @@
         "bundled": true,
         "commands": [
             "i18n",
-            "i18n make-pot"
+            "i18n make-pot",
+            "i18n po2json"
         ]
     },
     "autoload": {

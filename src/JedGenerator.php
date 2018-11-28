@@ -15,19 +15,66 @@ class JedGenerator extends Jed {
 	 * {@parentDoc}.
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$domain  = $translations->getDomain() ?: 'messages';
-		$options += static::$options;
+		$options  += static::$options;
+		$domain   = $translations->getDomain() ?: 'messages';
+		$messages = static::buildMessages( $translations );
 
-		$locale_data = json_decode( parent::toString( $translations, $options ), true );
-
-		return json_encode(
-			[
-				'translation-revision-date' => $translations->getHeader( 'PO-Revision-Date' ),
-				'generator'                 => 'WP-CLI/' . WP_CLI_VERSION,
-				'domain'                    => $domain,
-				'locale_data'               => $locale_data,
+		$configuration = [
+			'' => [
+				'domain'       => $domain,
+				'lang'         => $translations->getLanguage() ?: 'en',
+				'plural-forms' => $translations->getHeader( 'Plural-Forms' ) ?: 'nplurals=2; plural=(n != 1);',
 			],
-			$options['json']
-		);
+		];
+
+		$data = [
+			'translation-revision-date' => $translations->getHeader( 'PO-Revision-Date' ),
+			'generator'                 => 'WP-CLI/' . WP_CLI_VERSION,
+			'domain'                    => $domain,
+			'locale_data'               => [
+				$domain => $configuration + $messages,
+			],
+		];
+
+		return json_encode( $data, $options['json'] );
+	}
+
+	/**
+	 * Generates an array with all translations.
+	 *
+	 * @param Translations $translations
+	 *
+	 * @return array
+	 */
+	public static function buildMessages( Translations $translations ) {
+		$plural_forms      = $translations->getPluralForms();
+		$number_of_plurals = is_array( $plural_forms ) ? ( $plural_forms[0] - 1 ) : null;
+		$messages          = [];
+		$context_glue      = chr( 4 );
+
+		foreach ( $translations as $translation ) {
+			/** @var \Gettext\Translation $translation */
+
+			if ( $translation->isDisabled() ) {
+				continue;
+			}
+
+			$key = $translation->getOriginal();
+
+			if ( $translation->hasContext() ) {
+				$key = $translation->getContext() . $context_glue . $key;
+			}
+
+			$message = [ $translation->getTranslation() ];
+
+			if ( $translation->hasPluralTranslations( true ) ) {
+				$message = $translation->getPluralTranslations( $number_of_plurals );
+				array_unshift( $message, $translation->getTranslation() );
+			}
+
+			$messages[ $key ] = $message;
+		}
+
+		return $messages;
 	}
 }

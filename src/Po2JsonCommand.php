@@ -14,6 +14,13 @@ use IteratorIterator;
 
 class Po2JsonCommand extends WP_CLI_Command {
 	/**
+	 * Options passed to json_encode().
+	 *
+	 * @var int JSON options.
+	 */
+	protected $json_options = 0;
+
+	/**
 	 * Extract JavaScript strings from PO files and add them to individual JSON files.
 	 *
 	 * For JavaScript internationalization purposes, WordPress requires translations to be split up into
@@ -36,6 +43,9 @@ class Po2JsonCommand extends WP_CLI_Command {
 	 * [--keep-source-strings]
 	 * : Keep JavaScript-only strings inside the PO file instead of removing them.
 	 *
+	 * [--pretty-print]
+	 * : Pretty-print resulting JSON files.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create JSON files for all PO files in the languages directory
@@ -50,6 +60,10 @@ class Po2JsonCommand extends WP_CLI_Command {
 	 */
 	public function __invoke( $args, $assoc_args ) {
 		$keep_source_strings = Utils\get_flag_value( $assoc_args, 'keep-source-strings', false );
+
+		if ( Utils\get_flag_value( $assoc_args, 'pretty-print', false ) ) {
+			$this->json_options |= JSON_PRETTY_PRINT;
+		}
 
 		$source = realpath( $args[0] );
 
@@ -145,10 +159,16 @@ class Po2JsonCommand extends WP_CLI_Command {
 			foreach ( $sources as $source ) {
 				if ( ! isset( $mapping[ $source ] ) ) {
 					$mapping[ $source ] = new Translations();
-					$mapping[ $source ]->setDomain( $translations->getDomain() );
+					// See https://core.trac.wordpress.org/ticket/45441
+					//$mapping[ $source ]->setDomain( $translations->getDomain() );
 					$mapping[ $source ]->setLanguage( $translations->getLanguage() );
 					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
-					$mapping[ $source ]->setPluralForms( $translations->getPluralForms()[0], $translations->getPluralForms()[1] );
+
+					$plural_forms = $translations->getPluralForms();
+
+					if ( $plural_forms ) {
+						$mapping[ $source ]->setPluralForms( $plural_forms[0], $plural_forms[1] );
+					}
 				}
 
 				$mapping[ $source ][] = $translation;
@@ -180,7 +200,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 			$hash             = md5( $file );
 			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";
 
-			$success = JedGenerator::toFile( $translations, $destination_file );
+			$success = JedGenerator::toFile( $translations, $destination_file, [ 'json' => $this->json_options ] );
 
 			if ( ! $success ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', basename( $destination_file, '.json' ) ) );

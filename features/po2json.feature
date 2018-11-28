@@ -80,6 +80,161 @@ Feature: Split PO files into JSON files.
     And the return code should be 0
     And the result/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should exist
 
+  Scenario: Sets some meta data
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr "Foo Plugin"
+      """
+
+    When I run `wp i18n po2json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "translation-revision-date":
+      """
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "generator":"WP-CLI
+      """
+
+  Scenario: Always uses messages as text domain
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr "Foo Plugin"
+      """
+
+    When I run `wp i18n po2json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "domain":"messages"
+      """
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "messages":{
+      """
+
+  Scenario: Sets correct plural form
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=3; plural=(n != 2);\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr "Foo Plugin"
+      """
+
+    When I run `wp i18n po2json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "plural-forms":"nplurals=3; plural=(n != 2);"
+      """
+
+  Scenario: Sets default plural form if missing
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr "Foo Plugin"
+      """
+
+    When I run `wp i18n po2json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "plural-forms":"nplurals=2; plural=(n != 1);"
+      """
 
   Scenario: Splits PO file into multiple JSON files
     Given an empty foo-plugin directory
@@ -277,4 +432,53 @@ Feature: Split PO files into JSON files.
     And the foo-plugin/foo-plugin-de_DE.po file should contain:
       """
       "C"
+      """
+
+  Scenario: Should create pretty-printed JSON files
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr "Foo Plugin"
+      """
+
+    When I run `wp i18n po2json foo-plugin --pretty-print`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+          "domain": "messages",
+          "locale_data": {
+              "messages": {
+                  "": {
+                      "domain": "messages",
+                      "lang": "de_DE",
+                      "plural-forms": "nplurals=2; plural=(n != 1);"
+                  },
+                  "Foo Plugin": [
+                      "Foo Plugin"
+                  ]
+              }
+          }
       """

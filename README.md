@@ -130,9 +130,6 @@ wp i18n po2json <source> [<destination>] [--keep-source-strings] [--pretty-print
 For JavaScript internationalization purposes, WordPress requires translations to be split up into
 one Jed-formatted JSON file per JavaScript source file.
 
-Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
-if the source directory is detected as either a plugin or theme.
-
 See https://make.wordpress.org/core/2018/11/09/new-javascript-i18n-support-in-wordpress/ to learn more
 about WordPress JavaScript internationalization.
 

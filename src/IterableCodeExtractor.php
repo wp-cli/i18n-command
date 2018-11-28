@@ -7,9 +7,9 @@ use Gettext\Translations;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use DirectoryIterator;
 use SplFileInfo;
 use WP_CLI;
+use WP_CLI\Utils;
 
 trait IterableCodeExtractor {
 
@@ -30,7 +30,7 @@ trait IterableCodeExtractor {
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file ) as $f ) {
 			// Make sure a relative file path is added as a comment.
-			$options['file'] = ltrim( str_replace( static::$dir, '', $f ), '/' );
+			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $f ) ), '/' );
 
 			$string = file_get_contents( $f );
 
@@ -75,7 +75,7 @@ trait IterableCodeExtractor {
 	 * @return null
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
-		static::$dir = $dir;
+		static::$dir = Utils\normalize_path( $dir );
 
 		$include = isset( $options['include'] ) ? $options['include'] : [];
 		$exclude = isset( $options['exclude'] ) ? $options['exclude'] : [];

@@ -75,7 +75,9 @@ trait IterableCodeExtractor {
 	 * @return null
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
-		static::$dir = Utils\normalize_path( $dir );
+		$dir = Utils\normalize_path( $dir );
+
+		static::$dir = $dir;
 
 		$include = isset( $options['include'] ) ? $options['include'] : [];
 		$exclude = isset( $options['exclude'] ) ? $options['exclude'] : [];
@@ -225,7 +227,7 @@ trait IterableCodeExtractor {
 				continue;
 			}
 
-			$filtered_files[] = $file->getPathname();
+			$filtered_files[] = Utils\normalize_path( $file->getPathname() );
 		}
 
 		return $filtered_files;

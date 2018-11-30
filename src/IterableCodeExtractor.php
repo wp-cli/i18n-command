@@ -7,9 +7,9 @@ use Gettext\Translations;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use DirectoryIterator;
 use SplFileInfo;
 use WP_CLI;
+use WP_CLI\Utils;
 
 trait IterableCodeExtractor {
 
@@ -30,7 +30,7 @@ trait IterableCodeExtractor {
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file ) as $f ) {
 			// Make sure a relative file path is added as a comment.
-			$options['file'] = ltrim( str_replace( static::$dir, '', $f ), '/' );
+			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $f ) ), '/' );
 
 			$string = file_get_contents( $f );
 
@@ -75,6 +75,8 @@ trait IterableCodeExtractor {
 	 * @return null
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
+		$dir = Utils\normalize_path( $dir );
+
 		static::$dir = $dir;
 
 		$include = isset( $options['include'] ) ? $options['include'] : [];
@@ -194,7 +196,7 @@ trait IterableCodeExtractor {
 
 		$files = new RecursiveIteratorIterator(
 			new RecursiveCallbackFilterIterator(
-				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::UNIX_PATHS ),
 				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
@@ -225,7 +227,7 @@ trait IterableCodeExtractor {
 				continue;
 			}
 
-			$filtered_files[] = $file->getPathname();
+			$filtered_files[] = Utils\normalize_path( $file->getPathname() );
 		}
 
 		return $filtered_files;

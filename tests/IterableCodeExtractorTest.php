@@ -4,6 +4,7 @@ namespace WP_CLI\I18n\Tests;
 
 use PHPUnit_Framework_TestCase;
 use WP_CLI\I18n\IterableCodeExtractor;
+use WP_CLI\Utils;
 
 
 class Extractor_Test extends PHPUnit_Framework_TestCase {
@@ -15,7 +16,7 @@ class Extractor_Test extends PHPUnit_Framework_TestCase {
 		/**
 		 * PHP5.4 cannot set property with __DIR__ constant.
 		 */
-		self::$base = __DIR__ . '/data/';
+		self::$base = Utils\normalize_path( __DIR__ ) . '/data/';
 
 		$property = new \ReflectionProperty( 'WP_CLI\I18n\IterableCodeExtractor', 'dir' );
 		$property->setAccessible( true );

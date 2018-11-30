@@ -196,7 +196,7 @@ trait IterableCodeExtractor {
 
 		$files = new RecursiveIteratorIterator(
 			new RecursiveCallbackFilterIterator(
-				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
+				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::UNIX_PATHS ),
 				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */

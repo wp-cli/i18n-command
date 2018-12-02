@@ -8,7 +8,6 @@ use Gettext\Translation;
 use Gettext\Translations;
 use Symfony\Component\Finder\SplFileInfo;
 use WP_CLI;
-use WP_CLI\Utils;
 use WP_CLI_Command;
 use WP_CLI\Utils;
 use DirectoryIterator;

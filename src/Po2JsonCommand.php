@@ -2,7 +2,8 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Po;
+use Gettext\Extractors\Po as PoExtractor;
+use Gettext\Generators\Po as PoGenerator;
 use Gettext\Translation;
 use Gettext\Translations;
 use Symfony\Component\Finder\SplFileInfo;
@@ -220,7 +221,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 		/** @var Translations[] $mapping */
 		$translations = new Translations();
 
-		Po::fromFile( $source_file, $translations );
+		PoExtractor::fromFile( $source_file, $translations );
 
 		$translations_to_remove = [];
 
@@ -246,6 +247,6 @@ class Po2JsonCommand extends WP_CLI_Command {
 			unset( $translations[ $id ] );
 		}
 
-		return \Gettext\Generators\Po::toFile( $translations, $source_file );
+		return PoGenerator::toFile( $translations, $source_file );
 	}
 }

@@ -123,7 +123,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
 		$translations = new Translations();
-		$result = [];
+		$result       = [];
 
 		Po::fromFile( $source_file, $translations );
 
@@ -135,7 +135,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
 				function ( $reference ) {
-					$file  = $reference[0];
+					$file = $reference[0];
 
 					if ( substr( $file, - 7 ) === '.min.js' ) {
 						return substr( $file, 0, - 7 ) . '.js';

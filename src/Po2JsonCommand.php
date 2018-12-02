@@ -192,7 +192,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 		$result = [];
 
 		foreach ( $mapping as $file => $translations ) {
-			/** @var Translations $contents */
+			/** @var Translations $translations */
 
 			$hash             = md5( $file );
 			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";

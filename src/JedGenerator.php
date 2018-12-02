@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Generators\Jed;
+use Gettext\Translation;
 use Gettext\Translations;
 
 /**
@@ -53,7 +54,7 @@ class JedGenerator extends Jed {
 		$context_glue      = chr( 4 );
 
 		foreach ( $translations as $translation ) {
-			/** @var \Gettext\Translation $translation */
+			/** @var Translation $translation */
 
 			if ( $translation->isDisabled() ) {
 				continue;

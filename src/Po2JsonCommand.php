@@ -85,10 +85,10 @@ class Po2JsonCommand extends WP_CLI_Command {
 
 		$result_count = 0;
 
-		$files = new IteratorIterator( new DirectoryIterator( $source ) );
-
 		if ( is_file( $source ) ) {
 			$files = [ new SplFileInfo( $source ) ];
+		} else {
+			$files = new IteratorIterator( new DirectoryIterator( $source ) );
 		}
 
 		/** @var DirectoryIterator $file */

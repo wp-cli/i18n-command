@@ -1,4 +1,3 @@
-@require-php-5.4
 Feature: Split PO files into JSON files.
 
   Background:

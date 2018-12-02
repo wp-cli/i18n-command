@@ -7,6 +7,7 @@ use Gettext\Translation;
 use Gettext\Translations;
 use Symfony\Component\Finder\SplFileInfo;
 use WP_CLI;
+use WP_CLI\Utils;
 use WP_CLI_Command;
 use WP_CLI\Utils;
 use DirectoryIterator;
@@ -106,11 +107,8 @@ class Po2JsonCommand extends WP_CLI_Command {
 			}
 		}
 
-		if ( 1 === $result_count ) {
-			WP_CLI::success( sprintf( 'Created %d file.', $result_count ), 'po2json' );
-		} else {
-			WP_CLI::success( sprintf( 'Created %d files.', $result_count ), 'po2json' );
-		}
+
+		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count) ), 'po2json' );
 	}
 
 	/**

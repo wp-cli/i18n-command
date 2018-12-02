@@ -164,7 +164,8 @@ class Po2JsonCommand extends WP_CLI_Command {
 					$plural_forms = $translations->getPluralForms();
 
 					if ( $plural_forms ) {
-						$mapping[ $source ]->setPluralForms( $plural_forms[0], $plural_forms[1] );
+						list( $count, $rule ) = $plural_forms;
+						$mapping[ $source ]->setPluralForms( $count, $rule );
 					}
 				}
 

@@ -14,20 +14,6 @@ if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
 	WP_CLI::add_command( 'i18n', '\WP_CLI\I18n\CommandNamespace' );
 }
 
-WP_CLI::add_command( 'i18n make-pot', '\WP_CLI\I18n\MakePotCommand', array(
-	'before_invoke' => function() {
-		$min_version = '5.4';
-		if ( version_compare( PHP_VERSION, $min_version, '<' ) ) {
-			WP_CLI::error( "The `wp i18n make-pot` command requires PHP {$min_version} or newer." );
-		}
-	}
-) );
+WP_CLI::add_command( 'i18n make-pot', '\WP_CLI\I18n\MakePotCommand' );
 
-WP_CLI::add_command( 'i18n po2json', '\WP_CLI\I18n\Po2JsonCommand', array(
-	'before_invoke' => function() {
-		$min_version = '5.4';
-		if ( version_compare( PHP_VERSION, $min_version, '<' ) ) {
-			WP_CLI::error( "The `wp i18n po2json` command requires PHP {$min_version} or newer." );
-		}
-	}
-) );
+WP_CLI::add_command( 'i18n po2json', '\WP_CLI\I18n\Po2JsonCommand' );

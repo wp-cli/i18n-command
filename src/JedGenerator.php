@@ -66,11 +66,11 @@ class JedGenerator extends Jed {
 				$key = $translation->getContext() . $context_glue . $key;
 			}
 
-			$message = [ $translation->getTranslation() ];
-
 			if ( $translation->hasPluralTranslations( true ) ) {
 				$message = $translation->getPluralTranslations( $number_of_plurals );
 				array_unshift( $message, $translation->getTranslation() );
+			} else {
+				$message = [ $translation->getTranslation() ];
 			}
 
 			$messages[ $key ] = $message;

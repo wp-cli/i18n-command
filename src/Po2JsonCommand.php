@@ -234,7 +234,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 			foreach ( $translation->getReferences() as $reference ) {
 				$file = $reference[0];
 
-				if ( substr( $file, - 4 ) === '.php' ) {
+				if ( substr( $file, - 3 ) !== '.js' ) {
 					continue 2;
 				}
 			}

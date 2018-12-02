@@ -124,7 +124,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 		$translations = new Translations();
 		$result       = [];
 
-		Po::fromFile( $source_file, $translations );
+		PoExtractor::fromFile( $source_file, $translations );
 
 		$base_file_name = basename( $source_file, '.po' );
 

@@ -222,9 +222,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 
 		PoExtractor::fromFile( $source_file, $translations );
 
-		$translations_to_remove = [];
-
-		foreach ( $translations as $translation ) {
+		foreach ( $translations->getArrayCopy() as $translation ) {
 			/** @var Translation $translation */
 
 			if ( ! $translation->hasReferences() ) {
@@ -239,11 +237,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 				}
 			}
 
-			$translations_to_remove[] = $translation->getId();
-		}
-
-		foreach ( $translations_to_remove as $id ) {
-			unset( $translations[ $id ] );
+			unset( $translations[ $translation->getId() ] );
 		}
 
 		return PoGenerator::toFile( $translations, $source_file );

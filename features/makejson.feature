@@ -4,7 +4,7 @@ Feature: Split PO files into JSON files.
     Given a WP install
 
   Scenario: Bail for invalid source file or directory
-    When I try `wp i18n po2json foo`
+    When I try `wp i18n make-json foo`
     Then STDERR should contain:
       """
       Error: Source file or directory does not exist!
@@ -37,7 +37,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -71,7 +71,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin result`
+    When I run `wp i18n make-json foo-plugin result`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -105,7 +105,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -146,7 +146,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -187,7 +187,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -224,7 +224,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -274,7 +274,7 @@ Feature: Split PO files into JSON files.
       msgstr "D"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 2 files.
@@ -373,7 +373,7 @@ Feature: Split PO files into JSON files.
       msgstr "D"
       """
 
-    When I run `wp i18n po2json foo-plugin --keep-source-strings`
+    When I run `wp i18n make-json foo-plugin --keep-source-strings`
     Then STDOUT should contain:
       """
       Success: Created 2 files.
@@ -460,7 +460,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin (DE)"
       """
 
-    When I run `wp i18n po2json foo-plugin`
+    When I run `wp i18n make-json foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -501,7 +501,7 @@ Feature: Split PO files into JSON files.
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n po2json foo-plugin --pretty-print`
+    When I run `wp i18n make-json foo-plugin --pretty-print`
     Then STDOUT should contain:
       """
       Success: Created 1 file.

@@ -13,7 +13,7 @@ use WP_CLI\Utils;
 use DirectoryIterator;
 use IteratorIterator;
 
-class Po2JsonCommand extends WP_CLI_Command {
+class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Options passed to json_encode().
 	 *
@@ -47,10 +47,10 @@ class Po2JsonCommand extends WP_CLI_Command {
 	 * ## EXAMPLES
 	 *
 	 *     # Create JSON files for all PO files in the languages directory
-	 *     $ wp i18n po2json languages
+	 *     $ wp i18n make-json languages
 	 *
 	 *     # Create JSON files for my-plugin-de_DE.po and leave the PO file untouched.
-	 *     $ wp i18n po2json my-plugin-de_DE.po /tmp --keep-source-strings
+	 *     $ wp i18n make-json my-plugin-de_DE.po /tmp --keep-source-strings
 	 *
 	 * @when before_wp_load
 	 *
@@ -94,7 +94,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension()) {
-				$result = $this->po2json( $file->getRealPath(), $destination );
+				$result = $this->make_json( $file->getRealPath(), $destination );
 				$result_count += count( $result );
 
 				if ( ! $keep_source_strings ) {
@@ -108,7 +108,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 		}
 
 
-		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count) ), 'po2json' );
+		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count) ), 'make-json' );
 	}
 
 	/**
@@ -118,7 +118,7 @@ class Po2JsonCommand extends WP_CLI_Command {
 	 * @param string $destination Path to the destination directory.
 	 * @return array List of created JSON files.
 	 */
-	protected function po2json( $source_file, $destination ) {
+	protected function make_json( $source_file, $destination ) {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
 		$translations = new Translations();

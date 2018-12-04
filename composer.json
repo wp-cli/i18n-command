@@ -31,7 +31,7 @@
         "commands": [
             "i18n",
             "i18n make-pot",
-            "i18n po2json"
+            "i18n make-json"
         ]
     },
     "autoload": {

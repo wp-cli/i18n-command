@@ -24,5 +24,5 @@ labels:
     color: c5def5
   - name: command:i18n-make-pot
     color: c5def5
-  - name: command:i18n-po2json
+  - name: command:i18n-make-json
     color: c5def5

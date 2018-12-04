@@ -373,7 +373,7 @@ Feature: Split PO files into JSON files.
       msgstr "D"
       """
 
-    When I run `wp i18n make-json foo-plugin --keep-source-strings`
+    When I run `wp i18n make-json foo-plugin --no-purge`
     Then STDOUT should contain:
       """
       Success: Created 2 files.

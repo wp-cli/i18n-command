@@ -38,8 +38,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * [<destination>]
 	 * : Path to the destination directory for the resulting JSON files. Defaults to the source directory.
 	 *
-	 * [--keep-source-strings]
-	 * : Keep JavaScript-only strings inside the PO file instead of removing them.
+	 * [--purge]
+	 * : Whether to purge the strings that were extracted from the original source file. Defaults to true, use `--no-purge` to skip the removal.
 	 *
 	 * [--pretty-print]
 	 * : Pretty-print resulting JSON files.
@@ -50,14 +50,14 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *     $ wp i18n make-json languages
 	 *
 	 *     # Create JSON files for my-plugin-de_DE.po and leave the PO file untouched.
-	 *     $ wp i18n make-json my-plugin-de_DE.po /tmp --keep-source-strings
+	 *     $ wp i18n make-json my-plugin-de_DE.po /tmp --no-purge
 	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$keep_source_strings = Utils\get_flag_value( $assoc_args, 'keep-source-strings', false );
+		$purge = Utils\get_flag_value( $assoc_args, 'purge', true );
 
 		if ( Utils\get_flag_value( $assoc_args, 'pretty-print', false ) ) {
 			$this->json_options |= JSON_PRETTY_PRINT;
@@ -97,7 +97,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 				$result = $this->make_json( $file->getRealPath(), $destination );
 				$result_count += count( $result );
 
-				if ( ! $keep_source_strings ) {
+				if ( $purge ) {
 					$removed = $this->remove_js_strings_from_po_file( $file->getRealPath() );
 
 					if ( ! $removed ) {

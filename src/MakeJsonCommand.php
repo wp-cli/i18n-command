@@ -107,8 +107,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			}
 		}
 
-
-		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count) ), 'make-json' );
+		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count) ) );
 	}
 
 	/**

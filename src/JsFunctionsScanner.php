@@ -41,11 +41,12 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		$this->code = str_replace( '/"/', '/\"/', $this->code );
 		$this->code = str_replace( '/"|\'/', '/\"|\\\'/', $this->code );
 
-		$ast = Peast::latest( $this->code, [
+		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
 			'comments'   => false !== $this->extractComments,
 			'jsx'        => true,
-		] )->parse();
+		];
+		$ast           = Peast::latest( $this->code, $peast_options )->parse();
 
 		$traverser = new Traverser();
 

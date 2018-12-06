@@ -45,12 +45,12 @@ trait IterableCodeExtractor {
 				continue;
 			}
 
-			if ( ! empty ( $options['wpExtractTemplates'] ) ) {
+			if ( ! empty( $options['wpExtractTemplates'] ) ) {
 				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
 
-				if ( ! empty( $headers[ 'Template Name'])) {
-					$translation = new Translation( '', $headers[ 'Template Name'] );
-					$translation->addExtractedComment('Template Name of the theme' );
+				if ( ! empty( $headers['Template Name'] ) ) {
+					$translation = new Translation( '', $headers['Template Name'] );
+					$translation->addExtractedComment( 'Template Name of the theme' );
 
 					$translations[] = $translation;
 				}
@@ -118,7 +118,9 @@ trait IterableCodeExtractor {
 			$base_score = count(
 				array_filter(
 					explode( '/', $path_or_file ),
-					function ( $component) { return $component !== '*'; }
+					function ( $component ) {
+						return '*' !== $component;
+					}
 				)
 			);
 			if ( 0 === $base_score ) {

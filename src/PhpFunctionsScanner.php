@@ -20,7 +20,8 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				continue;
 			}
 
-			$context = $plural = null;
+			$context = null;
+			$plural  = null;
 
 			switch ( $functions[ $name ] ) {
 				case 'text_domain':

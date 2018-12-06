@@ -24,7 +24,7 @@ class PotGenerator extends Po {
 	public static function setCommentBeforeHeaders( $comment ) {
 		$comments = explode( "\n", $comment );
 
-		foreach( $comments as $line ) {
+		foreach ( $comments as $line ) {
 			if ( '' !== trim( $line ) ) {
 				static::$comments_before_headers[] = '# ' . $line;
 			}

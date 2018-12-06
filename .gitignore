@@ -8,3 +8,6 @@ vendor/
 *.txt
 *.log
 composer.lock
+phpunit.xml
+phpcs.xml
+.phpcs.xml

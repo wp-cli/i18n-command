@@ -57,99 +57,101 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		 * Make sure translator comments in front of variable declarations
 		 * and inside nested call expressions are available when parsing the function call.
 		 */
-		$traverser->addFunction( function ( $node ) use ( &$translations, $options, &$all_comments ) {
-			$functions = $options['functions'];
-			$file      = $options['file'];
+		$traverser->addFunction(
+			function ( $node ) use ( &$translations, $options, &$all_comments ) {
+				$functions = $options['functions'];
+				$file      = $options['file'];
 
-			/** @var Node\Node $node */
-			foreach ( $node->getLeadingComments() as $comment ) {
-				$all_comments[] = $comment;
-			}
-
-			/** @var Node\CallExpression $node */
-			if ( 'CallExpression' !== $node->getType() ) {
-				return;
-			}
-
-			$callee = $this->resolveExpressionCallee( $node );
-
-			if ( ! $callee || ! isset( $functions[ $callee['name'] ] ) ) {
-				return;
-			}
-
-			/** @var Node\CallExpression $node */
-			foreach ( $node->getArguments() as $argument ) {
-				// Support nested function calls.
-				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
-			}
-
-			foreach ( $callee['comments'] as $comment ) {
-				$all_comments[] = $comment;
-			}
-
-			$context = null;
-			$plural  = null;
-			$args    = [];
-
-			/** @var Node\Node $argument */
-			foreach ( $node->getArguments() as $argument ) {
-				foreach ( $argument->getLeadingComments() as $comment ) {
+				/** @var Node\Node $node */
+				foreach ( $node->getLeadingComments() as $comment ) {
 					$all_comments[] = $comment;
 				}
 
-				if ( 'Identifier' === $argument->getType() ) {
-					$args[] = ''; // The value doesn't matter as it's unused.
+				/** @var Node\CallExpression $node */
+				if ( 'CallExpression' !== $node->getType() ) {
+					return;
 				}
 
-				if ( 'Literal' === $argument->getType() ) {
-					/** @var Node\Literal $argument */
-					$args[] = $argument->getValue();
+				$callee = $this->resolveExpressionCallee( $node );
+
+				if ( ! $callee || ! isset( $functions[ $callee['name'] ] ) ) {
+					return;
 				}
-			}
 
-			switch ( $functions[ $callee['name'] ] ) {
-				case 'text_domain':
-				case 'gettext':
-					list( $original, $domain ) = array_pad( $args, 2, null );
-					break;
+				/** @var Node\CallExpression $node */
+				foreach ( $node->getArguments() as $argument ) {
+					// Support nested function calls.
+					$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
+				}
 
-				case 'text_context_domain':
-					list( $original, $context, $domain ) = array_pad( $args, 3, null );
-					break;
+				foreach ( $callee['comments'] as $comment ) {
+					$all_comments[] = $comment;
+				}
 
-				case 'single_plural_number_domain':
-					list( $original, $plural, $number, $domain ) = array_pad( $args, 4, null );
-					break;
+				$context = null;
+				$plural  = null;
+				$args    = [];
 
-				case 'single_plural_number_context_domain':
-					list( $original, $plural, $number, $context, $domain ) = array_pad( $args, 5, null );
-					break;
-			}
-
-			if ( '' !== (string) $original && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
-				$translation = $translations->insert( $context, $original, $plural );
-				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
-
-				/** @var Node\Comment $comment */
-				foreach ( $all_comments as $comment ) {
-					// Comments should be before the translation.
-					if ( ! $this->commentPrecedesNode( $comment, $node ) ) {
-						continue;
+				/** @var Node\Node $argument */
+				foreach ( $node->getArguments() as $argument ) {
+					foreach ( $argument->getLeadingComments() as $comment ) {
+						$all_comments[] = $comment;
 					}
 
-					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
-					$prefixes       = array_filter( (array) $this->extractComments );
+					if ( 'Identifier' === $argument->getType() ) {
+						$args[] = ''; // The value doesn't matter as it's unused.
+					}
 
-					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-						$translation->addExtractedComment( $parsed_comment->getComment() );
+					if ( 'Literal' === $argument->getType() ) {
+						/** @var Node\Literal $argument */
+						$args[] = $argument->getValue();
 					}
 				}
 
-				if ( isset( $parsed_comment ) ) {
-					$all_comments = [];
+				switch ( $functions[ $callee['name'] ] ) {
+					case 'text_domain':
+					case 'gettext':
+						list( $original, $domain ) = array_pad( $args, 2, null );
+						break;
+
+					case 'text_context_domain':
+						list( $original, $context, $domain ) = array_pad( $args, 3, null );
+						break;
+
+					case 'single_plural_number_domain':
+						list( $original, $plural, $number, $domain ) = array_pad( $args, 4, null );
+						break;
+
+					case 'single_plural_number_context_domain':
+						list( $original, $plural, $number, $context, $domain ) = array_pad( $args, 5, null );
+						break;
+				}
+
+				if ( '' !== (string) $original && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
+					$translation = $translations->insert( $context, $original, $plural );
+					$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
+
+					/** @var Node\Comment $comment */
+					foreach ( $all_comments as $comment ) {
+						// Comments should be before the translation.
+						if ( ! $this->commentPrecedesNode( $comment, $node ) ) {
+							continue;
+						}
+
+						$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
+						$prefixes       = array_filter( (array) $this->extractComments );
+
+						if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
+							$translation->addExtractedComment( $parsed_comment->getComment() );
+						}
+					}
+
+					if ( isset( $parsed_comment ) ) {
+						$all_comments = [];
+					}
 				}
 			}
-		} );
+		);
 
 		$traverser->traverse( $ast );
 	}

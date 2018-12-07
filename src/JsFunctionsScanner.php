@@ -126,7 +126,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					break;
 			}
 
-			if ( (string) $original !== '' && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
+			if ( '' !== (string) $original && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
 				$translation = $translations->insert( $context, $original, $plural );
 				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
 

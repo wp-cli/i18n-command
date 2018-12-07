@@ -191,17 +191,17 @@ class MakePotCommand extends WP_CLI_Command {
 	 * : String that should be added as a comment to the top of the resulting POT file.
 	 * By default, a copyright comment is added for WordPress plugins and themes in the following manner:
 	 *
-	 * 		```
-	 * 		Copyright (C) 2018 Example Plugin Author
-	 * 		This file is distributed under the same license as the Example Plugin package.
-	 * 		```
+	 *      ```
+	 *      Copyright (C) 2018 Example Plugin Author
+	 *      This file is distributed under the same license as the Example Plugin package.
+	 *      ```
 	 *
-	 * 		If a plugin or theme specifies a license in their main plugin file or stylesheet, the comment looks like this:
+	 *      If a plugin or theme specifies a license in their main plugin file or stylesheet, the comment looks like this:
 	 *
-	 * 		```
-	 * 		Copyright (C) 2018 Example Plugin Author
-	 * 		This file is distributed under the GPLv2.
-	 * 		```
+	 *      ```
+	 *      Copyright (C) 2018 Example Plugin Author
+	 *      This file is distributed under the GPLv2.
+	 *      ```
 	 *
 	 * [--package-name=<name>]
 	 * : Name to use for package name in the resulting POT file's `Project-Id-Version` header.
@@ -366,7 +366,8 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->exceptions->mergeWith( $exception_translations );
 
 					return true;
-				} );
+				}
+			);
 
 			if ( ! empty( $exceptions ) ) {
 				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', implode( ',', $exceptions ) ), 'make-pot' );
@@ -426,7 +427,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
-			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension()) {
+			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
 				$plugin_files[] = $file->getRealPath();
 			}
 		}
@@ -569,7 +570,7 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		foreach( $this->exceptions as $translation ) {
+		foreach ( $this->exceptions as $translation ) {
 			if ( $translations->find( $translation ) ) {
 				unset( $translations[ $translation->getId() ] );
 			}
@@ -590,7 +591,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @param Translations $translations Translations object.
 	 */
 	protected function audit_strings( $translations ) {
-		foreach( $translations as $translation ) {
+		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
 			$references = $translation->getReferences();
@@ -612,7 +613,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// Check 2: Flag strings with different translator comments.
 			if ( $translation->hasExtractedComments() ) {
-				$comments = $translation->getExtractedComments();
+				$comments       = $translation->getExtractedComments();
 				$comments_count = count( $comments );
 
 				if ( $comments_count > 1 ) {
@@ -638,7 +639,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// Check 4: Flag strings with multiple unordered placeholders (%s %s %s vs. %1$s %2$s %3$s).
 			$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
-			$unordered_matches = $unordered_matches[0];
+			$unordered_matches       = $unordered_matches[0];
 
 			if ( $unordered_matches_count >= 2 ) {
 				WP_CLI::warning( sprintf(
@@ -781,7 +782,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	private function get_wp_version() {
 		$version_php = $this->source . '/wp-includes/version.php';
-		if ( ! file_exists( $version_php) || ! is_readable( $version_php ) ) {
+		if ( ! file_exists( $version_php ) || ! is_readable( $version_php ) ) {
 			return false;
 		}
 
@@ -829,7 +830,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @return array Array of file headers in `HeaderKey => Header Value` format.
 	 */
-	public static function get_file_data_from_string( $string, $headers  ) {
+	public static function get_file_data_from_string( $string, $headers ) {
 		foreach ( $headers as $field => $regex ) {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $string, $match ) && $match[1] ) {
 				$headers[ $field ] = static::_cleanup_header_comment( $match[1] );

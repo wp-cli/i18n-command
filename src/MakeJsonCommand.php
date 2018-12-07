@@ -93,8 +93,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
-			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension()) {
-				$result = $this->make_json( $file->getRealPath(), $destination );
+			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension() ) {
+				$result        = $this->make_json( $file->getRealPath(), $destination );
 				$result_count += count( $result );
 
 				if ( $purge ) {
@@ -107,7 +107,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			}
 		}
 
-		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count) ) );
+		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );
 	}
 
 	/**

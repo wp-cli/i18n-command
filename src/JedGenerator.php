@@ -16,7 +16,7 @@ class JedGenerator extends Jed {
 	 * {@parentDoc}.
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$options  += static::$options;
+		$options += static::$options;
 		$domain   = $translations->getDomain() ?: 'messages';
 		$messages = static::buildMessages( $translations );
 

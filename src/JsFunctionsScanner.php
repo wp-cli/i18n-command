@@ -62,7 +62,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			$file      = $options['file'];
 
 			/** @var Node\Node $node */
-			foreach( $node->getLeadingComments() as $comment ) {
+			foreach ( $node->getLeadingComments() as $comment ) {
 				$all_comments[] = $comment;
 			}
 
@@ -83,16 +83,17 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
 			}
 
-			foreach( $callee['comments'] as $comment ) {
+			foreach ( $callee['comments'] as $comment ) {
 				$all_comments[] = $comment;
 			}
 
-			$context = $plural = null;
+			$context = null;
+			$plural  = null;
 			$args    = [];
 
 			/** @var Node\Node $argument */
 			foreach ( $node->getArguments() as $argument ) {
-				foreach( $argument->getLeadingComments() as $comment ) {
+				foreach ( $argument->getLeadingComments() as $comment ) {
 					$all_comments[] = $comment;
 				}
 
@@ -168,7 +169,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		if ( 'Identifier' === $callee->getType() ) {
 			return [
 				'name'     => $callee->getName(),
-				'comments' => $callee->getLeadingComments()
+				'comments' => $callee->getLeadingComments(),
 			];
 		}
 
@@ -192,8 +193,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		// If the callee is a call expression as created by Webpack resolve it.
 		// For example: Object(u.__)( "translation" ).
 		if (
-			'CallExpression' ===  $callee->getType() &&
-			'Identifier' ===  $callee->getCallee()->getType() &&
+			'CallExpression' === $callee->getType() &&
+			'Identifier' === $callee->getCallee()->getType() &&
 			'Object' === $callee->getCallee()->getName() &&
 			[] !== $callee->getArguments() &&
 			'MemberExpression' === $callee->getArguments()[0]->getType()

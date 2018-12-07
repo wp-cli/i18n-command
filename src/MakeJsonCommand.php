@@ -76,9 +76,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 		}
 
 		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( $destination ) &&
-		     ! mkdir( $destination, 0777, true ) &&
-		     ! is_dir( $destination )
+		if ( ! is_dir( $destination )
+			&& ! mkdir( $destination, 0777, true )
+			&& ! is_dir( $destination )
 		) {
 			WP_CLI::error( 'Could not create destination directory!' );
 		}

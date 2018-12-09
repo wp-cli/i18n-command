@@ -537,13 +537,14 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		try {
-			PhpCodeExtractor::fromDirectory( $this->source, $translations, [
+			$options = [
 				// Extract 'Template Name' headers in theme files.
 				'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),
 				'include'            => $this->include,
 				'exclude'            => $this->exclude,
 				'extensions'         => [ 'php' ],
-			] );
+			];
+			PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
 
 			if ( ! $this->skip_js ) {
 				JsCodeExtractor::fromDirectory(
@@ -604,11 +605,12 @@ class MakePotCommand extends WP_CLI_Command {
 				! $translation->hasExtractedComments() &&
 				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $placeholders ) >= 1
 			) {
-				WP_CLI::warning( sprintf(
+				$message = sprintf(
 					'The string "%1$s" contains placeholders but has no "translators:" comment to clarify their meaning. %2$s',
 					$translation->getOriginal(),
 					$location
-				) );
+				);
+				WP_CLI::warning( $message );
 			}
 
 			// Check 2: Flag strings with different translator comments.
@@ -617,12 +619,13 @@ class MakePotCommand extends WP_CLI_Command {
 				$comments_count = count( $comments );
 
 				if ( $comments_count > 1 ) {
-					WP_CLI::warning( sprintf(
+					$message = sprintf(
 						'The string "%1$s" has %2$d different translator comments. %3$s',
 						$translation->getOriginal(),
 						$comments_count,
 						$location
-					) );
+					);
+					WP_CLI::warning( $message );
 				}
 			}
 
@@ -631,10 +634,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// Check 3: Flag empty strings without any translatable content.
 			if ( '' === $non_placeholder_content ) {
-				WP_CLI::warning( sprintf(
+				$message = sprintf(
 					'Found string without translatable content. %s',
 					$location
-				) );
+				);
+				WP_CLI::warning( $message );
 			}
 
 			// Check 4: Flag strings with multiple unordered placeholders (%s %s %s vs. %1$s %2$s %3$s).
@@ -642,10 +646,11 @@ class MakePotCommand extends WP_CLI_Command {
 			$unordered_matches       = $unordered_matches[0];
 
 			if ( $unordered_matches_count >= 2 ) {
-				WP_CLI::warning( sprintf(
+				$message = sprintf(
 					'Multiple placeholders should be ordered. %s',
 					$location
-				) );
+				);
+				WP_CLI::warning( $message );
 			}
 
 			if ( $translation->hasPlural() ) {
@@ -658,10 +663,11 @@ class MakePotCommand extends WP_CLI_Command {
 				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals
 				if ( count( $single_placeholders ) < count( $plural_placeholders ) ) {
 					// Check 5: Flag things like _n( 'One comment', '%s Comments' )
-					WP_CLI::warning( sprintf(
+					$message = sprintf(
 						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals %s',
 						$location
-					) );
+					);
+					WP_CLI::warning( $message );
 				} else {
 					// Reordering is fine, but mismatched placeholders is probably wrong.
 					sort( $single_placeholders );
@@ -669,10 +675,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 					// Check 6: Flag things like _n( '%s Comment (%d)', '%s Comments (%s)' )
 					if ( $single_placeholders !== $plural_placeholders ) {
-						WP_CLI::warning( sprintf(
+						$message = sprintf(
 							'Mismatched placeholders for singular and plural string. %s',
 							$location
-						) );
+						);
+						WP_CLI::warning( $message );
 					}
 				}
 			}

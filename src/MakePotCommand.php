@@ -84,6 +84,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $file_comment;
 
 	/**
+	 * @var string
+	 */
+	protected $project_type = 'generic';
+
+	/**
 	 * These Regexes copied from http://php.net/manual/en/function.sprintf.php#93552
 	 * and adjusted for better precision and updated specs.
 	 */
@@ -167,16 +172,16 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--include=<paths>]
 	 * : Comma-separated list of files and paths that should be used for string extraction.
 	 * If provided, only these files and folders will be taken into account for string extraction.
-	 * For example, `--include="src,my-file.php` will ignore anything besides `my-file.php` and files in the `src` directory.
-	 * Simple glob patterns can be used, i.e. `--include=foo-*.php` includes any PHP file with the `foo-` prefix.
-	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
+	 * For example, `--include="src,my-file.php` will ignore anything besides `my-file.php` and files in the `src`
+	 * directory. Simple glob patterns can be used, i.e. `--include=foo-*.php` includes any PHP file with the `foo-`
+	 * prefix. Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 	 *
 	 * [--exclude=<paths>]
 	 * : Comma-separated list of files and paths that should be skipped for string extraction.
-	 * For example, `--exclude=".github,myfile.php` would ignore any strings found within `myfile.php` or the `.github` folder.
-	 * Simple glob patterns can be used, i.e. `--exclude=foo-*.php` excludes any PHP file with the `foo-` prefix.
-	 * Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
-	 * The following files and folders are always excluded: node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js.
+	 * For example, `--exclude=".github,myfile.php` would ignore any strings found within `myfile.php` or the `.github`
+	 * folder. Simple glob patterns can be used, i.e. `--exclude=foo-*.php` excludes any PHP file with the `foo-`
+	 * prefix. Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`. The
+	 * following files and folders are always excluded: node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js.
 	 *
 	 * [--headers=<headers>]
 	 * : Array in JSON format of custom headers which will be added to the POT file. Defaults to empty array.
@@ -185,7 +190,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
 	 * [--skip-audit]
-	 * : Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an automated environment.
+	 * : Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an
+	 * automated environment.
 	 *
 	 * [--file-comment=<file-comment>]
 	 * : String that should be added as a comment to the top of the resulting POT file.
@@ -196,7 +202,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 *      This file is distributed under the same license as the Example Plugin package.
 	 *      ```
 	 *
-	 *      If a plugin or theme specifies a license in their main plugin file or stylesheet, the comment looks like this:
+	 *      If a plugin or theme specifies a license in their main plugin file or stylesheet, the comment looks like
+	 *      this:
 	 *
 	 *      ```
 	 *      Copyright (C) 2018 Example Plugin Author
@@ -213,7 +220,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 *     $ wp i18n make-pot . languages/my-plugin.pot
 	 *
 	 *     # Create a POT file for the continents and cities list in WordPress core.
-	 *     $ wp i18n make-pot . continents-and-cities.pot --include="wp-admin/includes/continents-cities.php" --ignore-domain
+	 *     $ wp i18n make-pot . continents-and-cities.pot --include="wp-admin/includes/continents-cities.php"
+	 *     --ignore-domain
 	 *
 	 * @when before_wp_load
 	 *
@@ -417,6 +425,8 @@ class MakePotCommand extends WP_CLI_Command {
 				WP_CLI::log( 'Theme stylesheet detected.' );
 				WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet ), 'make-pot' );
 
+				$this->project_type = 'theme';
+
 				return $theme_data;
 			}
 		}
@@ -439,6 +449,8 @@ class MakePotCommand extends WP_CLI_Command {
 			if ( ! empty( $plugin_data['Plugin Name'] ) ) {
 				WP_CLI::log( 'Plugin file detected.' );
 				WP_CLI::debug( sprintf( 'Plugin file: %s', $plugin_file ), 'make-pot' );
+
+				$this->project_type = 'plugin';
 
 				return $plugin_data;
 			}
@@ -615,7 +627,24 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// Check 2: Flag strings with different translator comments.
 			if ( $translation->hasExtractedComments() ) {
-				$comments       = $translation->getExtractedComments();
+				$comments = $translation->getExtractedComments();
+
+				// Remove plugin header information from comments.
+				$comments = array_filter(
+					$comments,
+					function ( $comment ) {
+						/** @var string $comment */
+						/** @var string $file_header */
+						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
+							if ( 0 === strpos( $comment, $file_header ) ) {
+								return null;
+							}
+						}
+
+						return $comment;
+					}
+				);
+
 				$comments_count = count( $comments );
 
 				if ( $comments_count > 1 ) {

@@ -35,7 +35,9 @@ class PotGenerator extends PoGenerator {
 	 * {@parentDoc}.
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$lines = static::$comments_before_headers + [ 'msgid ""', 'msgstr ""' ];
+		$lines   = static::$comments_before_headers;
+		$lines[] = 'msgid ""';
+		$lines[] = 'msgstr ""';
 
 		$plural_form = $translations->getPluralForms();
 		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : 1;

@@ -6,8 +6,7 @@ use PHPUnit_Framework_TestCase;
 use WP_CLI\I18n\IterableCodeExtractor;
 use WP_CLI\Utils;
 
-
-class Extractor_Test extends PHPUnit_Framework_TestCase {
+class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 
 	/** @var string A path files are located */
 	private static $base;

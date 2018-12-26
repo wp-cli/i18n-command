@@ -2017,6 +2017,32 @@ Feature: Generate a POT file of a WordPress project
       Extracted 2 strings
       """
 
+  Scenario: Detects theme in sub folder
+    Given an empty foo-themes directory
+    And an empty foo-themes/theme-a directory
+    And a foo-themes/theme-a/style.css file:
+      """
+      /*
+      Theme Name:     Theme A
+      Theme URI:      https://example.com
+      Description:
+      Author:
+      Author URI:
+      Version:        0.1.0
+      License:        GPL-2.0+
+      Text Domain:    foo-theme
+      Domain Path:    /languages
+      */
+      """
+
+    When I try `wp i18n make-pot foo-theme`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+
   Scenario: Ignore strings that are part of the exception list
     Given an empty directory
     And a exception.pot file:

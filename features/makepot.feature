@@ -2035,7 +2035,7 @@ Feature: Generate a POT file of a WordPress project
       */
       """
 
-    When I try `wp i18n make-pot foo-theme`
+    When I try `wp i18n make-pot foo-themes`
     Then STDOUT should be:
       """
       Theme stylesheet detected.

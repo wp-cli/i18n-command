@@ -157,11 +157,13 @@ trait IterableCodeExtractor {
 			return false;
 		}
 
+		/** @var string $root_relative_path */
 		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
 
 		foreach ( $matchers as $path_or_file ) {
 			// If the matcher contains no wildcards and the path matches the start of the matcher.
 			if (
+				'' !== $root_relative_path &&
 				false === strpos( $path_or_file, '*' ) &&
 				0 === strpos( $path_or_file . '/', $root_relative_path )
 			) {
@@ -173,7 +175,7 @@ trait IterableCodeExtractor {
 			// If start of the path matches the start of the matcher until the first wildcard.
 			// Or the start of the matcher until the first wildcard matches the start of the path.
 			if (
-				0 === strpos( $base, $root_relative_path ) ||
+				( '' !== $root_relative_path && 0 === strpos( $base, $root_relative_path ) ) ||
 				0 === strpos( $root_relative_path, $base )
 			) {
 				return true;

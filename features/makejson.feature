@@ -514,7 +514,7 @@ Feature: Split PO files into JSON files.
               "messages": {
                   "": {
                       "domain": "messages",
-                      "lang": "de_DE",
+                      "lang": "de-DE",
                       "plural-forms": "nplurals=2; plural=(n != 1);"
                   },
                   "Foo Plugin": [
@@ -522,4 +522,41 @@ Feature: Split PO files into JSON files.
                   ]
               }
           }
+      """
+
+  Scenario: Should fall back to English for invalid locales.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-invalid.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: invalid\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.js:15
+      msgid "Foo Plugin"
+      msgstr "Foo Plugin"
+      """
+
+    When I run `wp i18n make-json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-invalid-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "lang":"en"
       """

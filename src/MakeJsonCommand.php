@@ -153,8 +153,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			foreach ( $sources as $source ) {
 				if ( ! isset( $mapping[ $source ] ) ) {
 					$mapping[ $source ] = new Translations();
-					// See https://core.trac.wordpress.org/ticket/45441
-					//$mapping[ $source ]->setDomain( $translations->getDomain() );
+					$mapping[ $source ]->setDomain( $translations->getDomain() );
 					$mapping[ $source ]->setLanguage( $translations->getLanguage() );
 					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
 

@@ -1413,6 +1413,9 @@ Feature: Generate a POT file of a WordPress project
     Then the wp-content/plugins/hello-world directory should exist
     And the wp-content/plugins/hello-world/hello-world.php file should exist
 
+    When I run `date +"%Y"`
+    Then save STDOUT as {YEAR}
+
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     Then STDOUT should be:
@@ -1424,7 +1427,7 @@ Feature: Generate a POT file of a WordPress project
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      # Copyright (C) 2018 John Doe
+      # Copyright (C) {YEAR} John Doe
       # This file is distributed under the same license as the Hello World plugin.
       msgid ""
       msgstr ""

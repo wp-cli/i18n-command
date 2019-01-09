@@ -31,6 +31,7 @@ class JedGenerator extends Jed {
 		$data = [
 			'translation-revision-date' => $translations->getHeader( 'PO-Revision-Date' ),
 			'generator'                 => 'WP-CLI/' . WP_CLI_VERSION,
+			'source'                    => $options['source'],
 			'domain'                    => $domain,
 			'locale_data'               => [
 				$domain => $configuration + $messages,

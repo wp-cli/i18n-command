@@ -508,7 +508,7 @@ Feature: Split PO files into JSON files.
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
       """
-      "domain":"messages"
+      "domain":"foo-plugin"
       """
     And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
       """
@@ -549,11 +549,11 @@ Feature: Split PO files into JSON files.
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
       """
-          "domain": "messages",
+          "domain": "foo-plugin",
           "locale_data": {
-              "messages": {
+              "foo-plugin": {
                   "": {
-                      "domain": "messages",
+                      "domain": "foo-plugin",
                       "lang": "de_DE",
                       "plural-forms": "nplurals=2; plural=(n != 1);"
                   },

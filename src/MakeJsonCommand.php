@@ -155,7 +155,14 @@ class MakeJsonCommand extends WP_CLI_Command {
 					$mapping[ $source ] = new Translations();
 					// See https://core.trac.wordpress.org/ticket/45441
 					//$mapping[ $source ]->setDomain( $translations->getDomain() );
-					$mapping[ $source ]->setLanguage( $translations->getLanguage() );
+
+					try {
+						$mapping[ $source ]->setLanguage( str_replace( '_', '-', $translations->getLanguage() ) );
+					} catch ( \InvalidArgumentException $e ) {
+						// The locale had an invalid format.
+						$mapping[ $source ]->setLanguage( 'en' );
+					}
+
 					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
 
 					$plural_forms = $translations->getPluralForms();

@@ -119,6 +119,10 @@ Feature: Split PO files into JSON files.
       """
       "generator":"WP-CLI
       """
+    And the foo-plugin/foo-plugin-de_DE-56746e49c6485323d16a717754b7447e.json file should contain:
+      """
+      "source":"foo-plugin.js"
+      """
 
   Scenario: Always uses messages as text domain
     Given an empty foo-plugin directory

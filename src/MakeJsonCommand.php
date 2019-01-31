@@ -155,7 +155,14 @@ class MakeJsonCommand extends WP_CLI_Command {
 					$mapping[ $source ] = new Translations();
 					// See https://core.trac.wordpress.org/ticket/45441
 					//$mapping[ $source ]->setDomain( $translations->getDomain() );
-					$mapping[ $source ]->setLanguage( $translations->getLanguage() );
+
+					try {
+						$mapping[ $source ]->setLanguage( str_replace( '_', '-', $translations->getLanguage() ) );
+					} catch ( \InvalidArgumentException $e ) {
+						// The locale had an invalid format.
+						$mapping[ $source ]->setLanguage( 'en' );
+					}
+
 					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
 
 					$plural_forms = $translations->getPluralForms();
@@ -195,7 +202,14 @@ class MakeJsonCommand extends WP_CLI_Command {
 			$hash             = md5( $file );
 			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";
 
-			$success = JedGenerator::toFile( $translations, $destination_file, [ 'json' => $this->json_options ] );
+			$success = JedGenerator::toFile(
+				$translations,
+				$destination_file,
+				[
+					'json'   => $this->json_options,
+					'source' => $file,
+				]
+			);
 
 			if ( ! $success ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', basename( $destination_file, '.json' ) ) );

@@ -421,7 +421,7 @@ class MakePotCommand extends WP_CLI_Command {
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			// wp-content/themes/my-theme/style.css
-			if ( $file->isFile() && 'style' === $file->getBasename( 'css' ) && $file->isReadable() ) {
+			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
 				$theme_data = static::get_file_data( $file->getRealPath(), array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
 
 				// Stop when it contains a valid Theme Name header.

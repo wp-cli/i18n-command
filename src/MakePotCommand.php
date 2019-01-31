@@ -435,7 +435,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			// wp-content/themes/my-themes/theme-a/style.css
-			if ( $file->isDir() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+			if ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
 				$theme_data = static::get_file_data( $file->getRealPath() . '/style.css', array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
 
 				// Stop when it contains a valid Theme Name header.

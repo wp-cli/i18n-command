@@ -615,7 +615,7 @@ Feature: Generate a POT file of a WordPress project
       __( 'Hello World', 'foo-plugin' );
       """
 
-    When I try `wp i18n make-pot foo-plugin --debug`
+    When I try `wp i18n make-pot foo-plugin`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -624,6 +624,39 @@ Feature: Generate a POT file of a WordPress project
     And STDERR should contain:
       """
       Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      """
+
+  Scenario: Does not print a warning for translator comments clashing with meta data
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       * Plugin URI: https://example.com
+       * Author URI: https://example.com
+       */
+
+      /* translators: This is a comment */
+      __( 'Plugin name', 'foo-plugin' );
+
+      /* Translators: This is another comment! */
+      __( 'https://example.com', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should not contain:
+      """
+      The string "Plugin name" has 2 different translator comments.
+      """
+    And STDERR should not contain:
+      """
+      The string "https://example.com" has 3 different translator comments.
       """
 
   Scenario: Prints a warning for strings without translatable content
@@ -1413,6 +1446,9 @@ Feature: Generate a POT file of a WordPress project
     Then the wp-content/plugins/hello-world directory should exist
     And the wp-content/plugins/hello-world/hello-world.php file should exist
 
+    When I run `date +"%Y"`
+    Then save STDOUT as {YEAR}
+
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     Then STDOUT should be:
@@ -1424,7 +1460,7 @@ Feature: Generate a POT file of a WordPress project
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      # Copyright (C) 2018 John Doe
+      # Copyright (C) {YEAR} John Doe
       # This file is distributed under the same license as the Hello World plugin.
       msgid ""
       msgstr ""

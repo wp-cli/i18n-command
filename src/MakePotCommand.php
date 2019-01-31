@@ -6,6 +6,7 @@ use Gettext\Extractors\Po;
 use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
+use Symfony\Component\Finder\SplFileInfo;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -415,44 +416,53 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @return array
 	 */
 	protected function get_main_file_data() {
-		$stylesheet = sprintf( '%s/style.css', $this->source );
-
-		if ( is_file( $stylesheet ) && is_readable( $stylesheet ) ) {
-			$theme_data = static::get_file_data( $stylesheet, array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
-
-			// Stop when it contains a valid Theme Name header.
-			if ( ! empty( $theme_data['Theme Name'] ) ) {
-				WP_CLI::log( 'Theme stylesheet detected.' );
-				WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet ), 'make-pot' );
-
-				$this->project_type = 'theme';
-
-				return $theme_data;
-			}
-		}
-
-		$plugin_files = [];
-
 		$files = new IteratorIterator( new DirectoryIterator( $this->source ) );
 
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
-			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
-				$plugin_files[] = $file->getRealPath();
+			// wp-content/themes/my-theme/style.css
+			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
+				$theme_data = static::get_file_data( $file->getRealPath(), array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
+
+				// Stop when it contains a valid Theme Name header.
+				if ( ! empty( $theme_data['Theme Name'] ) ) {
+					WP_CLI::log( 'Theme stylesheet detected.' );
+					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() ), 'make-pot' );
+
+					$this->project_type = 'theme';
+
+					return $theme_data;
+				}
 			}
-		}
 
-		foreach ( $plugin_files as $plugin_file ) {
-			$plugin_data = static::get_file_data( $plugin_file, array_combine( $this->get_file_headers( 'plugin' ), $this->get_file_headers( 'plugin' ) ) );
+			// wp-content/themes/my-themes/theme-a/style.css
+			if ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+				$theme_data = static::get_file_data( $file->getRealPath() . '/style.css', array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
 
-			// Stop when we find a file with a valid Plugin Name header.
-			if ( ! empty( $plugin_data['Plugin Name'] ) ) {
-				WP_CLI::log( 'Plugin file detected.' );
-				WP_CLI::debug( sprintf( 'Plugin file: %s', $plugin_file ), 'make-pot' );
+				// Stop when it contains a valid Theme Name header.
+				if ( ! empty( $theme_data['Theme Name'] ) ) {
+					WP_CLI::log( 'Theme stylesheet detected.' );
+					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() . '/style.css' ), 'make-pot' );
 
-				$this->project_type = 'plugin';
+					$this->project_type = 'theme';
 
-				return $plugin_data;
+					return $theme_data;
+				}
+			}
+
+			// wp-content/plugins/my-plugin/my-plugin.php
+			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
+				$plugin_data = static::get_file_data( $file->getRealPath(), array_combine( $this->get_file_headers( 'plugin' ), $this->get_file_headers( 'plugin' ) ) );
+
+				// Stop when we find a file with a valid Plugin Name header.
+				if ( ! empty( $plugin_data['Plugin Name'] ) ) {
+					WP_CLI::log( 'Plugin file detected.' );
+					WP_CLI::debug( sprintf( 'Plugin file: %s', $file->getRealPath() ), 'make-pot' );
+
+					$this->project_type = 'plugin';
+
+					return $plugin_data;
+				}
 			}
 		}
 

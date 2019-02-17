@@ -11,6 +11,7 @@ use WP_CLI_Command;
 use WP_CLI\Utils;
 use DirectoryIterator;
 use IteratorIterator;
+use SplFileInfo; 
 
 class MakeJsonCommand extends WP_CLI_Command {
 	/**

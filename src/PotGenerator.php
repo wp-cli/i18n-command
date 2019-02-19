@@ -63,7 +63,7 @@ class PotGenerator extends PoGenerator {
 			}
 
 			foreach ( $translation->getReferences() as $reference ) {
-				$lines[] = '#: ' . $reference[0] . ( $reference[1] !== null ? ':' . $reference[1] : null );
+				$lines[] = '#: ' . $reference[0] . ( $reference[1] !== null ? ':' . $reference[1] : '' );
 			}
 
 			if ( $translation->hasFlags() ) {
@@ -91,7 +91,7 @@ class PotGenerator extends PoGenerator {
 			$lines[] = '';
 		}
 
-		return implode("\n", $lines);
+		return implode( "\n", $lines );
 	}
 
 	/**

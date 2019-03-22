@@ -2,7 +2,7 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Generators\Po;
+use Gettext\Generators\Po as PoGenerator;
 use Gettext\Translations;
 
 /**
@@ -11,7 +11,7 @@ use Gettext\Translations;
  * The only difference to the existing PO file generator is that this
  * adds some comments at the very beginning of the file.
  */
-class PotGenerator extends Po {
+class PotGenerator extends PoGenerator {
 	protected static $comments_before_headers = [];
 
 	/**
@@ -35,12 +35,105 @@ class PotGenerator extends Po {
 	 * {@parentDoc}.
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$result = '';
+		$lines   = static::$comments_before_headers;
+		$lines[] = 'msgid ""';
+		$lines[] = 'msgstr ""';
 
-		if ( ! empty( static::$comments_before_headers ) ) {
-			$result = implode( "\n", static::$comments_before_headers ) . "\n";
+		$plural_form = $translations->getPluralForms();
+		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : 1;
+
+		foreach ( $translations->getHeaders() as $name => $value ) {
+			$lines[] = sprintf( '"%s: %s\\n"', $name, $value );
 		}
 
-		return $result . parent::toString( $translations, $options );
+		$lines[] = '';
+
+		foreach ( $translations as $translation ) {
+			/** @var \Gettext\Translation $translation */
+			if ( $translation->hasComments() ) {
+				foreach ( $translation->getComments() as $comment ) {
+					$lines[] = '# ' . $comment;
+				}
+			}
+
+			if ( $translation->hasExtractedComments() ) {
+				foreach ( $translation->getExtractedComments() as $comment ) {
+					$lines[] = '#. ' . $comment;
+				}
+			}
+
+			foreach ( $translation->getReferences() as $reference ) {
+				$lines[] = '#: ' . $reference[0] . ( $reference[1] !== null ? ':' . $reference[1] : '' );
+			}
+
+			if ( $translation->hasFlags() ) {
+				$lines[] = '#, ' . implode( ',', $translation->getFlags() );
+			}
+
+			$prefix = $translation->isDisabled() ? '#~ ' : '';
+
+			if ( $translation->hasContext() ) {
+				$lines[] = $prefix . 'msgctxt ' . self::convertString( $translation->getContext() );
+			}
+
+			self::addLines( $lines, $prefix . 'msgid', $translation->getOriginal() );
+
+			if ( $translation->hasPlural() ) {
+				self::addLines( $lines, $prefix . 'msgid_plural', $translation->getPlural() );
+
+				for ( $i = 0; $i <= $plural_size; $i ++ ) {
+					self::addLines( $lines, $prefix . 'msgstr[' . $i . ']', '' );
+				}
+			} else {
+				self::addLines( $lines, $prefix . 'msgstr', $translation->getTranslation() );
+			}
+
+			$lines[] = '';
+		}
+
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * Escapes and adds double quotes to a string.
+	 *
+	 * @param string $string Multiline string.
+	 *
+	 * @return string[]
+	 */
+	private static function multilineQuote($string)	{
+		$lines = explode( "\n", $string );
+		$last  = count( $lines ) - 1;
+
+		foreach ( $lines as $k => $line ) {
+			if ( $k === $last ) {
+				$lines[ $k ] = self::convertString( $line );
+			} else {
+				$lines[ $k ] = self::convertString( $line . "\n" );
+			}
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * Add one or more lines depending whether the string is multiline or not.
+	 *
+	 * @param array  &$lines Array lines should be added to.
+	 * @param string $name   Name of the line, e.g. msgstr or msgid_plural.
+	 * @param string $value  The line to add.
+	 */
+	private static function addLines( array &$lines, $name, $value ) {
+		$newlines = self::multilineQuote( $value );
+
+		if ( count( $newlines ) === 1 ) {
+			$lines[] = $name . ' ' . $newlines[0];
+		} else {
+			$lines[] = $name . ' ""';
+
+			foreach ( $newlines as $line ) {
+				$lines[] = $line;
+			}
+		}
 	}
 }

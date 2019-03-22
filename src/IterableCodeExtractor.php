@@ -176,7 +176,7 @@ trait IterableCodeExtractor {
 			// Or the start of the matcher until the first wildcard matches the start of the path.
 			if (
 				( '' !== $root_relative_path && 0 === strpos( $base, $root_relative_path ) ) ||
-				0 === strpos( $root_relative_path, $base )
+				( '' !== $base && 0 === strpos( $root_relative_path, $base ) )
 			) {
 				return true;
 			}

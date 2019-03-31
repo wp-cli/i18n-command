@@ -518,7 +518,7 @@ Feature: Split PO files into JSON files.
               "messages": {
                   "": {
                       "domain": "messages",
-                      "lang": "de-DE",
+                      "lang": "de_DE",
                       "plural-forms": "nplurals=2; plural=(n != 1);"
                   },
                   "Foo Plugin": [
@@ -528,7 +528,7 @@ Feature: Split PO files into JSON files.
           }
       """
 
-  Scenario: Should fall back to English for invalid locales.
+  Scenario: Should not error for invalid languages
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin-invalid.po file:
       """
@@ -562,5 +562,5 @@ Feature: Split PO files into JSON files.
     And the return code should be 0
     And the foo-plugin/foo-plugin-invalid-56746e49c6485323d16a717754b7447e.json file should contain:
       """
-      "lang":"en"
+      "lang":"invalid"
       """

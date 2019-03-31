@@ -518,7 +518,7 @@ Feature: Split PO files into JSON files.
               "messages": {
                   "": {
                       "domain": "messages",
-                      "lang": "de-DE",
+                      "lang": "de_DE",
                       "plural-forms": "nplurals=2; plural=(n != 1);"
                   },
                   "Foo Plugin": [

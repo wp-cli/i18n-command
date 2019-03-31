@@ -11,7 +11,7 @@ use WP_CLI_Command;
 use WP_CLI\Utils;
 use DirectoryIterator;
 use IteratorIterator;
-use SplFileInfo; 
+use SplFileInfo;
 
 class MakeJsonCommand extends WP_CLI_Command {
 	/**
@@ -156,13 +156,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 					// See https://core.trac.wordpress.org/ticket/45441
 					//$mapping[ $source ]->setDomain( $translations->getDomain() );
 
-					try {
-						$mapping[ $source ]->setLanguage( str_replace( '_', '-', $translations->getLanguage() ) );
-					} catch ( \InvalidArgumentException $e ) {
-						// The locale had an invalid format.
-						$mapping[ $source ]->setLanguage( 'en' );
-					}
-
+					$mapping[ $source ]->setHeader( 'Language', $translations->getLanguage() );
 					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
 
 					$plural_forms = $translations->getPluralForms();

@@ -63,7 +63,7 @@ class PotGenerator extends PoGenerator {
 			}
 
 			foreach ( $translation->getReferences() as $reference ) {
-				$lines[] = '#: ' . $reference[0] . ( $reference[1] !== null ? ':' . $reference[1] : '' );
+				$lines[] = '#: ' . $reference[0] . ( null !== $reference[1] ? ':' . $reference[1] : '' );
 			}
 
 			if ( $translation->hasFlags() ) {
@@ -101,7 +101,7 @@ class PotGenerator extends PoGenerator {
 	 *
 	 * @return string[]
 	 */
-	private static function multilineQuote($string)	{
+	private static function multilineQuote( $string ) {
 		$lines = explode( "\n", $string );
 		$last  = count( $lines ) - 1;
 

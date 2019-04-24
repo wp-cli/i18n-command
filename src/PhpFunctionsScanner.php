@@ -59,8 +59,8 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				$translation = $translation->addReference( $file, $line );
 
 				if ( isset( $function[3] ) ) {
-					foreach ( $function[3] as $extractedComment ) {
-						$translation = $translation->addExtractedComment( $extractedComment );
+					foreach ( $function[3] as $extracted_comment ) {
+						$translation = $translation->addExtractedComment( $extracted_comment );
 					}
 				}
 			}

@@ -153,8 +153,10 @@ class MakeJsonCommand extends WP_CLI_Command {
 			foreach ( $sources as $source ) {
 				if ( ! isset( $mapping[ $source ] ) ) {
 					$mapping[ $source ] = new Translations();
+
+					// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- Provide code that is meant to be used once the bug is fixed.
 					// See https://core.trac.wordpress.org/ticket/45441
-					//$mapping[ $source ]->setDomain( $translations->getDomain() );
+					// $mapping[ $source ]->setDomain( $translations->getDomain() );
 
 					$mapping[ $source ]->setHeader( 'Language', $translations->getLanguage() );
 					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );

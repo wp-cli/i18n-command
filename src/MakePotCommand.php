@@ -897,7 +897,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @return string
 	 */
-	protected static function _cleanup_header_comment( $str ) {
+	protected static function _cleanup_header_comment( $str ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Not changing because third-party commands might use/extend.
 		return trim( preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str ) );
 	}
 }

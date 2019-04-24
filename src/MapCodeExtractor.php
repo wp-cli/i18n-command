@@ -33,13 +33,13 @@ final class MapCodeExtractor extends JsCode {
 		try {
 			$options += static::$options;
 
-			$mapObject = json_decode( $string );
+			$map_object = json_decode( $string );
 
-			if ( ! isset( $mapObject->sourcesContent ) || ! is_array( $mapObject->sourcesContent ) ) {
+			if ( ! isset( $map_object->sourcesContent ) || ! is_array( $map_object->sourcesContent ) ) {
 				return;
 			}
 
-			$string = implode( "\n", $mapObject->sourcesContent );
+			$string = implode( "\n", $map_object->sourcesContent );
 
 			$functions = new JsFunctionsScanner( $string );
 

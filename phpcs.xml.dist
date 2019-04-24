@@ -60,11 +60,13 @@
 		<exclude-pattern>*/src/IterableCodeExtractor\.php$</exclude-pattern>
 	</rule>
 
-	<!-- Whitelist variable names for classes that extend a PSR-2 package. -->
+	<!-- Whitelist property name for a a JSON-decoded object. -->
 	<rule ref="WordPress.NamingConventions.ValidVariableName">
-		<exclude-pattern>*/src/JsFunctionsScanner\.php$</exclude-pattern>
-		<exclude-pattern>*/src/PhpFunctionsScanner\.php$</exclude-pattern>
-		<exclude-pattern>*/src/MapCodeExtractor\.php$</exclude-pattern>
+		<properties>
+			<property name="customPropertiesWhitelist" type="array">
+				<element value="sourcesContent"/>
+			</property>
+		</properties>
 	</rule>
 
 	<!-- Allow for JavaScript format examples to be provided in comments.

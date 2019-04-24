@@ -15,7 +15,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @var string|false|array
 	 */
-	private $extractComments = false;
+	private $extract_comments = false;
 
 	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).
@@ -23,14 +23,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * @param mixed $tag
 	 */
 	public function enableCommentsExtraction( $tag = '' ) {
-		$this->extractComments = $tag;
+		$this->extract_comments = $tag;
 	}
 
 	/**
 	 * Disable comments extraction.
 	 */
 	public function disableCommentsExtraction() {
-		$this->extractComments = false;
+		$this->extract_comments = false;
 	}
 
 	/**
@@ -43,7 +43,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
-			'comments'   => false !== $this->extractComments,
+			'comments'   => false !== $this->extract_comments,
 			'jsx'        => true,
 		];
 		$ast           = Peast::latest( $this->code, $peast_options )->parse();
@@ -140,7 +140,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						}
 
 						$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
-						$prefixes       = array_filter( (array) $this->extractComments );
+						$prefixes       = array_filter( (array) $this->extract_comments );
 
 						if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
 							$translation->addExtractedComment( $parsed_comment->getComment() );

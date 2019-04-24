@@ -55,4 +55,24 @@
 		</properties>
 	</rule>
 
+	<!-- Whitelist method names for classes that extend a PSR-2 package. -->
+	<rule ref="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid">
+		<exclude-pattern>*/src/IterableCodeExtractor\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Whitelist variable names for classes that extend a PSR-2 package. -->
+	<rule ref="WordPress.NamingConventions.ValidVariableName">
+		<exclude-pattern>*/src/JsFunctionsScanner\.php$</exclude-pattern>
+		<exclude-pattern>*/src/PhpFunctionsScanner\.php$</exclude-pattern>
+		<exclude-pattern>*/src/MapCodeExtractor\.php$</exclude-pattern>
+	</rule>
+
+	<!-- Allow for JavaScript format examples to be provided in comments.
+		 See: https://github.com/squizlabs/PHP_CodeSniffer/wiki/Customisable-Sniff-Properties#squizphpcommentedoutcode -->
+	<rule ref="Squiz.PHP.CommentedOutCode">
+		<properties>
+			<property name="maxPercentage" value="45"/>
+		</properties>
+	</rule>
+
 </ruleset>

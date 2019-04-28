@@ -1638,6 +1638,34 @@ Feature: Generate a POT file of a WordPress project
       msgid "wrong-domain"
       """
 
+  Scenario: Ignores dynamic import in JavaScript file.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      // This should not trigger a compiler error
+      import('./some-file.js').then(a => console.log(a))
+      __( '__', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "__"
+      """
+
   Scenario: Extract translator comments from JavaScript file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

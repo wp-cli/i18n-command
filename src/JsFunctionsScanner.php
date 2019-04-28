@@ -37,11 +37,11 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * {@inheritdoc}
 	 */
 	public function saveGettextFunctions( Translations $translations, array $options ) {
-        $code = $this->code;
-        // See https://github.com/mck89/peast/issues/7
+		$code = $this->code;
+		// See https://github.com/mck89/peast/issues/7
 		// Temporary workaround to fix dynamic imports. The τ is a greek letter.
-        // This will trick the parser into thinking that it is a normal method call.
-        $code = preg_replace( "/import(\\s*\\()/", "imporτ$1", $code );
+		// This will trick the parser into thinking that it is a normal method call.
+		$code = preg_replace( '/import(\\s*\\()/', 'imporτ$1', $code );
 
 		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,

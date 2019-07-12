@@ -494,6 +494,8 @@ Feature: Generate a POT file of a WordPress project
       """
 
   Scenario: Extract translator comments
+    Given I run `echo "\t"`
+    And save STDOUT as {TAB}
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
@@ -524,11 +526,10 @@ Feature: Generate a POT file of a WordPress project
 
       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g( __( 'bubu', 'foo-plugin' ) );
 
-      	/*
-      	 * translators: this comment block is intend with a tab and should get extracted too.
-      	 */
-      __( 'yolo', 'foo-plugin' );
-
+      {TAB}/*
+      {TAB} * translators: this comment block is intend with a tab and should get extracted too.
+      {TAB} */
+      {TAB}__( 'yolo', 'foo-plugin' );
       """
 
     When I run `wp i18n make-pot foo-plugin`

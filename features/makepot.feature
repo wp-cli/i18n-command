@@ -520,9 +520,15 @@ Feature: Generate a POT file of a WordPress project
        */
        __( 'off', 'foo-plugin' );
 
-       /* translators: this should get extracted. */ $foo = __( 'baba', 'foo-plugin' );
+      /* translators: this should get extracted. */ $foo = __( 'baba', 'foo-plugin' );
 
-       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g ( __( 'bubu', 'foo-plugin' ) );
+      /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g( __( 'bubu', 'foo-plugin' ) );
+
+      	/*
+      	 * translators: this comment block is intend with a tab and should get extracted too.
+      	 */
+      __( 'yolo', 'foo-plugin' );
+
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -567,6 +573,10 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       #. translators: this should get extracted too.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this comment block is intend with a tab and should get extracted too.
       """
 
   Scenario: Generates a POT file for a child theme with no other files

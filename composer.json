@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "gettext/gettext": "^4.6",
+        "gettext/gettext": "dev-master#68d9f76f709a12ad7c3159d0acb08f9cad159426",
         "mck89/peast": "^1.8",
         "wp-cli/wp-cli": "^2"
     },

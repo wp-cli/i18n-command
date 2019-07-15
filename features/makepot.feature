@@ -527,7 +527,7 @@ Feature: Generate a POT file of a WordPress project
       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g( __( 'bubu', 'foo-plugin' ) );
 
       {TAB}/*
-      {TAB} * translators: this comment block is intend with a tab and should get extracted too.
+      {TAB} * translators: this comment block is indented with a tab and should get extracted too.
       {TAB} */
       {TAB}__( 'yolo', 'foo-plugin' );
       """
@@ -577,7 +577,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      #. translators: this comment block is intend with a tab and should get extracted too.
+      #. translators: this comment block is indented with a tab and should get extracted too.
       """
 
   Scenario: Generates a POT file for a child theme with no other files

@@ -494,6 +494,8 @@ Feature: Generate a POT file of a WordPress project
       """
 
   Scenario: Extract translator comments
+    Given I run `echo "\t"`
+    And save STDOUT as {TAB}
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
@@ -520,9 +522,14 @@ Feature: Generate a POT file of a WordPress project
        */
        __( 'off', 'foo-plugin' );
 
-       /* translators: this should get extracted. */ $foo = __( 'baba', 'foo-plugin' );
+      /* translators: this should get extracted. */ $foo = __( 'baba', 'foo-plugin' );
 
-       /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g ( __( 'bubu', 'foo-plugin' ) );
+      /* translators: boo */ /* translators: this should get extracted too. */ /* some other comment */ $bar = g( __( 'bubu', 'foo-plugin' ) );
+
+      {TAB}/*
+      {TAB} * translators: this comment block is indented with a tab and should get extracted too.
+      {TAB} */
+      {TAB}__( 'yolo', 'foo-plugin' );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -567,6 +574,10 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       #. translators: this should get extracted too.
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: this comment block is indented with a tab and should get extracted too.
       """
 
   Scenario: Generates a POT file for a child theme with no other files
@@ -1664,6 +1675,48 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "__"
+      """
+
+  Scenario: Parse .js and .jsx files for javascript translations
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( 'js', 'foo-plugin' );
+      """
+    And a foo-plugin/foo-plugin.jsx file:
+      """
+      __( 'jsx', 'foo-plugin' );
+      """
+    And a foo-plugin/foo-plugin.whatever file:
+      """
+      __( 'whatever', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "js"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "jsx"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgid "whatever"
       """
 
   Scenario: Extract translator comments from JavaScript file

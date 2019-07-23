@@ -234,6 +234,8 @@ trait IterableCodeExtractor {
 			$filtered_files[] = Utils\normalize_path( $file->getPathname() );
 		}
 
+		sort( $filtered_files, SORT_NATURAL | SORT_FLAG_CASE );
+
 		return $filtered_files;
 	}
 }

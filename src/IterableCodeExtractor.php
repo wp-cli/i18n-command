@@ -159,6 +159,7 @@ trait IterableCodeExtractor {
 
 		/** @var string $root_relative_path */
 		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
+		$root_relative_path = ltrim( $root_relative_path, '/' );
 
 		foreach ( $matchers as $path_or_file ) {
 			// If the matcher contains no wildcards and the path matches the start of the matcher.

@@ -2160,6 +2160,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should be empty
 
+  @less-than-php-7.3
   Scenario: Ignore strings that are part of the exception list
     Given an empty directory
     And a exception.pot file:

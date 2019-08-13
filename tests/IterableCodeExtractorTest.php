@@ -120,7 +120,32 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 			static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php',
 			static::$base . 'foo/bar/foofoo/included.js',
 			static::$base . 'hoge/should_NOT_be_included.js',
+			static::$base . 'vendor/vendor-file.php',
 		);
 		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_can_include_file_in_excluded_folder() {
+		$includes = [ 'vendor/vendor-file.php' ];
+		$excludes = [ 'vendor' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = static::$base . 'vendor/vendor-file.php';
+		$this->assertContains( $expected, $result );
+	}
+
+	public function test_can_include_file_in_excluded_folder_with_leading_slash() {
+		$includes = [ '/vendor/vendor-file.php' ];
+		$excludes = [ 'vendor' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = static::$base . 'vendor/vendor-file.php';
+		$this->assertContains( $expected, $result );
+	}
+
+	public function test_can_include_file_in_excluded_folder_by_wildcard() {
+		$includes = [ 'vendor/**' ];
+		$excludes = [ 'vendor' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = static::$base . 'vendor/vendor-file.php';
+		$this->assertContains( $expected, $result );
 	}
 }

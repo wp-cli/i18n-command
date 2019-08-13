@@ -205,6 +205,10 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
+					// Normalize include and exclude paths.
+					$include = array_map( 'static::trim_leading_slash', $include );
+					$exclude = array_map( 'static::trim_leading_slash', $exclude );
+
 					// If no $include is passed everything gets the weakest possible matching score.
 					$inclusion_score = empty( $include ) ? 0.1 : static::calculateMatchScore( $file, $include );
 					$exclusion_score = static::calculateMatchScore( $file, $exclude );
@@ -214,12 +218,12 @@ trait IterableCodeExtractor {
 						return true;
 					}
 
-					if ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) {
+					if ( ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) && $iterator->hasChildren() ) {
 						// Always include directories that may have matching children even if they are excluded.
-						return $iterator->hasChildren() && static::containsMatchingChildren( $file, $include );
+						return static::containsMatchingChildren( $file, $include );
 					}
 
-					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );
+					return ( ( $inclusion_score >= $exclusion_score ) && $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );
 				}
 			),
 			RecursiveIteratorIterator::CHILD_FIRST
@@ -237,5 +241,15 @@ trait IterableCodeExtractor {
 		sort( $filtered_files, SORT_NATURAL | SORT_FLAG_CASE );
 
 		return $filtered_files;
+	}
+
+	/**
+	 * Trim leading slash from a path.
+	 *
+	 * @param string $path Path to trim.
+	 * @return string Trimmed path.
+	 */
+	private static function trim_leading_slash( $path ) {
+		return ltrim( $path, '/' );
 	}
 }

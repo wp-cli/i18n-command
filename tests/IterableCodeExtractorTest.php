@@ -111,6 +111,19 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains( $expected, $result );
 	}
 
+	public function test_can_return_all_directory_files_sorted() {
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ '*' ], [], [ 'php', 'js' ] );
+		$expected = array(
+			static::$base . 'baz/includes/should_be_included.js',
+			static::$base . 'foo-plugin/foo-plugin.php',
+			static::$base . 'foo/bar/excluded/ignored.js',
+			static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php',
+			static::$base . 'foo/bar/foofoo/included.js',
+			static::$base . 'hoge/should_NOT_be_included.js',
+		);
+		$this->assertEquals( $expected, $result );
+	}
+
 	public function test_can_include_file_in_excluded_folder() {
 		$includes = [ 'vendor/vendor-file.php' ];
 		$excludes = [ 'vendor' ];

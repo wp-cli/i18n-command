@@ -159,9 +159,10 @@ trait IterableCodeExtractor {
 
 		/** @var string $root_relative_path */
 		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
-		$root_relative_path = ltrim( $root_relative_path, '/' );
 
 		foreach ( $matchers as $path_or_file ) {
+			$path_or_file = ltrim( $path_or_file, '/' );
+
 			// If the matcher contains no wildcards and the path matches the start of the matcher.
 			if (
 				'' !== $root_relative_path &&
@@ -205,19 +206,18 @@ trait IterableCodeExtractor {
 				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
-
 					// If no $include is passed everything gets the weakest possible matching score.
 					$inclusion_score = empty( $include ) ? 0.1 : static::calculateMatchScore( $file, $include );
 					$exclusion_score = static::calculateMatchScore( $file, $exclude );
 
 					// Always include directories that aren't excluded.
-					if ( 0 === $exclusion_score && $iterator->hasChildren() ) {
+					if ( $file->isDir() && 0 === $exclusion_score ) {
 						return true;
 					}
 
-					if ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) {
+					if ( $file->isDir() && ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) ) {
 						// Always include directories that may have matching children even if they are excluded.
-						return $iterator->hasChildren() && static::containsMatchingChildren( $file, $include );
+						return static::containsMatchingChildren( $file, $include );
 					}
 
 					return ( $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );

@@ -120,6 +120,7 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 			static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php',
 			static::$base . 'foo/bar/foofoo/included.js',
 			static::$base . 'hoge/should_NOT_be_included.js',
+			static::$base . 'vendor/vendor-file.php',
 		);
 		$this->assertEquals( $expected, $result );
 	}

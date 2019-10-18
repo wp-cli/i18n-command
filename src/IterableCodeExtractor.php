@@ -205,6 +205,10 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
+					if ( $file->isFile() && ! in_array( $file->getExtension(), $extensions, true ) ) {
+						return false;
+					}
+
 					// Normalize include and exclude paths.
 					$include = array_map( 'static::trim_leading_slash', $include );
 					$exclude = array_map( 'static::trim_leading_slash', $exclude );
@@ -223,7 +227,7 @@ trait IterableCodeExtractor {
 						return static::containsMatchingChildren( $file, $include );
 					}
 
-					return ( ( $inclusion_score >= $exclusion_score ) && $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );
+					return $inclusion_score >= $exclusion_score;
 				}
 			),
 			RecursiveIteratorIterator::CHILD_FIRST

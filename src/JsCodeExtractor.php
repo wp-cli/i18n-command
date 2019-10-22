@@ -28,6 +28,8 @@ final class JsCodeExtractor extends JsCode {
 		try {
 			$options += static::$options;
 
+			WP_CLI::debug( "Parsing file {$options['file']}" );
+
 			$functions = new JsFunctionsScanner( $string );
 
 			$functions->enableCommentsExtraction( $options['extractComments'] );

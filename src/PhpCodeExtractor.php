@@ -46,12 +46,7 @@ final class PhpCodeExtractor extends PhpCode {
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$options += static::$options;
 
-		WP_CLI::debug(
-			sprintf(
-				'Parsing file %s',
-				$options['file']
-			)
-		);
+		WP_CLI::debug( "Parsing file {$options['file']}" );
 
 		$functions = new PhpFunctionsScanner( $string );
 

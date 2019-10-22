@@ -205,7 +205,7 @@ trait IterableCodeExtractor {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
-					if ( $file->isFile() && ! in_array( $file->getExtension(), $extensions, true ) ) {
+					if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
 						return false;
 					}
 

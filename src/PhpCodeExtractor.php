@@ -2,9 +2,9 @@
 
 namespace WP_CLI\I18n;
 
+use Exception;
 use Gettext\Extractors\PhpCode;
 use Gettext\Translations;
-use RecursiveIteratorIterator;
 use WP_CLI;
 
 final class PhpCodeExtractor extends PhpCode {
@@ -40,15 +40,24 @@ final class PhpCodeExtractor extends PhpCode {
 		],
 	];
 
+	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
+
 	/**
 	 * {@inheritdoc}
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		$options += static::$options;
+		WP_CLI::debug( "Parsing file {$options['file']}" );
 
-		$functions = new PhpFunctionsScanner( $string );
-
-		$functions->enableCommentsExtraction( $options['extractComments'] );
-		$functions->saveGettextFunctions( $translations, $options );
+		try {
+			static::fromStringMultiple( $string, [ $translations ], $options );
+		} catch ( Exception $exception ) {
+			WP_CLI::debug(
+				sprintf(
+					'Could not parse file %1$s: %2$s',
+					$options['file'],
+					$exception->getMessage()
+				)
+			);
+		}
 	}
 }

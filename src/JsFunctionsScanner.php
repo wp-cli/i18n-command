@@ -2,7 +2,6 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Translations;
 use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
 use Gettext\Utils\ParsedComment;
 use Peast\Peast;
@@ -10,6 +9,7 @@ use Peast\Syntax\Node;
 use Peast\Traverser;
 
 final class JsFunctionsScanner extends GettextJsFunctionsScanner {
+
 	/**
 	 * If not false, comments will be extracted.
 	 *
@@ -36,7 +36,13 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function saveGettextFunctions( Translations $translations, array $options ) {
+	public function saveGettextFunctions( $translations, array $options ) {
+		// Ignore multiple translations for now.
+		// @todo Add proper support for multiple translations.
+		if ( is_array( $translations ) ) {
+			$translations = $translations[0];
+		}
+
 		$code = $this->code;
 		// See https://github.com/mck89/peast/issues/7
 		// Temporary workaround to fix dynamic imports. The τ is a greek letter.
@@ -91,9 +97,11 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					$all_comments[] = $comment;
 				}
 
-				$context = null;
-				$plural  = null;
-				$args    = [];
+				$domain   = null;
+				$original = null;
+				$context  = null;
+				$plural   = null;
+				$args     = [];
 
 				/** @var Node\Node $argument */
 				foreach ( $node->getArguments() as $argument ) {
@@ -130,28 +138,34 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						break;
 				}
 
-				if ( '' !== (string) $original && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
-					$translation = $translations->insert( $context, $original, $plural );
-					$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
+				if ( '' === (string) $original ) {
+					return;
+				}
 
-					/** @var Node\Comment $comment */
-					foreach ( $all_comments as $comment ) {
-						// Comments should be before the translation.
-						if ( ! $this->commentPrecedesNode( $comment, $node ) ) {
-							continue;
-						}
+				if ( $domain !== $translations->getDomain() && null !== $translations->getDomain() ) {
+					return;
+				}
 
-						$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
-						$prefixes       = array_filter( (array) $this->extract_comments );
+				$translation = $translations->insert( $context, $original, $plural );
+				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
 
-						if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-							$translation->addExtractedComment( $parsed_comment->getComment() );
-						}
+				/** @var Node\Comment $comment */
+				foreach ( $all_comments as $comment ) {
+					// Comments should be before the translation.
+					if ( ! $this->commentPrecedesNode( $comment, $node ) ) {
+						continue;
 					}
 
-					if ( isset( $parsed_comment ) ) {
-						$all_comments = [];
+					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
+					$prefixes       = array_filter( (array) $this->extract_comments );
+
+					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
+						$translation->addExtractedComment( $parsed_comment->getComment() );
 					}
+				}
+
+				if ( isset( $parsed_comment ) ) {
+					$all_comments = [];
 				}
 			}
 		);

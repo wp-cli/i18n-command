@@ -41,6 +41,8 @@ final class MapCodeExtractor extends JsCode {
 
 			$string = implode( "\n", $map_object->sourcesContent );
 
+			WP_CLI::debug( "Parsing file {$options['file']}" );
+
 			$functions = new JsFunctionsScanner( $string );
 
 			$functions->enableCommentsExtraction( $options['extractComments'] );

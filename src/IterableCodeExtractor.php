@@ -118,7 +118,7 @@ trait IterableCodeExtractor {
 			$base_score = count(
 				array_filter(
 					explode( '/', $path_or_file ),
-					function ( $component ) {
+					static function ( $component ) {
 						return '*' !== $component;
 					}
 				)
@@ -201,7 +201,7 @@ trait IterableCodeExtractor {
 		$files = new RecursiveIteratorIterator(
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::UNIX_PATHS ),
-				function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
+				static function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 

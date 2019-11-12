@@ -364,7 +364,7 @@ class MakePotCommand extends WP_CLI_Command {
 				$exceptions,
 				function ( $exception ) {
 					if ( ! file_exists( $exception ) ) {
-						WP_CLI::warning( sprintf( 'Invalid file provided to --except: %s', $exception ) );
+						WP_CLI::warning( sprintf( 'Invalid file provided to --subtract: %s', $exception ) );
 
 						return false;
 					}

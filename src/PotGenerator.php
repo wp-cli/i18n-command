@@ -101,7 +101,7 @@ class PotGenerator extends PoGenerator {
 	 *
 	 * @return string[]
 	 */
-	private static function multilineQuote( $string ) {
+	protected static function multilineQuote( $string ) {
 		$lines = explode( "\n", $string );
 		$last  = count( $lines ) - 1;
 
@@ -123,7 +123,7 @@ class PotGenerator extends PoGenerator {
 	 * @param string $name   Name of the line, e.g. msgstr or msgid_plural.
 	 * @param string $value  The line to add.
 	 */
-	private static function addLines( array &$lines, $name, $value ) {
+	protected static function addLines( array &$lines, $name, $value ) {
 		$newlines = self::multilineQuote( $value );
 
 		if ( count( $newlines ) === 1 ) {

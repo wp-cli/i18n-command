@@ -743,7 +743,7 @@ class MakePotCommand extends WP_CLI_Command {
 			if ( isset( $this->main_file_data['License'] ) ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
-					date( 'Y' ),
+					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 					$this->main_file_data['Author'],
 					$this->main_file_data['License']
 				);
@@ -751,7 +751,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			return sprintf(
 				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s theme.",
-				date( 'Y' ),
+				date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 				$this->main_file_data['Author'],
 				$this->main_file_data['Theme Name']
 			);
@@ -761,7 +761,7 @@ class MakePotCommand extends WP_CLI_Command {
 			if ( isset( $this->main_file_data['License'] ) ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
-					date( 'Y' ),
+					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 					$this->main_file_data['Author'],
 					$this->main_file_data['License']
 				);
@@ -769,7 +769,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			return sprintf(
 				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s plugin.",
-				date( 'Y' ),
+				date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 				$this->main_file_data['Author'],
 				$this->main_file_data['Plugin Name']
 			);

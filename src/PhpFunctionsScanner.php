@@ -2,14 +2,20 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Translations;
 use Gettext\Utils\PhpFunctionsScanner as GettextPhpFunctionsScanner;
 
 class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
+
 	/**
 	 * {@inheritdoc}
 	 */
-	public function saveGettextFunctions( Translations $translations, array $options ) {
+	public function saveGettextFunctions( $translations, array $options ) {
+		// Ignore multiple translations for now.
+		// @todo Add proper support for multiple translations.
+		if ( is_array( $translations ) ) {
+			$translations = $translations[0];
+		}
+
 		$functions = $options['functions'];
 		$file      = $options['file'];
 
@@ -20,8 +26,10 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				continue;
 			}
 
-			$context = null;
-			$plural  = null;
+			$original = null;
+			$domain   = null;
+			$context  = null;
+			$plural   = null;
 
 			switch ( $functions[ $name ] ) {
 				case 'text_domain':
@@ -54,14 +62,20 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );
 			}
 
-			if ( '' !== (string) $original && ( $domain === $translations->getDomain() || null === $translations->getDomain() ) ) {
-				$translation = $translations->insert( $context, $original, $plural );
-				$translation = $translation->addReference( $file, $line );
+			if ( '' === (string) $original ) {
+				continue;
+			}
 
-				if ( isset( $function[3] ) ) {
-					foreach ( $function[3] as $extracted_comment ) {
-						$translation = $translation->addExtractedComment( $extracted_comment );
-					}
+			if ( $domain !== $translations->getDomain() && null !== $translations->getDomain() ) {
+				continue;
+			}
+
+			$translation = $translations->insert( $context, $original, $plural );
+			$translation = $translation->addReference( $file, $line );
+
+			if ( isset( $function[3] ) ) {
+				foreach ( $function[3] as $extracted_comment ) {
+					$translation = $translation->addExtractedComment( $extracted_comment );
 				}
 			}
 		}

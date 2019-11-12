@@ -65,6 +65,7 @@
 		<properties>
 			<property name="customPropertiesWhitelist" type="array">
 				<element value="sourcesContent"/>
+				<element value="functionsScannerClass"/>
 			</property>
 		</properties>
 	</rule>
@@ -75,6 +76,11 @@
 		<properties>
 			<property name="maxPercentage" value="45"/>
 		</properties>
+	</rule>
+
+	<!-- Whitelist method names for classes that extend a PSR-2 package. -->
+	<rule ref="WordPress.DateTime.RestrictedFunctions.date_date">
+		<exclude-pattern>*/src/MakePotCommand\.php$</exclude-pattern>
 	</rule>
 
 </ruleset>

@@ -826,7 +826,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @return string|false Version number on success, false otherwise.
 	 */
-	private function get_wp_version() {
+	protected function get_wp_version() {
 		$version_php = $this->source . '/wp-includes/version.php';
 		if ( ! file_exists( $version_php ) || ! is_readable( $version_php ) ) {
 			return false;

@@ -2,6 +2,7 @@
 
 namespace WP_CLI\I18n;
 
+use Exception;
 use Gettext\Extractors\JsCode;
 use Gettext\Translations;
 use Peast\Syntax\Exception as PeastException;
@@ -21,27 +22,46 @@ final class JsCodeExtractor extends JsCode {
 		],
 	];
 
+	protected static $functionsScannerClass = 'WP_CLI\I18n\JsFunctionsScanner';
+
 	/**
-	 * {@inheritdoc}
+	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
+		WP_CLI::debug( "Parsing file {$options['file']}" );
+
 		try {
-			$options += static::$options;
-
-			$functions = new JsFunctionsScanner( $string );
-
-			$functions->enableCommentsExtraction( $options['extractComments'] );
-			$functions->saveGettextFunctions( $translations, $options );
-		} catch ( PeastException $e ) {
+			static::fromStringMultiple( $string, [ $translations ], $options );
+		} catch ( PeastException $exception ) {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s (line %3$d, column %4$d)',
 					$options['file'],
-					$e->getMessage(),
-					$e->getPosition()->getLine(),
-					$e->getPosition()->getColumn()
+					$exception->getMessage(),
+					$exception->getPosition()->getLine(),
+					$exception->getPosition()->getColumn()
+				)
+			);
+		} catch ( Exception $exception ) {
+			WP_CLI::debug(
+				sprintf(
+					'Could not parse file %1$s: %2$s',
+					$options['file'],
+					$exception->getMessage()
 				)
 			);
 		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static function fromStringMultiple( $string, array $translations, array $options = [] ) {
+		$options += static::$options;
+
+		/** @var JsFunctionsScanner $functions */
+		$functions = new static::$functionsScannerClass( $string );
+		$functions->enableCommentsExtraction( $options['extractComments'] );
+		$functions->saveGettextFunctions( $translations, $options );
 	}
 }

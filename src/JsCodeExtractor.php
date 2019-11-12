@@ -5,7 +5,6 @@ namespace WP_CLI\I18n;
 use Exception;
 use Gettext\Extractors\JsCode;
 use Gettext\Translations;
-use Gettext\Utils\FunctionsScanner;
 use Peast\Syntax\Exception as PeastException;
 use WP_CLI;
 
@@ -23,18 +22,17 @@ final class JsCodeExtractor extends JsCode {
 		],
 	];
 
-    protected static $functionsScannerClass = 'WP_CLI\I18n\JsFunctionsScanner';
+	protected static $functionsScannerClass = 'WP_CLI\I18n\JsFunctionsScanner';
 
-    /**
-     * @inheritdoc
-     */
-    public static function fromString($string, Translations $translations, array $options = [])
-    {
-    	WP_CLI::debug( "Parsing file {$options['file']}" );
+	/**
+	 * @inheritdoc
+	 */
+	public static function fromString( $string, Translations $translations, array $options = [] ) {
+		WP_CLI::debug( "Parsing file {$options['file']}" );
 
-    	try {
-            static::fromStringMultiple($string, [$translations], $options);
-	    } catch ( PeastException $exception ) {
+		try {
+			static::fromStringMultiple( $string, [ $translations ], $options );
+		} catch ( PeastException $exception ) {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s (line %3$d, column %4$d)',
@@ -44,7 +42,7 @@ final class JsCodeExtractor extends JsCode {
 					$exception->getPosition()->getColumn()
 				)
 			);
-	    } catch ( Exception $exception ) {
+		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s',
@@ -52,8 +50,8 @@ final class JsCodeExtractor extends JsCode {
 					$exception->getMessage()
 				)
 			);
-	    }
-    }
+		}
+	}
 
 	/**
 	 * @inheritDoc

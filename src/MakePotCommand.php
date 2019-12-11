@@ -488,6 +488,7 @@ class MakePotCommand extends WP_CLI_Command {
 					'Author',
 					'Author URI',
 					'Version',
+					'License',
 					'Domain Path',
 					'Text Domain',
 				];

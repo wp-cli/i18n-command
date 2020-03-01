@@ -231,8 +231,17 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			// Matches unminified webpack statements:
 			// Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["__"])( "translation" );
 			if ( 'Literal' === $property->getType() ) {
+				$name = $property->getValue();
+
+				// Matches mangled webpack statement:
+				// Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__[/* __ */ "a"])( "translation" );
+				$leading_property_comments = $property->getLeadingComments();
+				if ( count( $leading_property_comments ) === 1 && $leading_property_comments[0]->getKind() === 'multiline' ) {
+					$name = trim( $leading_property_comments[0]->getText() );
+				}
+
 				return [
-					'name'     => $property->getValue(),
+					'name'     => $name,
 					'comments' => $callee->getCallee()->getLeadingComments(),
 				];
 			}

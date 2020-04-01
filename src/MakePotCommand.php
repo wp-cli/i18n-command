@@ -275,7 +275,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->source       = realpath( $args[0] );
 		$this->slug         = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js      = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->skip_php      = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
+		$this->skip_php     = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
 		$this->skip_audit   = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
 		$this->headers      = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
 		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );

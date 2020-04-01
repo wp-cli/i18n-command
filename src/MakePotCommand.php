@@ -57,6 +57,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var bool
 	 */
+	protected $skip_js = false;
+
+	/**
+	 * @var bool
+	 */
 	protected $skip_php = false;
 
 	/**

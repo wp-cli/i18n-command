@@ -2016,7 +2016,7 @@ Feature: Generate a POT file of a WordPress project
       msgid "Hello World from JavaScript"
       """
 
-Scenario: Skips  JavaScript file and PHP file altogether
+  Scenario: Skips  JavaScript file and PHP file altogether
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
@@ -2032,7 +2032,7 @@ Scenario: Skips  JavaScript file and PHP file altogether
       __( 'Hello World from JavaScript', 'foo-plugin' );
       """
 
-    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --skip-php`
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --skip-js --skip-php`
     Then STDOUT should be:
       """
       Plugin file detected.

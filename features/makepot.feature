@@ -1991,8 +1991,6 @@ Feature: Generate a POT file of a WordPress project
        */
 
        __( 'Hello World from PHP', 'foo-plugin' );
-
-
       """
     And a foo-plugin/foo-plugin.js file:
       """
@@ -2028,8 +2026,6 @@ Scenario: Skips  JavaScript file and PHP file altogether
        */
 
        __( 'Hello World from PHP', 'foo-plugin' );
-
-
       """
     And a foo-plugin/foo-plugin.js file:
       """

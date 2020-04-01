@@ -62,6 +62,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var bool
 	 */
+	protected $skip_php = false;
+
+	/**
+	 * @var bool
+	 */
 	protected $skip_audit = false;
 
 	/**
@@ -190,6 +195,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
+	 * [--skip-php]
+	 * : Skips PHP string extraction.
+	 *
 	 * [--skip-audit]
 	 * : Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an
 	 * automated environment.
@@ -267,6 +275,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->source       = realpath( $args[0] );
 		$this->slug         = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js      = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->skip_php     = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
 		$this->skip_audit   = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
 		$this->headers      = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
 		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
@@ -560,14 +569,16 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		try {
-			$options = [
-				// Extract 'Template Name' headers in theme files.
-				'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),
-				'include'            => $this->include,
-				'exclude'            => $this->exclude,
-				'extensions'         => [ 'php' ],
-			];
-			PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
+			if ( ! $this->skip_php ) {
+				$options = [
+					// Extract 'Template Name' headers in theme files.
+					'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),
+					'include'            => $this->include,
+					'exclude'            => $this->exclude,
+					'extensions'         => [ 'php' ],
+				];
+				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
+			}
 
 			if ( ! $this->skip_js ) {
 				JsCodeExtractor::fromDirectory(

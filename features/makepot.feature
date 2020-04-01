@@ -1981,6 +1981,76 @@ Feature: Generate a POT file of a WordPress project
       msgid "Hello World"
       """
 
+  Scenario: Skips PHP file altogether
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+
+       __( 'Hello World from PHP', 'foo-plugin' );
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( 'Hello World from JavaScript', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --skip-php`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Hello World from PHP"
+      """
+   And the foo-plugin.pot file should contain:
+      """
+      msgid "Hello World from JavaScript"
+      """
+
+  Scenario: Skips  JavaScript file and PHP file altogether
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+
+       __( 'Hello World from PHP', 'foo-plugin' );
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      __( 'Hello World from JavaScript', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --skip-js --skip-php`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Hello World from PHP"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Hello World from JavaScript"
+      """
+
   Scenario: Extract all strings regardless of text domain
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

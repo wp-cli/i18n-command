@@ -570,7 +570,6 @@ class MakePotCommand extends WP_CLI_Command {
 
 		try {
 			if ( ! $this->skip_php ) {
-				WP_CLI::error('inside if');
 				$options = [
 					// Extract 'Template Name' headers in theme files.
 					'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),

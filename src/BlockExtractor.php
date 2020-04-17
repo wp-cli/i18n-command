@@ -23,7 +23,8 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		WP_CLI::debug( "Parsing file {$options['file']}" );
+		$file = $options['file'];
+		WP_CLI::debug( "Parsing file {$file}" );
 
 		$file_data = json_decode( $string, true );
 
@@ -31,7 +32,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: error code %2$s',
-					$options['file'],
+					$file,
 					json_last_error()
 				)
 			);
@@ -52,7 +53,8 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			}
 
 			foreach ( (array) $original as $msg ) {
-				$translations->insert( sprintf( 'block %s', $key ), $msg );
+				$translation = $translations->insert( sprintf( 'block %s', $key ), $msg );
+				$translation->addReference( $file );
 			}
 		}
 	}

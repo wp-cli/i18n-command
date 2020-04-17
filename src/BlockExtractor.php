@@ -42,7 +42,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 		$domain = isset( $file_data['textDomain'] ) ? $file_data['textDomain'] : null;
 
 		// Allow missing domain, but skip if they don't match.
-		if ( $domain !== null && $domain !== $translations->getDomain()) {
+		if ( null !== $domain && $domain !== $translations->getDomain() ) {
 			return;
 		}
 

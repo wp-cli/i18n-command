@@ -23,12 +23,20 @@ trait IterableCodeExtractor {
 	 * @param array        $options      {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
-	 *     @type bool $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type bool  $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type array $restrictFileNames  Skip all files which are not included in this array.
 	 * }
 	 * @return null
 	 */
 	public static function fromFile( $file, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file ) as $f ) {
+			if ( ! empty( $options['restrictFileNames'] ) ) {
+				$basename = Utils\basename( $f );
+				if ( ! in_array( $basename, $options['restrictFileNames'], true ) ) {
+					continue;
+				}
+			}
+
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $f ) ), '/' );
 

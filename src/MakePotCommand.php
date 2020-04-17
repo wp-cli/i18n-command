@@ -616,10 +616,10 @@ class MakePotCommand extends WP_CLI_Command {
 					$translations,
 					[
 						// Only look for block.json files, nothing else.
-						'restrictFileNames'   => [ 'block.json' ],
-						'include'             => $this->include,
-						'exclude'             => $this->exclude,
-						'extensions'          => [ 'json' ],
+						'restrictFileNames' => [ 'block.json' ],
+						'include'           => $this->include,
+						'exclude'           => $this->exclude,
+						'extensions'        => [ 'json' ],
 					]
 				);
 			}

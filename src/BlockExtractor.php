@@ -15,7 +15,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			'title',
 			'description',
 			'keywords',
-			'styles',
+			'styleVariations',
 		],
 	];
 
@@ -53,7 +53,11 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			}
 
 			foreach ( (array) $original as $msg ) {
-				$translation = $translations->insert( sprintf( 'block %s', $key ), $msg );
+				if ( is_object( $msg ) ) {
+					$translation = $translations->insert( sprintf( 'block %s %s', $key, $msg->name ), $msg->label );
+				} else {
+					$translation = $translations->insert( sprintf( 'block %s', $key ), $msg );
+				}
 				$translation->addReference( $file );
 			}
 		}

@@ -2536,6 +2536,22 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "message"
       """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block styleVariatons default"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Default"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block styleVariatons other"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Other"
+      """
 
   Scenario: Ignores block.json files with other text domain
     Given an empty foo-plugin directory
@@ -2679,4 +2695,61 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "message"
+      """
+
+  Scenario: Skips block.json file altogether
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/block.json file:
+      """
+      {
+        "name": "my-plugin/notice",
+        "title": "Notice",
+        "category": "common",
+        "parent": [ "core/group" ],
+        "icon": "star",
+        "description": "Shows warning, error or success notices  ...",
+        "keywords": [ "alert", "message" ],
+        "attributes": {
+          "message": {
+            "type": "string",
+            "source": "html",
+            "selector": ".message"
+          }
+        },
+        "styleVariations": [
+          { "name": "default", "label": "Default", "isDefault": true },
+          { "name": "other", "label": "Other" }
+        ],
+        "editorScript": "build/editor.js",
+        "script": "build/main.js",
+        "editorStyle": "build/editor.css",
+        "style": "build/style.css"
+      }
+      """
+
+    When I try `wp i18n make-pot foo-plugin --skip-block-json`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgctxt "block title"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgid "Notice"
       """

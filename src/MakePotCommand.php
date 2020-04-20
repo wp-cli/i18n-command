@@ -66,7 +66,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var bool
 	 */
-	protected $skip_json = false;
+	protected $skip_block_json = false;
 
 	/**
 	 * @var bool
@@ -202,7 +202,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-php]
 	 * : Skips PHP string extraction.
 	 *
-	 * [--skip-json]
+	 * [--skip-block-json]
 	 * : Skips string extraction from block.json files.
 	 *
 	 * [--skip-audit]
@@ -279,15 +279,15 @@ class MakePotCommand extends WP_CLI_Command {
 		$array_arguments = array( 'headers' );
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
-		$this->source       = realpath( $args[0] );
-		$this->slug         = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->skip_js      = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->skip_php     = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
-		$this->skip_json    = Utils\get_flag_value( $assoc_args, 'skip-json', $this->skip_json );
-		$this->skip_audit   = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
-		$this->headers      = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
-		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
-		$this->package_name = Utils\get_flag_value( $assoc_args, 'package-name' );
+		$this->source          = realpath( $args[0] );
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
+		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
+		$this->skip_audit      = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
+		$this->headers         = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
+		$this->file_comment    = Utils\get_flag_value( $assoc_args, 'file-comment' );
+		$this->package_name    = Utils\get_flag_value( $assoc_args, 'package-name' );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -610,7 +610,7 @@ class MakePotCommand extends WP_CLI_Command {
 				);
 			}
 
-			if ( ! $this->skip_json ) {
+			if ( ! $this->skip_block_json ) {
 				BlockExtractor::fromDirectory(
 					$this->source,
 					$translations,

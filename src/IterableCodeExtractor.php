@@ -265,4 +265,38 @@ trait IterableCodeExtractor {
 	private static function trim_leading_slash( $path ) {
 		return ltrim( $path, '/' );
 	}
+
+	/**
+	 * Formerly part php-gettext 4.x.
+	 */
+	protected static function getFiles($file)
+	{
+		if (empty($file)) {
+			throw new InvalidArgumentException('There is not any file defined');
+		}
+
+		if (is_string($file)) {
+			if (!is_file($file)) {
+				throw new InvalidArgumentException("'$file' is not a valid file");
+			}
+
+			if (!is_readable($file)) {
+				throw new InvalidArgumentException("'$file' is not a readable file");
+			}
+
+			return [$file];
+		}
+
+		if (is_array($file)) {
+			$files = [];
+
+			foreach ($file as $f) {
+				$files = array_merge($files, self::getFiles($f));
+			}
+
+			return $files;
+		}
+
+		throw new InvalidArgumentException('The first argument must be string or array');
+	}
 }

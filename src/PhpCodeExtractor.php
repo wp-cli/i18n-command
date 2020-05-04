@@ -3,11 +3,11 @@
 namespace WP_CLI\I18n;
 
 use Exception;
-use Gettext\Extractors\PhpCode;
+use Gettext\Scanner\PhpScanner;
 use Gettext\Translations;
 use WP_CLI;
 
-final class PhpCodeExtractor extends PhpCode {
+class PhpCodeExtractor {
 	use IterableCodeExtractor;
 
 	public static $options = [
@@ -43,8 +43,6 @@ final class PhpCodeExtractor extends PhpCode {
 		],
 	];
 
-	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
-
 	/**
 	 * {@inheritdoc}
 	 */
@@ -52,7 +50,10 @@ final class PhpCodeExtractor extends PhpCode {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
-			static::fromStringMultiple( $string, [ $translations ], $options );
+			$scanner = new PhpScanner( $translations );
+			$scanner->setFunctions( self::$options['functions'] );
+			$scanner->extractCommentsStartingWith($options['extractComments']);
+			$scanner->scanString( $string, $options[ 'file' ] );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(

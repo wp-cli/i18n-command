@@ -31,7 +31,6 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			return;
 		}
 
-
 		$domain = isset( $file_data['textDomain'] ) ? $file_data['textDomain'] : null;
 
 		// Allow missing domain, but skip if they don't match.
@@ -40,7 +39,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 		}
 
 		foreach ( $file_data as $key => $original ) {
-			switch( $key ) {
+			switch ( $key ) {
 				case 'title':
 				case 'description':
 					$translation = $translations->insert( sprintf( 'block %s', $key ), $original );
@@ -51,7 +50,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 						continue 2;
 					}
 
-					foreach( $original as $msg ) {
+					foreach ( $original as $msg ) {
 						$translation = $translations->insert( 'block keyword', $msg );
 						$translation->addReference( $file );
 					}
@@ -62,7 +61,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 						continue 2;
 					}
 
-					foreach( $original as $msg ) {
+					foreach ( $original as $msg ) {
 						$translation = $translations->insert( 'block style variation', $msg['label'] );
 						$translation->addReference( $file );
 					}

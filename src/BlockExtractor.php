@@ -23,6 +23,8 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
+		$options += static::$options;
+
 		$file = $options['file'];
 		WP_CLI::debug( "Parsing file {$file}" );
 

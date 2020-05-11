@@ -10,21 +10,10 @@ use WP_CLI;
 final class BlockExtractor extends Extractor implements ExtractorInterface {
 	use IterableCodeExtractor;
 
-	public static $options = [
-		'translatableProperties' => [
-			'title',
-			'description',
-			'keywords',
-			'styleVariations',
-		],
-	];
-
 	/**
 	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		$options += static::$options;
-
 		$file = $options['file'];
 		WP_CLI::debug( "Parsing file {$file}" );
 
@@ -42,6 +31,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			return;
 		}
 
+
 		$domain = isset( $file_data['textDomain'] ) ? $file_data['textDomain'] : null;
 
 		// Allow missing domain, but skip if they don't match.
@@ -50,17 +40,32 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 		}
 
 		foreach ( $file_data as $key => $original ) {
-			if ( ! array_key_exists( $key, $options['translatableProperties'] ) ) {
-				continue;
-			}
+			switch( $key ) {
+				case 'title':
+				case 'description':
+					$translation = $translations->insert( sprintf( 'block %s', $key ), $original );
+					$translation->addReference( $file );
+					break;
+				case 'keywords':
+					if ( ! is_array( $original ) ) {
+						continue 2;
+					}
 
-			foreach ( (array) $original as $msg ) {
-				if ( is_object( $msg ) ) {
-					$translation = $translations->insert( sprintf( 'block %s %s', $key, $msg->name ), $msg->label );
-				} else {
-					$translation = $translations->insert( sprintf( 'block %s', $key ), $msg );
-				}
-				$translation->addReference( $file );
+					foreach( $original as $msg ) {
+						$translation = $translations->insert( 'block keyword', $msg );
+						$translation->addReference( $file );
+					}
+
+					break;
+				case 'styleVariations':
+					if ( ! is_array( $original ) ) {
+						continue 2;
+					}
+
+					foreach( $original as $msg ) {
+						$translation = $translations->insert( 'block style variation', $msg['label'] );
+						$translation->addReference( $file );
+					}
 			}
 		}
 	}

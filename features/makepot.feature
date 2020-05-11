@@ -2526,7 +2526,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgctxt "block keywords"
+      msgctxt "block keyword"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
@@ -2538,7 +2538,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgctxt "block styleVariatons default"
+      msgctxt "block style variation"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
@@ -2546,7 +2546,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgctxt "block styleVariatons other"
+      msgctxt "block style variation"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
@@ -2686,7 +2686,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgctxt "block keywords"
+      msgctxt "block keyword"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """

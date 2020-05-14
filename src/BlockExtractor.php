@@ -57,6 +57,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 					}
 
 					break;
+				case 'styles':
 				case 'styleVariations':
 					if ( ! is_array( $original ) ) {
 						continue 2;

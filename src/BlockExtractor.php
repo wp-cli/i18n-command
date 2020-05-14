@@ -15,7 +15,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$file = $options['file'];
-		WP_CLI::debug( "Parsing file {$file}" );
+		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		$file_data = json_decode( $string, true );
 
@@ -25,7 +25,8 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 					'Could not parse file %1$s: error code %2$s',
 					$file,
 					json_last_error()
-				)
+				),
+				'make-pot'
 			);
 
 			return;

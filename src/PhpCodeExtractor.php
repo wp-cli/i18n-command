@@ -46,7 +46,7 @@ final class PhpCodeExtractor extends PhpCode {
 	 * {@inheritdoc}
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		WP_CLI::debug( "Parsing file {$options['file']}" );
+		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
 			static::fromStringMultiple( $string, [ $translations ], $options );
@@ -56,7 +56,8 @@ final class PhpCodeExtractor extends PhpCode {
 					'Could not parse file %1$s: %2$s',
 					$options['file'],
 					$exception->getMessage()
-				)
+				),
+				'make-pot'
 			);
 		}
 	}

@@ -47,7 +47,8 @@ trait IterableCodeExtractor {
 					sprintf(
 						'Could not load file %1s',
 						$file
-					)
+					),
+					'make-pot'
 				);
 
 				continue;

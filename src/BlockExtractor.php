@@ -32,7 +32,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			return;
 		}
 
-		$domain = isset( $file_data['textDomain'] ) ? $file_data['textDomain'] : null;
+		$domain = isset( $file_data['textdomain'] ) ? $file_data['textdomain'] : null;
 
 		// Allow missing domain, but skip if they don't match.
 		if ( null !== $domain && $domain !== $translations->getDomain() ) {
@@ -58,13 +58,12 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 
 					break;
 				case 'styles':
-				case 'styleVariations':
 					if ( ! is_array( $original ) ) {
 						continue 2;
 					}
 
 					foreach ( $original as $msg ) {
-						$translation = $translations->insert( 'block style variation', $msg['label'] );
+						$translation = $translations->insert( 'block style style', $msg['label'] );
 						$translation->addReference( $file );
 					}
 			}

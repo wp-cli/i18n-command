@@ -12,7 +12,7 @@ use WP_CLI_Command;
 
 class MakeMoCommand extends WP_CLI_Command {
 	/**
-	 * Create MO files from from PO files.
+	 * Create MO files from PO files.
 	 *
 	 * ## OPTIONS
 	 *

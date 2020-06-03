@@ -63,7 +63,7 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 					}
 
 					foreach ( $original as $msg ) {
-						$translation = $translations->insert( 'block style style', $msg['label'] );
+						$translation = $translations->insert( 'block style label', $msg['label'] );
 						$translation->addReference( $file );
 					}
 			}

@@ -2538,7 +2538,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgctxt "block style"
+      msgctxt "block style label"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
@@ -2546,7 +2546,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgctxt "block style"
+      msgctxt "block style label"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """

@@ -18,28 +18,37 @@ trait IterableCodeExtractor {
 	/**
 	 * Extract the translations from a file.
 	 *
-	 * @param array|string $file         A path of a file or files
-	 * @param Translations $translations The translations instance to append the new translations.
+	 * @param array|string $file_or_files A path of a file or files
+	 * @param Translations $translations  The translations instance to append the new translations.
 	 * @param array        $options      {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
-	 *     @type bool $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type bool  $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type array $restrictFileNames  Skip all files which are not included in this array.
 	 * }
 	 * @return null
 	 */
-	public static function fromFile( $file, Translations $translations, array $options = [] ) {
-		foreach ( static::getFiles( $file ) as $f ) {
-			// Make sure a relative file path is added as a comment.
-			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $f ) ), '/' );
+	public static function fromFile( $file_or_files, Translations $translations, array $options = [] ) {
+		foreach ( static::getFiles( $file_or_files ) as $file ) {
+			if ( ! empty( $options['restrictFileNames'] ) ) {
+				$basename = Utils\basename( $file );
+				if ( ! in_array( $basename, $options['restrictFileNames'], true ) ) {
+					continue;
+				}
+			}
 
-			$string = file_get_contents( $f );
+			// Make sure a relative file path is added as a comment.
+			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
+
+			$string = file_get_contents( $file );
 
 			if ( ! $string ) {
 				WP_CLI::debug(
 					sprintf(
 						'Could not load file %1s',
-						$f
-					)
+						$file
+					),
+					'make-pot'
 				);
 
 				continue;

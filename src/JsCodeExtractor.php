@@ -28,7 +28,7 @@ final class JsCodeExtractor extends JsCode {
 	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		WP_CLI::debug( "Parsing file {$options['file']}" );
+		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
 			static::fromStringMultiple( $string, [ $translations ], $options );
@@ -40,7 +40,8 @@ final class JsCodeExtractor extends JsCode {
 					$exception->getMessage(),
 					$exception->getPosition()->getLine(),
 					$exception->getPosition()->getColumn()
-				)
+				),
+				'make-pot'
 			);
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
@@ -48,7 +49,8 @@ final class JsCodeExtractor extends JsCode {
 					'Could not parse file %1$s: %2$s',
 					$options['file'],
 					$exception->getMessage()
-				)
+				),
+				'make-pot'
 			);
 		}
 	}

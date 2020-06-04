@@ -41,7 +41,7 @@ final class MapCodeExtractor extends JsCode {
 
 			$string = implode( "\n", $map_object->sourcesContent );
 
-			WP_CLI::debug( "Parsing file {$options['file']}" );
+			WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 			$functions = new JsFunctionsScanner( $string );
 
@@ -55,7 +55,8 @@ final class MapCodeExtractor extends JsCode {
 					$e->getMessage(),
 					$e->getPosition()->getLine(),
 					$e->getPosition()->getColumn()
-				)
+				),
+				'make-pot'
 			);
 		}
 	}

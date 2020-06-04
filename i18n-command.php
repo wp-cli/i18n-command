@@ -17,3 +17,5 @@ if ( class_exists( 'WP_CLI\Dispatcher\CommandNamespace' ) ) {
 WP_CLI::add_command( 'i18n make-pot', '\WP_CLI\I18n\MakePotCommand' );
 
 WP_CLI::add_command( 'i18n make-json', '\WP_CLI\I18n\MakeJsonCommand' );
+
+WP_CLI::add_command( 'i18n make-mo', '\WP_CLI\I18n\MakeMoCommand' );

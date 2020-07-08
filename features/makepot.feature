@@ -352,13 +352,16 @@ Feature: Generate a POT file of a WordPress project
       __( '__', 'foo-plugin' );
       esc_attr__( 'esc_attr__', 'foo-plugin' );
       esc_html__( 'esc_html__', 'foo-plugin' );
+      esc_xml__( 'esc_xml__', 'foo-plugin' );
       _e( '_e', 'foo-plugin' );
       esc_attr_e( 'esc_attr_e', 'foo-plugin' );
       esc_html_e( 'esc_html_e', 'foo-plugin' );
+      esc_xml_e( 'esc_xml_e', 'foo-plugin' );
       _x( '_x', '_x_context', 'foo-plugin' );
       _ex( '_ex', '_ex_context', 'foo-plugin' );
       esc_attr_x( 'esc_attr_x', 'esc_attr_x_context', 'foo-plugin' );
       esc_html_x( 'esc_html_x', 'esc_html_x_context', 'foo-plugin' );
+      esc_xml_x( 'esc_xml_x', 'esc_xml_x_context', 'foo-plugin' );
       _n( '_n_single', '_n_plural', $number, 'foo-plugin' );
       _nx( '_nx_single', '_nx_plural', $number, '_nx_context', 'foo-plugin' );
       _n_noop( '_n_noop_single', '_n_noop_plural', 'foo-plugin' );
@@ -398,6 +401,10 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
+      msgid "esc_xml__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
       msgid "_e"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -407,6 +414,10 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "esc_html_e"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_xml_e"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
@@ -439,6 +450,14 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgctxt "esc_html_x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esc_xml_x"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "esc_xml_x_context"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """

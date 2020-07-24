@@ -146,8 +146,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					return;
 				}
 
+				if ( isset( $options['line'] ) ) {
+					$line = $options['line'];
+				} else {
+					$line = $node->getLocation()->getStart()->getLine();
+				}
+
 				$translation = $translations->insert( $context, $original, $plural );
-				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
+				$translation->addReference( $file, $line );
 
 				/** @var Node\Comment $comment */
 				foreach ( $all_comments as $comment ) {
@@ -186,6 +192,9 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				if ( ! $callee || 'eval' != $callee['name'] ) {
 					return;
 				}
+
+				// Override the line location to be that of the eval().
+				$options['line'] = $node->getLocation()->getStart()->getLine();
 
 				$class        = get_class( $scanner );
 				$eval_scaller = new $class( $node->getArguments()[0]->getValue() );

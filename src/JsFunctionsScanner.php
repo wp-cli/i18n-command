@@ -170,6 +170,30 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			}
 		);
 
+		/**
+		 * Traverse through JS code contained within eval() to find and extract gettext functions.
+		 */
+		$scanner = $this;
+		$traverser->addFunction(
+			function ( $node ) use ( &$translations, $options, $scanner ) {
+				/** @var Node\CallExpression $node */
+				if ( 'CallExpression' !== $node->getType() ) {
+					return;
+				}
+
+				$callee = $this->resolveExpressionCallee( $node );
+
+				if ( ! $callee || 'eval' != $callee['name'] ) {
+					return;
+				}
+
+				$class        = get_class( $scanner );
+				$eval_scaller = new $class( $node->getArguments()[0]->getValue() );
+				$eval_scaller->enableCommentsExtraction( $options['extractComments'] );
+				$eval_scaller->saveGettextFunctions( $translations, $options );
+			}
+		);
+
 		$traverser->traverse( $ast );
 	}
 

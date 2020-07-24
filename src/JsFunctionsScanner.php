@@ -196,10 +196,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				// Override the line location to be that of the eval().
 				$options['line'] = $node->getLocation()->getStart()->getLine();
 
-				$class        = get_class( $scanner );
-				$eval_scaller = new $class( $node->getArguments()[0]->getValue() );
-				$eval_scaller->enableCommentsExtraction( $options['extractComments'] );
-				$eval_scaller->saveGettextFunctions( $translations, $options );
+				$class = get_class( $scanner );
+				$evals = new $class( $node->getArguments()[0]->getValue() );
+				$evals->enableCommentsExtraction( $options['extractComments'] );
+				$evals->saveGettextFunctions( $translations, $options );
 			}
 		);
 

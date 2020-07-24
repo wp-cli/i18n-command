@@ -189,7 +189,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 				$callee = $this->resolveExpressionCallee( $node );
 
-				if ( ! $callee || 'eval' != $callee['name'] ) {
+				if ( ! $callee || 'eval' !== $callee['name'] ) {
 					return;
 				}
 

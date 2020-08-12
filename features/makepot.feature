@@ -1616,7 +1616,7 @@ Feature: Generate a POT file of a WordPress project
       Object(u.__)( 'minified.__', 'foo-plugin' );
       Object(j._x)( 'minified._x', 'minified._x_context', 'foo-plugin' );
 
-      eval("__( 'Hello Eval World', 'foo-plugin' );" );
+      eval( "__( 'Hello Eval World', 'foo-plugin' );" );
       """
 
     When I run `wp i18n make-pot foo-plugin`

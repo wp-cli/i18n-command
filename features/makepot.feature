@@ -1616,6 +1616,11 @@ Feature: Generate a POT file of a WordPress project
       Object(u.__)( 'minified.__', 'foo-plugin' );
       Object(j._x)( 'minified._x', 'minified._x_context', 'foo-plugin' );
 
+      /* translators: babel */
+      (0, __)( 'babel.__', 'foo-plugin' );
+      (0, _i18n.__)( 'babel-i18n.__', 'foo-plugin' );
+      (0, _i18n._x)( 'babel-i18n._x', 'babel-i18n._x_context', 'foo-plugin' );
+
       eval( "__( 'Hello Eval World', 'foo-plugin' );" );
       """
 
@@ -1697,6 +1702,22 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgctxt "minified._x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "babel.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "babel-i18n.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "babel-i18n._x"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "babel-i18n._x_context"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """

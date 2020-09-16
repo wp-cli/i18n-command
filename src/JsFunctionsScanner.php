@@ -299,6 +299,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		if (
 			'ParenthesizedExpression' === $callee->getType() &&
 			'SequenceExpression' === $callee->getExpression()->getType() &&
+			2 === count( $callee->getExpression()->getExpressions() ) &&
 			'Literal' === $callee->getExpression()->getExpressions()[0]->getType() &&
 			[] !== $node->getArguments()
 		) {

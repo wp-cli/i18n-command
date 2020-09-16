@@ -1705,6 +1705,10 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
+      #. translators: babel
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
       msgid "babel.__"
       """
     And the foo-plugin/foo-plugin.pot file should contain:

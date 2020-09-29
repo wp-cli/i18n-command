@@ -295,7 +295,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		}
 
 		// If the callee is an indirect function call as created by babel, resolve it.
-		// For example: (0, u.__)( "translation" ).
+		// For example: `(0, u.__)( "translation" )`.
 		if (
 			'ParenthesizedExpression' === $callee->getType()
 			&& 'SequenceExpression' === $callee->getExpression()->getType()
@@ -303,7 +303,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			&& 'Literal' === $callee->getExpression()->getExpressions()[0]->getType()
 			&& [] !== $node->getArguments()
 		) {
-			// Matches any general indirect function call: (0, __)( "translation" ).
+			// Matches any general indirect function call: `(0, __)( "translation" )`.
 			if ( 'Identifier' === $callee->getExpression()->getExpressions()[1]->getType() ) {
 				return [
 					'name'     => $callee->getExpression()->getExpressions()[1]->getName(),
@@ -311,7 +311,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				];
 			}
 
-			// Matches indirect function calls used by babel for module imports: (0, _i18n.__)( "translation" ).
+			// Matches indirect function calls used by babel for module imports: `(0, _i18n.__)( "translation" )`.
 			if ( 'MemberExpression' === $callee->getExpression()->getExpressions()[1]->getType() ) {
 				$property = $callee->getExpression()->getExpressions()[1]->getProperty();
 

@@ -14,7 +14,7 @@
         "gettext/gettext": "^4.8",
         "mck89/peast": "^1.8",
         "wp-cli/wp-cli": "^2.5",
-        "wp-cli/wp-cli-tests": "^3.0.1"
+        "wp-cli/wp-cli-tests": "^3.0.2"
     },
     "require-dev": {
         "wp-cli/scaffold-command": "^1.2 || ^2"

@@ -146,8 +146,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					return;
 				}
 
+				if ( isset( $options['line'] ) ) {
+					$line = $options['line'];
+				} else {
+					$line = $node->getLocation()->getStart()->getLine();
+				}
+
 				$translation = $translations->insert( $context, $original, $plural );
-				$translation->addReference( $file, $node->getLocation()->getStart()->getLine() );
+				$translation->addReference( $file, $line );
 
 				/** @var Node\Comment $comment */
 				foreach ( $all_comments as $comment ) {
@@ -167,6 +173,47 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				if ( isset( $parsed_comment ) ) {
 					$all_comments = [];
 				}
+			}
+		);
+
+		/**
+		 * Traverse through JS code contained within eval() to find and extract gettext functions.
+		 */
+		$scanner = $this;
+		$traverser->addFunction(
+			function ( $node ) use ( &$translations, $options, $scanner ) {
+				/** @var Node\CallExpression $node */
+				if ( 'CallExpression' !== $node->getType() ) {
+					return;
+				}
+
+				$callee = $this->resolveExpressionCallee( $node );
+
+				if ( ! $callee || 'eval' !== $callee['name'] ) {
+					return;
+				}
+
+				$eval_contents = '';
+				/** @var Node\Node $argument */
+				foreach ( $node->getArguments() as $argument ) {
+					if ( 'Literal' === $argument->getType() ) {
+						/** @var Node\Literal $argument */
+						$eval_contents = $argument->getValue();
+						break;
+					}
+				}
+
+				if ( ! $eval_contents ) {
+					return;
+				}
+
+				// Override the line location to be that of the eval().
+				$options['line'] = $node->getLocation()->getStart()->getLine();
+
+				$class = get_class( $scanner );
+				$evals = new $class( $eval_contents );
+				$evals->enableCommentsExtraction( $options['extractComments'] );
+				$evals->saveGettextFunctions( $translations, $options );
 			}
 		);
 

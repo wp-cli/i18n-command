@@ -1615,6 +1615,8 @@ Feature: Generate a POT file of a WordPress project
 
       Object(u.__)( 'minified.__', 'foo-plugin' );
       Object(j._x)( 'minified._x', 'minified._x_context', 'foo-plugin' );
+
+      eval( "__( 'Hello Eval World', 'foo-plugin' );" );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -1695,6 +1697,10 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgctxt "minified._x_context"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Hello Eval World"
       """
     And the foo-plugin/foo-plugin.pot file should not contain:
       """

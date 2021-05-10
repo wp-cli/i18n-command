@@ -3,7 +3,7 @@ wp-cli/i18n-command
 
 Provides internationalization tools for WordPress projects.
 
-[![Build Status](https://travis-ci.org/wp-cli/i18n-command.svg?branch=master)](https://travis-ci.org/wp-cli/i18n-command)
+
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 
@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress project.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--skip-js] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--skip-js] [--skip-php] [--skip-block-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
 ~~~
 
 Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
@@ -85,6 +85,12 @@ if the source directory is detected as either a plugin or theme.
 
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
+
+	[--skip-php]
+		Skips PHP string extraction.
+
+	[--skip-block-json]
+		Skips string extraction from block.json files.
 
 	[--skip-audit]
 		Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an

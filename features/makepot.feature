@@ -2746,6 +2746,119 @@ Feature: Generate a POT file of a WordPress project
       msgid "message"
       """
 
+  Scenario: Extract strings from all block.json files when domain is ignored
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/block_one/block.json file:
+      """
+      {
+        "name": "my-plugin/notice",
+        "title": "Notice",
+        "category": "common",
+        "parent": [ "core/group" ],
+        "icon": "star",
+        "description": "Shows warning, error or success notices  ...",
+        "keywords": [ "alert", "message" ],
+        "textdomain": "my-plugin",
+        "attributes": {
+          "message": {
+            "type": "string",
+            "source": "html",
+            "selector": ".message"
+          }
+        },
+        "styles": [
+          { "name": "default", "label": "Default", "isDefault": true },
+          { "name": "other", "label": "Other" }
+        ],
+        "editorScript": "build/editor.js",
+        "script": "build/main.js",
+        "editorStyle": "build/editor.css",
+        "style": "build/style.css"
+      }
+      """
+    And a foo-plugin/block_two/block.json file:
+      """
+      {
+        "name": "my-plugin/block_two",
+        "title": "Second Notice",
+        "category": "common",
+        "parent": [ "core/group" ],
+        "icon": "star",
+        "description": "Another way to show warning, error or success notices  ...",
+        "keywords": [ "alert", "message" ],
+        "attributes": {
+          "message": {
+            "type": "string",
+            "source": "html",
+            "selector": ".message"
+          }
+        },
+        "styles": [
+          { "name": "default", "label": "Default", "isDefault": true },
+          { "name": "other", "label": "Other" }
+        ],
+        "editorScript": "build/editor.js",
+        "script": "build/main.js",
+        "editorStyle": "build/editor.css",
+        "style": "build/style.css"
+      }
+      """
+
+    When I try `wp i18n make-pot foo-plugin --ignore-domain`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block title"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Notice"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block description"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Shows warning, error or success notices  ..."
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block keyword"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "alert"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "message"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Second Notice"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Another way to show warning, error or success notices  ..."
+      """
+
   Scenario: Skips block.json file altogether
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

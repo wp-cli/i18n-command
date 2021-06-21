@@ -52,9 +52,9 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 				 */
 				$base_path = array_slice( $path, 0, $nodes_to_iterate[0] );
 				$data_path = array_slice( $path, $nodes_to_iterate[0] + 1 );
-				$base_tree = self::_wp_array_get( $theme_json, $base_path, array() );
+				$base_tree = self::array_get( $theme_json, $base_path, array() );
 				foreach ( $base_tree as $node_name => $node_data ) {
-					$array_to_translate = self::_wp_array_get( $node_data, $data_path, null );
+					$array_to_translate = self::array_get( $node_data, $data_path, null );
 					if ( is_null( $array_to_translate ) ) {
 						continue;
 					}
@@ -69,7 +69,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 					}
 				}
 			} else {
-				$array_to_translate = self::_wp_array_get( $theme_json, $path, null );
+				$array_to_translate = self::array_get( $theme_json, $path, null );
 				if ( is_null( $array_to_translate ) ) {
 					continue;
 				}
@@ -153,7 +153,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 *             ),
 	 *         ),
 	 *     );
-	 *     _wp_array_get( $array, array( 'a', 'b', 'c' ) );
+	 *     array_get( $array, array( 'a', 'b', 'c' ) );
 	 *
 	 * @param array $array   An array from which we want to retrieve some information.
 	 * @param array $path    An array of keys describing the path with which to retrieve information.
@@ -162,7 +162,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 *
 	 * @return mixed The value from the path specified.
 	 */
-	private function _wp_array_get( $array, $path, $default = null ) {
+	private function array_get( $array, $path, $default = null ) {
 		// Confirm $path is valid.
 		if ( ! is_array( $path ) || 0 === count( $path ) ) {
 			return $default;

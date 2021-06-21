@@ -72,6 +72,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var bool
 	 */
+	protected $skip_theme_json = false;
+
+	/**
+	 * @var bool
+	 */
 	protected $skip_audit = false;
 
 	/**
@@ -206,6 +211,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--skip-block-json]
 	 * : Skips string extraction from block.json files.
 	 *
+	 * [--skip-theme-json]
+	 * : Skips string extraction from theme.json files.
+	 *
 	 * [--skip-audit]
 	 * : Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an
 	 * automated environment.
@@ -285,6 +293,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
 		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
+		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
 		$this->skip_audit      = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
 		$this->headers         = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
 		$this->file_comment    = Utils\get_flag_value( $assoc_args, 'file-comment' );
@@ -618,6 +627,20 @@ class MakePotCommand extends WP_CLI_Command {
 					[
 						// Only look for block.json files, nothing else.
 						'restrictFileNames' => [ 'block.json' ],
+						'include'           => $this->include,
+						'exclude'           => $this->exclude,
+						'extensions'        => [ 'json' ],
+					]
+				);
+			}
+
+			if ( ! $this->skip_theme_json ) {
+				ThemeJsonExtractor::fromDirectory(
+					$this->source,
+					$translations,
+					[
+						// Only look for theme.json files, nothing else.
+						'restrictFileNames' => [ 'theme.json' ],
 						'include'           => $this->include,
 						'exclude'           => $this->exclude,
 						'extensions'        => [ 'json' ],

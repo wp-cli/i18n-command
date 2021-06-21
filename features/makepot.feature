@@ -3164,9 +3164,73 @@ Scenario: Skips theme.json file if skip-theme-json flag provided
         "version": "1",
         "settings": {
           "color": {
+            "duotone": [
+                { "slug": "dark-grayscale", "name": "Dark grayscale", "colors": [] }
+            ],
+            "gradients": [
+                { "slug": "purple-to-yellow", "name": "Purple to yellow" }
+            ],
             "palette": [
-              { "slug": "black", "color": "#000000", "name": "Black" }
+              { "slug": "black", "color": "#000000", "name": "Black" },
+              { "slug": "white", "color": "#000000", "name": "White" }
             ]
+          },
+          "typography": {
+              "fontSizes": [
+                  { "name": "Small", "slug": "small", "size": "13px" }
+              ]
+          }
+        }
+      }
+      """
+
+    When I try `wp i18n make-pot foo-theme`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the foo-theme/foo-theme.pot file should exist
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Duotone name"
+      msgid "Dark grayscale"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Gradient name"
+      msgid "Purple to yellow"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Color name"
+      msgid "White"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Color name"
+      msgid "White"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Font size name"
+      msgid "Small"
+      """
+
+  Scenario: Extract strings from the blocks section of theme.json files
+    Given an empty foo-theme directory
+    And a foo-theme/theme.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "blocks": {
+            "core/paragraph": {
+              "color": {
+                "palette": [
+                  { "slug": "black", "color": "#000000", "name": "Black" }
+                ]
+              }
+            }
           }
         }
       }
@@ -3184,7 +3248,7 @@ Scenario: Skips theme.json file if skip-theme-json flag provided
       msgid "Black"
       """
 
-  Scenario: Extract strings from theme.json files
+  Scenario: Extract strings from the top-level section of theme.json files
     Given an empty foo-theme directory
     And a foo-theme/theme.json file:
       """

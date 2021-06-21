@@ -59,10 +59,14 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 						continue;
 					}
 
-					// Whole path will be [ 'settings', 'blocks', 'core/paragraph', 'color', 'palette' ].
-					$whole_path  = array_merge( $base_path, array( $node_name ), $data_path );
-					$translation = $translations->insert( $context, $original );
-					$translation->addReference( $file );
+					foreach ( $array_to_translate as $item_key => $item_to_translate ) {
+						if ( empty( $item_to_translate[ $key ] ) ) {
+							continue;
+						}
+
+						$translation = $translations->insert( $context, $array_to_translate[ $item_key ][ $key ] );
+						$translation->addReference( $file );
+					}
 				}
 			} else {
 				$array_to_translate = self::_wp_array_get( $theme_json, $path, null );
@@ -70,8 +74,14 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 					continue;
 				}
 
-				$translation = $translations->insert( $context, $original );
-				$translation->addReference( $file );
+				foreach ( $array_to_translate as $item_key => $item_to_translate ) {
+					if ( empty( $item_to_translate[ $key ] ) ) {
+						continue;
+					}
+
+					$translation = $translations->insert( $context, $array_to_translate[ $item_key ][ $key ] );
+					$translation->addReference( $file );
+				}
 			}
 		}
 	}

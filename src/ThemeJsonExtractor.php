@@ -86,6 +86,17 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 		}
 	}
 
+	/**
+	 * Given a file path, reads it as a JSON file
+	 * and returns an array with its contents.
+	 *
+	 * Returns an empty array in case of error.
+	 *
+	 * Ported from the core class `WP_Theme_JSON_Resolver`.
+	 *
+	 * @param string $file_path Path to file.
+	 * @return array Contents of the file.
+	 */
 	private static function read_json_file( $file_path ) {
 		$config = array();
 		if ( $file_path ) {
@@ -108,12 +119,70 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 		return $config;
 	}
 
+	/**
+	 * Returns a data structure to help setting up translations for theme.json data.
+	 *
+	 * array(
+	 *     array(
+	 *         'path'    => array( 'settings', 'color', 'palette' ),
+	 *         'key'     => 'key-that-stores-the-string-to-translate',
+	 *         'context' => 'translation-context',
+	 *     ),
+	 *     array(
+	 *         'path'    => 'etc',
+	 *         'key'     => 'etc',
+	 *         'context' => 'etc',
+	 *     ),
+	 * )
+	 *
+	 * Ported from the core class `WP_Theme_JSON_Resolver`.
+	 *
+	 * @return array An array of theme.json fields that are translatable and the keys that are translatable.
+	 */
 	private static function get_fields_to_translate() {
 		$file_structure  = self::read_json_file( __DIR__ . '/theme-i18n.json' );
 		$theme_json_i18n = self::extract_paths_to_translate( $file_structure );
 		return $theme_json_i18n;
 	}
 
+	/**
+	 * Converts a tree as in theme-i18.json file a linear array
+	 * containing metadata to translate a theme.json file.
+	 *
+	 * For example, given this input:
+	 *
+	 *     {
+	 *       "settings": {
+	 *         "*": {
+	 *           "typography": {
+	 *             "fontSizes": [ { "name": "Font size name" } ],
+	 *             "fontStyles": [ { "name": "Font size name" } ]
+	 *           }
+	 *         }
+	 *       }
+	 *     }
+	 *
+	 * will return this output:
+	 *
+	 *     array(
+	 *       0 => array(
+	 *         'path'    => array( 'settings', '*', 'typography', 'fontSizes' ),
+	 *         'key'     => 'name',
+	 *         'context' => 'Font size name'
+	 *       ),
+	 *       1 => array(
+	 *         'path'    => array( 'settings', '*', 'typography', 'fontStyles' ),
+	 *         'key'     => 'name',
+	 *         'context' => 'Font style name'
+	 *       )
+	 *     )
+	 *
+	 * Ported from the core class `WP_Theme_JSON_Resolver`.
+	 *
+	 * @param array $i18n_partial A tree that follows the format of theme-i18n.json.
+	 * @param array $current_path Keeps track of the path as we walk down the given tree.
+	 * @return array A linear array containing the paths to translate.
+	 */
 	private static function extract_paths_to_translate( $i18n_partial, $current_path = array() ) {
 		$result = array();
 		foreach ( $i18n_partial as $property => $partial_child ) {
@@ -157,7 +226,6 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * @param array $path    An array of keys describing the path with which to retrieve information.
 	 * @param mixed $default The return value if the path does not exist within the array,
 	 *                       or if `$array` or `$path` are not arrays.
-	 *
 	 * @return mixed The value from the path specified.
 	 */
 	private function array_get( $array, $path, $default = null ) {

@@ -228,7 +228,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 *                       or if `$array` or `$path` are not arrays.
 	 * @return mixed The value from the path specified.
 	 */
-	private function array_get( $array, $path, $default = null ) {
+	private static function array_get( $array, $path, $default = null ) {
 		// Confirm $path is valid.
 		if ( ! is_array( $path ) || 0 === count( $path ) ) {
 			return $default;

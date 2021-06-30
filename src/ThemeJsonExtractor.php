@@ -95,13 +95,15 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * Ported from the core class `WP_Theme_JSON_Resolver`.
 	 *
 	 * @param string $file_path Path to file.
+	 * @param array $context A valid context resource created with stream_context_create(). Optional.
+	 *
 	 * @return array Contents of the file.
 	 */
-	private static function read_json_file( $file_path ) {
+	private static function read_json_file( $file_path, $context = null ) {
 		$config = array();
 		if ( $file_path ) {
 			$decoded_file = json_decode(
-				file_get_contents( $file_path ),
+				file_get_contents( $file_path, false, $context ),
 				true
 			);
 
@@ -140,7 +142,20 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * @return array An array of theme.json fields that are translatable and the keys that are translatable.
 	 */
 	private static function get_fields_to_translate() {
-		$file_structure  = self::read_json_file( __DIR__ . '/theme-i18n.json' );
+		$context        = stream_context_create( array(
+			'http' => array(
+				'method'        => 'GET',
+				'header'        => 'Content-type: application/json',
+				'timeout'       => '3', // To make sure it resolves in a reasonable timeframe.
+			)
+		));
+		// Using the WordPress.org SVN repo resolved to a 403.
+		// $file_structure = self::read_json_file( 'http://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json', $context );
+		$file_structure = self::read_json_file( 'https://raw.githubusercontent.com/WordPress/gutenberg/wp/trunk/lib/experimental-i18n-theme.json', $context );
+		if ( empty( $theme_json_i18n ) ) {
+			WP_CLI::debug( "Remote file could not be accessed, will use local file as fallback" );
+			$file_structure  = self::read_json_file( __DIR__ . '/theme-i18n.json' );
+		}
 		$theme_json_i18n = self::extract_paths_to_translate( $file_structure );
 		return $theme_json_i18n;
 	}

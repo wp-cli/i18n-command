@@ -142,18 +142,20 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * @return array An array of theme.json fields that are translatable and the keys that are translatable.
 	 */
 	private static function get_fields_to_translate() {
-		$context        = stream_context_create( array(
-			'http' => array(
-				'method'        => 'GET',
-				'header'        => 'Content-type: application/json',
-				'timeout'       => '3', // To make sure it resolves in a reasonable timeframe.
+		$context = stream_context_create(
+			array(
+				'http' => array(
+					'method'  => 'GET',
+					'header'  => 'Content-type: application/json',
+					'timeout' => '3', // To make sure it resolves in a reasonable timeframe.
+				),
 			)
-		));
+		);
 		// Using the WordPress.org SVN repo resolved to a 403.
 		// $file_structure = self::read_json_file( 'http://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json', $context );
 		$file_structure = self::read_json_file( 'https://raw.githubusercontent.com/WordPress/wordpress-develop/master/src/wp-includes/theme-i18n.json', $context );
 		if ( empty( $file_structure ) ) {
-			WP_CLI::debug( "Remote file could not be accessed, will use local file as fallback" );
+			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback' );
 			$file_structure = self::read_json_file( __DIR__ . '/theme-i18n.json' );
 		}
 		$theme_json_i18n = self::extract_paths_to_translate( $file_structure );

@@ -41,6 +41,10 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * [--purge]
 	 * : Whether to purge the strings that were extracted from the original source file. Defaults to true, use `--no-purge` to skip the removal.
 	 *
+	 * [--update-mo-files]
+	 * : Whether MO files should be updated as well after updating PO files.
+	 * Only has an effect when used in combination with `--purge`.
+	 *
 	 * [--pretty-print]
 	 * : Pretty-print resulting JSON files.
 	 *
@@ -57,7 +61,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$purge = Utils\get_flag_value( $assoc_args, 'purge', true );
+		$purge           = Utils\get_flag_value( $assoc_args, 'purge', true );
+		$update_mo_files = Utils\get_flag_value( $assoc_args, 'update-mo-files', true );
 
 		if ( Utils\get_flag_value( $assoc_args, 'pretty-print', false ) ) {
 			$this->json_options |= JSON_PRETTY_PRINT;
@@ -102,6 +107,18 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 					if ( ! $removed ) {
 						WP_CLI::warning( sprintf( 'Could not update file %s', basename( $source ) ) );
+						continue;
+					}
+
+					if ( $update_mo_files ) {
+						$file_basename    = basename( $file->getFilename(), '.po' );
+						$destination_file = "{$destination}/{$file_basename}.mo";
+
+						$translations = Translations::fromPoFile( $file->getPathname() );
+						if ( ! $translations->toMoFile( $destination_file ) ) {
+							WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
+							continue;
+						}
 					}
 				}
 			}

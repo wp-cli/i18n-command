@@ -1266,7 +1266,7 @@ Feature: Generate a POT file of a WordPress project
       """
       I am totally included
       """
-    And the foo-plugin.pot file should contain:
+    And the foo-plugin.pot file should not contain:
       """
       I should not be included either
       """

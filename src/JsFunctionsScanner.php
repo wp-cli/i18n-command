@@ -18,6 +18,15 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	private $extract_comments = false;
 
 	/**
+	 * Holds a list of source code comments already added to a string.
+	 *
+	 * Prevents associating the same comment to multiple strings.
+	 *
+	 * @var Node\Comment[] $comments_cache
+	 */
+	private $comments_cache = [];
+
+	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).
 	 *
 	 * @param mixed $tag
@@ -162,11 +171,17 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						continue;
 					}
 
+					if ( in_array( $comment, $this->comments_cache, true ) ) {
+						continue;
+					}
+
 					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
 					$prefixes       = array_filter( (array) $this->extract_comments );
 
 					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
 						$translation->addExtractedComment( $parsed_comment->getComment() );
+
+						$this->comments_cache[] = $comment;
 					}
 				}
 

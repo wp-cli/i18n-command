@@ -74,6 +74,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $skip_audit = false;
 
 	/**
+	 * @var bool
+	 */
+	protected $location = true;
+
+	/**
 	 * @var array
 	 */
 	protected $headers = [];
@@ -196,6 +201,11 @@ class MakePotCommand extends WP_CLI_Command {
 	 * [--headers=<headers>]
 	 * : Array in JSON format of custom headers which will be added to the POT file. Defaults to empty array.
 	 *
+	 * [--location]
+	 * : Whether to write `#: filename:line` lines.
+	 * Defaults to true, use `--no-location` to skip the removal.
+	 * Note that disabling this option makes it harder for technically skilled translators to understand each message’s context.
+	 *
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
@@ -288,6 +298,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->headers         = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
 		$this->file_comment    = Utils\get_flag_value( $assoc_args, 'file-comment' );
 		$this->package_name    = Utils\get_flag_value( $assoc_args, 'package-name' );
+		$this->location        = Utils\get_flag_value( $assoc_args, 'location', true );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -584,6 +595,7 @@ class MakePotCommand extends WP_CLI_Command {
 					'include'            => $this->include,
 					'exclude'            => $this->exclude,
 					'extensions'         => [ 'php' ],
+					'addReferences'      => $this->location,
 				];
 				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}
@@ -593,9 +605,10 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
-						'include'    => $this->include,
-						'exclude'    => $this->exclude,
-						'extensions' => [ 'js', 'jsx' ],
+						'include'       => $this->include,
+						'exclude'       => $this->exclude,
+						'extensions'    => [ 'js', 'jsx' ],
+						'addReferences' => $this->location,
 					]
 				);
 
@@ -603,9 +616,10 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
-						'include'    => $this->include,
-						'exclude'    => $this->exclude,
-						'extensions' => [ 'map' ],
+						'include'       => $this->include,
+						'exclude'       => $this->exclude,
+						'extensions'    => [ 'map' ],
+						'addReferences' => $this->location,
 					]
 				);
 			}
@@ -620,6 +634,7 @@ class MakePotCommand extends WP_CLI_Command {
 						'include'           => $this->include,
 						'exclude'           => $this->exclude,
 						'extensions'        => [ 'json' ],
+						'addReferences'     => $this->location,
 					]
 				);
 			}

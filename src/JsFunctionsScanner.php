@@ -71,8 +71,9 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		 */
 		$traverser->addFunction(
 			function ( $node ) use ( &$translations, $options, &$all_comments ) {
-				$functions = $options['functions'];
-				$file      = $options['file'];
+				$functions     = $options['functions'];
+				$file          = $options['file'];
+				$add_reference = ! empty( $options['addReferences'] );
 
 				/** @var Node\Node $node */
 				foreach ( $node->getLeadingComments() as $comment ) {
@@ -168,7 +169,9 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 
 				$translation = $translations->insert( $context, $original, $plural );
-				$translation->addReference( $file, $line );
+				if ( $add_reference ) {
+					$translation->addReference( $file, $line );
+				}
 
 				/** @var Node\Comment $comment */
 				foreach ( $all_comments as $comment ) {

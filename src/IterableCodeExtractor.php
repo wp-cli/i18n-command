@@ -236,8 +236,7 @@ trait IterableCodeExtractor {
 						return false;
 					}
 
-					// Excludes files where both scores are 0.
-					return ( ( $inclusion_score >= $exclusion_score ) && 0 !== $inclusion_score );
+					return $inclusion_score > $exclusion_score;
 				}
 			),
 			RecursiveIteratorIterator::CHILD_FIRST

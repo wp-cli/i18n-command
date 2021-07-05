@@ -20,7 +20,7 @@
         "wp-cli/wp-cli-tests": "^3.0.11"
     },
     "suggest": {
-        "ext-mbstring": "Used for calculation include/exclude matches in code extraction"
+        "ext-mbstring": "Used for calculating include/exclude matches in code extraction"
     },
     "config": {
         "process-timeout": 7200,

@@ -52,18 +52,12 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			$translations = $translations[0];
 		}
 
-		$code = $this->code;
-		// See https://github.com/mck89/peast/issues/7
-		// Temporary workaround to fix dynamic imports. The τ is a greek letter.
-		// This will trick the parser into thinking that it is a normal method call.
-		$code = preg_replace( '/import(\\s*\\()/', 'imporτ$1', $code );
-
 		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
 			'comments'   => false !== $this->extract_comments,
 			'jsx'        => true,
 		];
-		$ast           = Peast::latest( $code, $peast_options )->parse();
+		$ast           = Peast::latest( $this->code, $peast_options )->parse();
 
 		$traverser = new Traverser();
 

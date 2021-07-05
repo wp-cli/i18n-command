@@ -1244,6 +1244,10 @@ Feature: Generate a POT file of a WordPress project
       """
       __( 'I am totally included', 'foo-plugin' );
       """
+    And a foo-plugin/foobar/ignored.js file:
+      """
+      __( 'I should not be included either', 'foo-plugin' );
+      """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=foo,bar,baz/inc*.js`
     Then the foo-plugin.pot file should not contain:
@@ -1261,6 +1265,55 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin.pot file should contain:
       """
       I am totally included
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      I should not be included either
+      """
+
+  Scenario: Inclusion takes precedence over exclusion
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/wp-admin/includes/continents-cities.php file:
+      """
+      <?php
+       __( 'I am included', 'foo-plugin' );
+      """
+    And a foo-plugin/wp-content/file.php file:
+      """
+      <?php
+       __( 'I am not included', 'foo-plugin' );
+      """
+    And a foo-plugin/wp-includes/file.php file:
+      """
+      <?php
+       __( 'I am not included', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=wp-admin/includes/continents-cities.php`
+    Then the foo-plugin.pot file should contain:
+      """
+      I am included
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      I am not included
       """
 
   Scenario: Includes minified JavaScript files if asked to
@@ -1293,7 +1346,7 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored
       """
 
-    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=*.min.js`
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=bar/*.min.js`
     Then the foo-plugin.pot file should contain:
       """
       I am not being ignored
@@ -1923,6 +1976,100 @@ Feature: Generate a POT file of a WordPress project
       #. translators: this is Webpack
       """
 
+  Scenario: Extract plural strings with expressions from JavaScript file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      _n( '%d var (_n)', '%d vars (_n)', x, 'foo-plugin' );
+      _n( '%d prop (_n)', '%d props (_n)', x.y, 'foo-plugin' );
+      _n( '%d function (_n)', '%d functions (_n)', Math.abs(x), 'foo-plugin' );
+      _n( '%d operation (_n)', '%d operations (_n)', x + x, 'foo-plugin' );
+
+      _nx( '%d var (_nx)', '%d vars (_nx)', x, 'context', 'foo-plugin' );
+      _nx( '%d prop (_nx)', '%d props (_nx)', x.y, 'context', 'foo-plugin' );
+      _nx( '%d function (_nx)', '%d functions (_nx)', Math.abs(x), 'context', 'foo-plugin' );
+      _nx( '%d operation (_nx)', '%d operations (_nx)', x + x, 'context', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d var (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d vars (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d var (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d vars (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d prop (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d props (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d prop (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d props (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d function (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d functions (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d function (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d functions (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d operation (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d operations (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d operation (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d operations (_nx)"
+      """
+
   Scenario: Ignores any other text domain in JavaScript file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
@@ -1967,6 +2114,47 @@ Feature: Generate a POT file of a WordPress project
      And the foo-plugin.pot file should not contain:
       """
       msgid "Hello JSX"
+      """
+
+  Scenario: Extract strings in template literals in JavaScript file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      /* translators: %s viewport width as css, ie: 100% */
+      __( `Import me (%spx)`, 'foo-plugin' );
+
+      /* translators: %s viewport width as css, ie: 100% */
+      __( `Do not ${x} import me (%spx)`, 'foo-plugin' );
+      """
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Foo Plugin"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Import me (%spx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: %s viewport width as css, ie: 100%
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      msgid "Do not ${x} import me (%spx)"
       """
 
   Scenario: Extract translator comments from JavaScript map file
@@ -2164,6 +2352,58 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin.pot file should contain:
       """
       msgid "Hello JS"
+      """
+
+  Scenario: Associates comments with the right source string
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      printf( /* translators: %s: test */ __( 'Hi %s', 'foo-plugin' ), foo ); __( 'hello', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --domain=bar --ignore-domain`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the foo-plugin.pot file should contain:
+      """
+      #. translators: %s: test
+      #: foo-plugin.js:1
+      msgid "Hi %s"
+      msgstr ""
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      #: foo-plugin.js:1
+      msgid "hello"
+      msgstr ""
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      #. translators: %s: test
+      #: foo-plugin.js:1
+      msgid "hello"
+      msgstr ""
       """
 
   Scenario: Prints helpful debug messages for plugin

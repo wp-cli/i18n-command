@@ -1244,6 +1244,10 @@ Feature: Generate a POT file of a WordPress project
       """
       __( 'I am totally included', 'foo-plugin' );
       """
+    And a foo-plugin/foobar/ignored.js file:
+      """
+      __( 'I should not be included either', 'foo-plugin' );
+      """
 
     When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=foo,bar,baz/inc*.js`
     Then the foo-plugin.pot file should not contain:
@@ -1261,6 +1265,55 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin.pot file should contain:
       """
       I am totally included
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      I should not be included either
+      """
+
+  Scenario: Inclusion takes precedence over exclusion
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/wp-admin/includes/continents-cities.php file:
+      """
+      <?php
+       __( 'I am included', 'foo-plugin' );
+      """
+    And a foo-plugin/wp-content/file.php file:
+      """
+      <?php
+       __( 'I am not included', 'foo-plugin' );
+      """
+    And a foo-plugin/wp-includes/file.php file:
+      """
+      <?php
+       __( 'I am not included', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=wp-admin/includes/continents-cities.php`
+    Then the foo-plugin.pot file should contain:
+      """
+      I am included
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      I am not included
       """
 
   Scenario: Includes minified JavaScript files if asked to
@@ -1293,7 +1346,7 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored
       """
 
-    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=*.min.js`
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=bar/*.min.js`
     Then the foo-plugin.pot file should contain:
       """
       I am not being ignored

@@ -2,11 +2,11 @@
 
 namespace WP_CLI\I18n\Tests;
 
-use PHPUnit_Framework_TestCase;
 use WP_CLI\I18n\IterableCodeExtractor;
+use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
+class IterableCodeExtractorTest extends TestCase {
 
 	/** @var string A path files are located */
 	private static $base;
@@ -21,6 +21,12 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 		$property->setAccessible( true );
 		$property->setValue( null, self::$base );
 		$property->setAccessible( false );
+	}
+
+	public function tearDown() {
+		if ( file_exists( self::$base . '/symlinked' ) ) {
+			unlink( self::$base . '/symlinked' );
+		}
 	}
 
 	public function test_can_include_files() {
@@ -175,5 +181,13 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
 		$expected = array();
 		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_can_include_file_in_symlinked_folder() {
+		symlink( self::$base . '/baz', self::$base . '/symlinked' );
+		$includes = [ 'symlinked/includes/should_be_included.js' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, [], [ 'php', 'js' ] );
+		$expected = static::$base . 'symlinked/includes/should_be_included.js';
+		$this->assertContains( $expected, $result );
 	}
 }

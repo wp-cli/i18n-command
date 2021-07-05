@@ -232,7 +232,11 @@ trait IterableCodeExtractor {
 						return static::containsMatchingChildren( $file, $include );
 					}
 
-					return ( ( $inclusion_score >= $exclusion_score ) && $file->isFile() && in_array( $file->getExtension(), $extensions, true ) );
+					if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
+						return false;
+					}
+
+					return $inclusion_score > $exclusion_score;
 				}
 			),
 			RecursiveIteratorIterator::CHILD_FIRST

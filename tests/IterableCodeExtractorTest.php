@@ -119,6 +119,7 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 			static::$base . 'foo/bar/excluded/ignored.js',
 			static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php',
 			static::$base . 'foo/bar/foofoo/included.js',
+			static::$base . 'foo/bar/foofoo/minified.min.js',
 			static::$base . 'hoge/should_NOT_be_included.js',
 			static::$base . 'vendor/vendor-file.php',
 		);
@@ -147,5 +148,32 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
 		$expected = static::$base . 'vendor/vendor-file.php';
 		$this->assertContains( $expected, $result );
+	}
+
+	public function test_exclude_not_included_files() {
+		$includes = [ 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, [], [ 'php', 'js' ] );
+		$expected = array(
+			static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php',
+		);
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_wildcard_exclude() {
+		$includes = [ 'foofoo/*' ];
+		$excludes = [ '*.min.js' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = array(
+			static::$base . 'foo/bar/foofoo/included.js',
+		);
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function test_identical_include_exclude() {
+		$includes = [ '*.min.js' ];
+		$excludes = [ '*.min.js' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = array();
+		$this->assertEquals( $expected, $result );
 	}
 }

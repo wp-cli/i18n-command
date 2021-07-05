@@ -1923,6 +1923,100 @@ Feature: Generate a POT file of a WordPress project
       #. translators: this is Webpack
       """
 
+  Scenario: Extract plural strings with expressions from JavaScript file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/foo-plugin.js file:
+      """
+      _n( '%d var (_n)', '%d vars (_n)', x, 'foo-plugin' );
+      _n( '%d prop (_n)', '%d props (_n)', x.y, 'foo-plugin' );
+      _n( '%d function (_n)', '%d functions (_n)', Math.abs(x), 'foo-plugin' );
+      _n( '%d operation (_n)', '%d operations (_n)', x + x, 'foo-plugin' );
+
+      _nx( '%d var (_nx)', '%d vars (_nx)', x, 'context', 'foo-plugin' );
+      _nx( '%d prop (_nx)', '%d props (_nx)', x.y, 'context', 'foo-plugin' );
+      _nx( '%d function (_nx)', '%d functions (_nx)', Math.abs(x), 'context', 'foo-plugin' );
+      _nx( '%d operation (_nx)', '%d operations (_nx)', x + x, 'context', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d var (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d vars (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d var (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d vars (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d prop (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d props (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d prop (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d props (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d function (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d functions (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d function (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d functions (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d operation (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d operations (_n)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "%d operation (_nx)"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid_plural "%d operations (_nx)"
+      """
+
   Scenario: Ignores any other text domain in JavaScript file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

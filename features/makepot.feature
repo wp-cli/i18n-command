@@ -1346,7 +1346,7 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored
       """
 
-    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=*.min.js`
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --include=bar/*.min.js`
     Then the foo-plugin.pot file should contain:
       """
       I am not being ignored

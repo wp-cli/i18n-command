@@ -16,8 +16,9 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 			$translations = $translations[0];
 		}
 
-		$functions = $options['functions'];
-		$file      = $options['file'];
+		$functions     = $options['functions'];
+		$file          = $options['file'];
+		$add_reference = ! empty( $options['addReferences'] );
 
 		foreach ( $this->getFunctions( $options['constants'] ) as $function ) {
 			list( $name, $line, $args ) = $function;
@@ -71,7 +72,9 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 			}
 
 			$translation = $translations->insert( $context, $original, $plural );
-			$translation = $translation->addReference( $file, $line );
+			if ( $add_reference ) {
+				$translation = $translation->addReference( $file, $line );
+			}
 
 			if ( isset( $function[3] ) ) {
 				foreach ( $function[3] as $extracted_comment ) {

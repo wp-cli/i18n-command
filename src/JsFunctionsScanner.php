@@ -129,6 +129,15 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						/** @var Node\Literal $argument */
 						$args[] = $argument->getValue();
 					}
+
+					if ( 'TemplateLiteral' === $argument->getType() && 0 === count( $argument->getExpressions() ) ) {
+						/** @var Node\TemplateLiteral $argument */
+						/** @var Node\TemplateElement[] $parts */
+
+						// Since there are no expressions within the TemplateLiteral, there is only one TemplateElement.
+						$parts  = $argument->getParts();
+						$args[] = $parts[0]->getValue();
+					}
 				}
 
 				switch ( $functions[ $callee['name'] ] ) {

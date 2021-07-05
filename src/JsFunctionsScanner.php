@@ -109,7 +109,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						$all_comments[] = $comment;
 					}
 
-					if ( 'Identifier' === $argument->getType() ) {
+					if (
+						'Identifier' === $argument->getType() ||
+						'Expression' === substr( $argument->getType(), -strlen( 'Expression' ) )
+					) {
 						$args[] = ''; // The value doesn't matter as it's unused.
 					}
 

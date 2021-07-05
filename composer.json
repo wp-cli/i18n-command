@@ -11,6 +11,7 @@
         }
     ],
     "require": {
+        "ext-mbstring": "*",
         "gettext/gettext": "^4.8",
         "mck89/peast": "^1.8",
         "wp-cli/wp-cli": "^2.5"

@@ -168,4 +168,12 @@ class IterableCodeExtractorTest extends PHPUnit_Framework_TestCase {
 		);
 		$this->assertEquals( $expected, $result );
 	}
+
+	public function test_identical_include_exclude() {
+		$includes = [ '*.min.js' ];
+		$excludes = [ '*.min.js' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = array();
+		$this->assertEquals( $expected, $result );
+	}
 }

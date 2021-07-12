@@ -174,8 +174,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 * If left empty, defaults to the destination POT file. POT file headers will be ignored.
 	 *
 	 * [--subtract=<paths>]
-	 * : Comma-separated list of POT files whose contents should act as some sort of blacklist for string extraction.
-	 * Any string which is found on that blacklist will not be extracted.
+	 * : Comma-separated list of POT files whose contents should act as some sort of denylist for string extraction.
+	 * Any string which is found on that denylist will not be extracted.
 	 * This can be useful when you want to create multiple POT files from the same source directory with slightly
 	 * different content and no duplicate strings between them.
 	 *

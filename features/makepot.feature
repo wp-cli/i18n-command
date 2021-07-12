@@ -2700,6 +2700,108 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "Some other text"
       """
+  @less-than-php-7.3
+  Scenario: Add references to files used in exception list
+    Given an empty directory
+    And a exception.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: bar-plugin.php:2
+      #: bar-baz-plugin.php:20
+      msgid "Foo Bar"
+      msgstr ""
+
+      #: bar-plugin.php:5
+      #: bar-bar.php:50
+      msgid "Bar Baz"
+      msgstr ""
+
+      #: bar-plugin.php:17
+      #: bar-baz-plugin.php:99
+      #: foobar/plugin.php:39
+      msgid "Some other text"
+      msgstr ""
+      """
+    And a foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Hello World', 'foo-plugin' );
+
+       __( 'Foo Bar', 'foo-plugin' );
+
+       __( 'Bar Baz', 'foo-plugin' );
+
+       __( 'Some text', 'foo-plugin' );
+
+       __( 'Some other text', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot . foo-plugin.pot --domain=foo-plugin --subtract=exception.pot --subtract-and-merge`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should be empty
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "Some text"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Foo Bar"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Bar Baz"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "Some other text"
+      """
+    And the exception.pot file should contain:
+      """
+      #: foo-plugin:17
+      """
+    And the exception.pot file should contain:
+      """
+      #: foo-plugin:19
+      """
+    And the exception.pot file should contain:
+      """
+      #: foo-plugin:23
+      """
 
   Scenario: Extract strings for a generic project
     Given an empty example-project directory

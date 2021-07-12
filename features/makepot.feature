@@ -2700,6 +2700,7 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "Some other text"
       """
+
   @less-than-php-7.3
   Scenario: Add references to files used in exception list
     Given an empty directory
@@ -2792,15 +2793,15 @@ Feature: Generate a POT file of a WordPress project
       """
     And the exception.pot file should contain:
       """
-      #: foo-plugin:17
+      #: foo-plugin.php:17
       """
     And the exception.pot file should contain:
       """
-      #: foo-plugin:19
+      #: foo-plugin.php:19
       """
     And the exception.pot file should contain:
       """
-      #: foo-plugin:23
+      #: foo-plugin.php:23
       """
 
   Scenario: Extract strings for a generic project

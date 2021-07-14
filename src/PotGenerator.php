@@ -4,6 +4,7 @@ namespace WP_CLI\I18n;
 
 use Gettext\Generators\Po as PoGenerator;
 use Gettext\Translations;
+use Gettext\Utils\ParsedComment;
 
 /**
  * POT file generator.
@@ -57,8 +58,9 @@ class PotGenerator extends PoGenerator {
 			}
 
 			if ( $translation->hasExtractedComments() ) {
+				/** @var ParsedComment|string $comment */
 				foreach ( $translation->getExtractedComments() as $comment ) {
-					$lines[] = '#. ' . $comment;
+					$lines[] = '#. ' . ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
 				}
 			}
 

@@ -674,9 +674,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $this->subtract_and_merge ) {
 					$translation = $translations[ $exception_translation->getId() ];
-					foreach ( $translation->getReferences() as $reference ) {
-						$exception_translation->addReference( $reference[0], $reference[1] );
-					}
+					$exception_translation->mergeWith( $translation );
 				}
 
 				unset( $translations[ $exception_translation->getId() ] );

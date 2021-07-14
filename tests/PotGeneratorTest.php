@@ -5,9 +5,9 @@ namespace WP_CLI\I18n\Tests;
 use Gettext\Translation;
 use WP_CLI\I18n\PotGenerator;
 use Gettext\Translations;
-use PHPUnit_Framework_TestCase;
+use WP_CLI\Tests\TestCase;
 
-class PotGeneratorTest extends PHPUnit_Framework_TestCase {
+class PotGeneratorTest extends TestCase {
 	public function test_adds_correct_amount_of_plural_strings() {
 		$translations = new Translations();
 

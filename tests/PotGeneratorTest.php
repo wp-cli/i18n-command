@@ -17,9 +17,9 @@ class PotGeneratorTest extends TestCase {
 
 		$result = PotGenerator::toString( $translations );
 
-		$this->assertContains( 'msgid "%d cat"', $result );
-		$this->assertContains( 'msgid_plural "%d cats"', $result );
-		$this->assertContains( 'msgstr[0] ""', $result );
-		$this->assertContains( 'msgstr[1] ""', $result );
+		$this->assertStringContainsString( 'msgid "%d cat"', $result );
+		$this->assertStringContainsString( 'msgid_plural "%d cats"', $result );
+		$this->assertStringContainsString( 'msgstr[0] ""', $result );
+		$this->assertStringContainsString( 'msgstr[1] ""', $result );
 	}
 }

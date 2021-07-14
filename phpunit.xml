@@ -8,7 +8,7 @@
 		 beStrictAboutTodoAnnotatedTests="true"
 		 colors="true"
 		 verbose="true">
-	<testsuite>
+	<testsuite name="wp-cli/i18n-command tests">
 		<directory suffix="Test.php">tests</directory>
 	</testsuite>
 

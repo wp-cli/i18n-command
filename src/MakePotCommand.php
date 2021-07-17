@@ -680,6 +680,9 @@ class MakePotCommand extends WP_CLI_Command {
 						/** @var string $comment */
 						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
+							if ( is_object( $comment ) && method_exists( $comment, 'getComment' ) ) {
+								$comment = $comment->getComment();
+							}
 							if ( 0 === strpos( $comment, $file_header ) ) {
 								return null;
 							}

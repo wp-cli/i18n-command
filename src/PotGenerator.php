@@ -58,6 +58,9 @@ class PotGenerator extends PoGenerator {
 
 			if ( $translation->hasExtractedComments() ) {
 				foreach ( $translation->getExtractedComments() as $comment ) {
+					if ( is_object( $comment ) && method_exists( $comment, 'getComment' ) ) {
+						$comment = $comment->getComment();
+					}
 					$lines[] = '#. ' . $comment;
 				}
 			}

@@ -116,7 +116,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 						$translations = Translations::fromPoFile( $file->getPathname() );
 						if ( ! $translations->toMoFile( $destination_file ) ) {
-							WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
+							WP_CLI::warning( "Could not create file {$destination_file}" );
 							continue;
 						}
 					}

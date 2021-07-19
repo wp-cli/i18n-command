@@ -53,33 +53,33 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 				$base_path = array_slice( $path, 0, $nodes_to_iterate[0] );
 				$data_path = array_slice( $path, $nodes_to_iterate[0] + 1 );
 				$base_tree = self::array_get( $theme_json, $base_path, array() );
-				foreach ( $base_tree as $node_name => $node_data ) {
-					$array_to_translate = self::array_get( $node_data, $data_path, null );
+				foreach ( $base_tree as $node_data ) {
+					$array_to_translate = self::array_get( $node_data, $data_path );
 					if ( is_null( $array_to_translate ) ) {
 						continue;
 					}
 
-					foreach ( $array_to_translate as $item_key => $item_to_translate ) {
+					foreach ( $array_to_translate as $item_to_translate ) {
 						if ( empty( $item_to_translate[ $key ] ) ) {
 							continue;
 						}
 
-						$translation = $translations->insert( $context, $array_to_translate[ $item_key ][ $key ] );
+						$translation = $translations->insert( $context, $item_to_translate[ $key ] );
 						$translation->addReference( $file );
 					}
 				}
 			} else {
-				$array_to_translate = self::array_get( $theme_json, $path, null );
+				$array_to_translate = self::array_get( $theme_json, $path );
 				if ( is_null( $array_to_translate ) ) {
 					continue;
 				}
 
-				foreach ( $array_to_translate as $item_key => $item_to_translate ) {
+				foreach ( $array_to_translate as $item_to_translate ) {
 					if ( empty( $item_to_translate[ $key ] ) ) {
 						continue;
 					}
 
-					$translation = $translations->insert( $context, $array_to_translate[ $item_key ][ $key ] );
+					$translation = $translations->insert( $context, $item_to_translate[ $key ] );
 					$translation->addReference( $file );
 				}
 			}

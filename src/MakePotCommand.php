@@ -6,6 +6,7 @@ use Gettext\Extractors\Po;
 use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
+use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -677,10 +678,10 @@ class MakePotCommand extends WP_CLI_Command {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
-						/** @var string $comment */
+						/** @var ParsedComment|string $comment */
 						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
-							if ( 0 === strpos( $comment, $file_header ) ) {
+							if ( 0 === strpos( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
 								return null;
 							}
 						}

@@ -155,8 +155,8 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 		// $file_structure = self::read_json_file( 'http://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json', $context );
 		$file_structure = self::read_json_file( 'https://raw.githubusercontent.com/WordPress/wordpress-develop/master/src/wp-includes/theme-i18n.json', $context );
 		if ( empty( $file_structure ) ) {
-			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback' );
-			$file_structure = self::read_json_file( __DIR__ . '/theme-i18n.json' );
+			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback', 'make-pot' );
+			$file_structure = self::read_json_file( __DIR__ . '/../assets/theme-i18n.json' );
 		}
 		return self::extract_paths_to_translate( $file_structure );
 	}

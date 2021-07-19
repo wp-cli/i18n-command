@@ -437,6 +437,104 @@ Feature: Split PO files into JSON files.
       "C"
       """
 
+  Scenario: Does generate or update MO files
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: a.js:10
+      msgid "A"
+      msgstr "A"
+
+      #: b.js:10
+      msgid "B"
+      msgstr "B"
+
+      #: a.js:10
+      #: b.js:10
+      msgid "C"
+      msgstr "C"
+
+      #: foo-plugin.php:10
+      msgid "D"
+      msgstr "D"
+      """
+
+    When I run `wp i18n make-json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 2 files.
+      """
+    And the return code should be 0
+
+    And the foo-plugin/foo-plugin-de_DE-95f0a310f289230d56c3a4949c17963e.json file should exist
+    And the foo-plugin/foo-plugin-de_DE.mo file should exist
+
+  Scenario: Does not generate or update MO files
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: a.js:10
+      msgid "A"
+      msgstr "A"
+
+      #: b.js:10
+      msgid "B"
+      msgstr "B"
+
+      #: a.js:10
+      #: b.js:10
+      msgid "C"
+      msgstr "C"
+
+      #: foo-plugin.php:10
+      msgid "D"
+      msgstr "D"
+      """
+
+    When I run `wp i18n make-json foo-plugin --no-update-mo-files`
+    Then STDOUT should contain:
+      """
+      Success: Created 2 files.
+      """
+    And the return code should be 0
+
+    And the foo-plugin/foo-plugin-de_DE-95f0a310f289230d56c3a4949c17963e.json file should exist
+    And the foo-plugin/foo-plugin-de_DE.mo file should not exist
+
   Scenario: Correctly saves strings with context
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin-de_DE.po file:

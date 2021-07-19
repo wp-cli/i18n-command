@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress project.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--skip-js] [--skip-php] [--skip-block-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--location] [--skip-js] [--skip-php] [--skip-block-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
 ~~~
 
 Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
@@ -83,6 +83,11 @@ if the source directory is detected as either a plugin or theme.
 	[--headers=<headers>]
 		Array in JSON format of custom headers which will be added to the POT file. Defaults to empty array.
 
+	[--location]
+		Whether to write `#: filename:line` lines.
+		Defaults to true, use `--no-location` to skip the removal.
+		Note that disabling this option makes it harder for technically skilled translators to understand each message’s context.
+
 	[--skip-js]
 		Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 
@@ -133,7 +138,7 @@ if the source directory is detected as either a plugin or theme.
 Extract JavaScript strings from PO files and add them to individual JSON files.
 
 ~~~
-wp i18n make-json <source> [<destination>] [--purge] [--pretty-print]
+wp i18n make-json <source> [<destination>] [--purge] [--update-mo-files] [--pretty-print]
 ~~~
 
 For JavaScript internationalization purposes, WordPress requires translations to be split up into
@@ -152,6 +157,10 @@ about WordPress JavaScript internationalization.
 
 	[--purge]
 		Whether to purge the strings that were extracted from the original source file. Defaults to true, use `--no-purge` to skip the removal.
+
+	[--update-mo-files]
+		Whether MO files should be updated as well after updating PO files.
+		Only has an effect when used in combination with `--purge`.
 
 	[--pretty-print]
 		Pretty-print resulting JSON files.

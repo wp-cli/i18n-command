@@ -158,12 +158,11 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback' );
 			$file_structure = self::read_json_file( __DIR__ . '/theme-i18n.json' );
 		}
-		$theme_json_i18n = self::extract_paths_to_translate( $file_structure );
-		return $theme_json_i18n;
+		return self::extract_paths_to_translate( $file_structure );
 	}
 
 	/**
-	 * Converts a tree as in theme-i18.json file a linear array
+	 * Converts a tree as in theme-i18.json file into a linear array
 	 * containing metadata to translate a theme.json file.
 	 *
 	 * For example, given this input:

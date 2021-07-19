@@ -11,7 +11,9 @@ class IterableCodeExtractorTest extends TestCase {
 	/** @var string A path files are located */
 	private static $base;
 
-	public function setUp() {
+	public function set_up() {
+		parent::set_up();
+
 		/**
 		 * PHP5.4 cannot set property with __DIR__ constant.
 		 */
@@ -23,10 +25,12 @@ class IterableCodeExtractorTest extends TestCase {
 		$property->setAccessible( false );
 	}
 
-	public function tearDown() {
+	public function tear_down() {
 		if ( file_exists( self::$base . '/symlinked' ) ) {
 			unlink( self::$base . '/symlinked' );
 		}
+
+		parent::tear_down();
 	}
 
 	public function test_can_include_files() {

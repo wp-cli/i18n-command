@@ -52,7 +52,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 				 */
 				$base_path = array_slice( $path, 0, $nodes_to_iterate[0] );
 				$data_path = array_slice( $path, $nodes_to_iterate[0] + 1 );
-				$base_tree = self::array_get( $theme_json, $base_path, array() );
+				$base_tree = self::array_get( $theme_json, $base_path, [] );
 				foreach ( $base_tree as $node_data ) {
 					$array_to_translate = self::array_get( $node_data, $data_path );
 					if ( is_null( $array_to_translate ) ) {
@@ -100,7 +100,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * @return array Contents of the file.
 	 */
 	private static function read_json_file( $file_path, $context = null ) {
-		$config = array();
+		$config = [];
 		if ( $file_path ) {
 			$decoded_file = json_decode(
 				file_get_contents( $file_path, false, $context ),
@@ -124,18 +124,18 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	/**
 	 * Returns a data structure to help setting up translations for theme.json data.
 	 *
-	 * array(
-	 *     array(
-	 *         'path'    => array( 'settings', 'color', 'palette' ),
+	 * [
+	 *     [
+	 *         'path'    => [ 'settings', 'color', 'palette' ],
 	 *         'key'     => 'key-that-stores-the-string-to-translate',
 	 *         'context' => 'translation-context',
-	 *     ),
-	 *     array(
+	 *     ],
+	 *     [
 	 *         'path'    => 'etc',
 	 *         'key'     => 'etc',
 	 *         'context' => 'etc',
-	 *     ),
-	 * )
+	 *     ],
+	 * ]
 	 *
 	 * Ported from the core class `WP_Theme_JSON_Resolver`.
 	 *
@@ -143,13 +143,13 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 */
 	private static function get_fields_to_translate() {
 		$context = stream_context_create(
-			array(
-				'http' => array(
+			[
+				'http' => [
 					'method'  => 'GET',
 					'header'  => 'Content-type: application/json',
 					'timeout' => '3', // To make sure it resolves in a reasonable timeframe.
-				),
-			)
+				],
+			]
 		);
 		// Using the WordPress.org SVN repo resolved to a 403.
 		// $file_structure = self::read_json_file( 'http://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json', $context );
@@ -181,18 +181,18 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 *
 	 * will return this output:
 	 *
-	 *     array(
-	 *       0 => array(
-	 *         'path'    => array( 'settings', '*', 'typography', 'fontSizes' ),
+	 *     [
+	 *       0 => [
+	 *         'path'    => [ 'settings', '*', 'typography', 'fontSizes' ],
 	 *         'key'     => 'name',
 	 *         'context' => 'Font size name'
-	 *       ),
-	 *       1 => array(
-	 *         'path'    => array( 'settings', '*', 'typography', 'fontStyles' ),
+	 *       ],
+	 *       1 => [
+	 *         'path'    => [ 'settings', '*', 'typography', 'fontStyles' ],
 	 *         'key'     => 'name',
 	 *         'context' => 'Font style name'
-	 *       )
-	 *     )
+	 *       ]
+	 *     ]
 	 *
 	 * Ported from the core class `WP_Theme_JSON_Resolver`.
 	 *
@@ -200,23 +200,23 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * @param array $current_path Keeps track of the path as we walk down the given tree.
 	 * @return array A linear array containing the paths to translate.
 	 */
-	private static function extract_paths_to_translate( $i18n_partial, $current_path = array() ) {
-		$result = array();
+	private static function extract_paths_to_translate( $i18n_partial, $current_path = [] ) {
+		$result = [];
 		foreach ( $i18n_partial as $property => $partial_child ) {
 			if ( is_numeric( $property ) ) {
 				foreach ( $partial_child as $key => $context ) {
-					return array(
-						array(
+					return [
+						[
 							'path'    => $current_path,
 							'key'     => $key,
 							'context' => $context,
-						),
-					);
+						],
+					];
 				}
 			}
 			$result = array_merge(
 				$result,
-				self::extract_paths_to_translate( $partial_child, array_merge( $current_path, array( $property ) ) )
+				self::extract_paths_to_translate( $partial_child, array_merge( $current_path, [ $property ] ) )
 			);
 		}
 		return $result;
@@ -230,14 +230,14 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 *
 	 * Example usage:
 	 *
-	 *     $array = array(
-	 *         'a' => array(
-	 *             'b' => array(
+	 *     $array = [
+	 *         'a' => [
+	 *             'b' => [
 	 *                 'c' => 1,
-	 *             ),
-	 *         ),
-	 *     );
-	 *     array_get( $array, array( 'a', 'b', 'c' ) );
+	 *             ],
+	 *         ],
+	 *     ];
+	 *     array_get( $array, [ 'a', 'b', 'c' ] );
 	 *
 	 * @param array $array   An array from which we want to retrieve some information.
 	 * @param array $path    An array of keys describing the path with which to retrieve information.

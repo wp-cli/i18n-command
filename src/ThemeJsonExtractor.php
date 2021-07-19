@@ -6,9 +6,17 @@ use Gettext\Extractors\Extractor;
 use Gettext\Extractors\ExtractorInterface;
 use Gettext\Translations;
 use WP_CLI;
+use WP_CLI\Utils;
 
 final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	use IterableCodeExtractor;
+
+	/**
+	 * Source URL from which to download the latest theme-i18n.json file.
+	 *
+	 * @var string
+	 */
+	const THEME_JSON_SOURCE = 'https://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json';
 
 	/**
 	 * @inheritdoc
@@ -87,38 +95,33 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	}
 
 	/**
-	 * Given a file path, reads it as a JSON file
-	 * and returns an array with its contents.
+	 * Given a remote URL, fetches it remotely and returns its content.
 	 *
-	 * Returns an empty array in case of error.
+	 * Returns an empty string in case of error.
 	 *
-	 * Ported from the core class `WP_Theme_JSON_Resolver`.
+	 * @param string $url URL of the file to fetch.
 	 *
-	 * @param string $file_path Path to file.
-	 * @param array $context A valid context resource created with stream_context_create(). Optional.
-	 *
-	 * @return array Contents of the file.
+	 * @return string Contents of the file.
 	 */
-	private static function read_json_file( $file_path, $context = null ) {
-		$config = [];
-		if ( $file_path ) {
-			$decoded_file = json_decode(
-				file_get_contents( $file_path, false, $context ),
-				true
-			);
-
-			$json_decoding_error = json_last_error();
-			if ( JSON_ERROR_NONE !== $json_decoding_error ) {
-				WP_CLI::debug( "Error when decoding {$file_path}", 'make-pot' );
-
-				return $config;
-			}
-
-			if ( is_array( $decoded_file ) ) {
-				$config = $decoded_file;
-			}
+	private static function remote_get( $url ) {
+		if ( ! $url ) {
+			return '';
 		}
-		return $config;
+
+		$headers  = [ 'Content-type: application/json' ];
+		$options  = [ 'halt_on_error' => false ];
+		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+
+		if (
+			! $response->success
+			|| 200 > (int) $response->status_code
+			|| 300 <= $response->status_code
+		) {
+			WP_CLI::debug( "Failed to download from URL {$url}", 'make-pot' );
+			return '';
+		}
+
+		return trim( $response->body );
 	}
 
 	/**
@@ -142,22 +145,24 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 * @return array An array of theme.json fields that are translatable and the keys that are translatable.
 	 */
 	private static function get_fields_to_translate() {
-		$context = stream_context_create(
-			[
-				'http' => [
-					'method'  => 'GET',
-					'header'  => 'Content-type: application/json',
-					'timeout' => '3', // To make sure it resolves in a reasonable timeframe.
-				],
-			]
-		);
-		// Using the WordPress.org SVN repo resolved to a 403.
-		// $file_structure = self::read_json_file( 'http://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json', $context );
-		$file_structure = self::read_json_file( 'https://raw.githubusercontent.com/WordPress/wordpress-develop/master/src/wp-includes/theme-i18n.json', $context );
-		if ( empty( $file_structure ) ) {
+		$json = self::remote_get( self::THEME_JSON_SOURCE );
+
+		if ( empty( $json ) ) {
 			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback', 'make-pot' );
-			$file_structure = self::read_json_file( __DIR__ . '/../assets/theme-i18n.json' );
+			$json = file_get_contents( __DIR__ . '/../assets/theme-i18n.json' );
 		}
+
+		$file_structure = json_decode( $json, true );
+
+		if ( JSON_ERROR_NONE !== json_last_error() ) {
+			WP_CLI::debug( 'Error when decoding theme-i18n.json file', 'make-pot' );
+			return [];
+		}
+
+		if ( ! is_array( $file_structure ) ) {
+			return [];
+		}
+
 		return self::extract_paths_to_translate( $file_structure );
 	}
 

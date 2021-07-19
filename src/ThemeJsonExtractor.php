@@ -204,14 +204,13 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 		foreach ( $i18n_partial as $property => $partial_child ) {
 			if ( is_numeric( $property ) ) {
 				foreach ( $partial_child as $key => $context ) {
-					return [
-						[
-							'path'    => $current_path,
-							'key'     => $key,
-							'context' => $context,
-						],
+					$result[] = [
+						'path'    => $current_path,
+						'key'     => $key,
+						'context' => $context,
 					];
 				}
+				return $result;
 			}
 			$result = array_merge(
 				$result,

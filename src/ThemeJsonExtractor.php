@@ -55,7 +55,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 				$base_tree = self::array_get( $theme_json, $base_path, [] );
 				foreach ( $base_tree as $node_data ) {
 					$array_to_translate = self::array_get( $node_data, $data_path );
-					if ( is_null( $array_to_translate ) ) {
+					if ( null === $array_to_translate ) {
 						continue;
 					}
 
@@ -70,7 +70,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 				}
 			} else {
 				$array_to_translate = self::array_get( $theme_json, $path );
-				if ( is_null( $array_to_translate ) ) {
+				if ( null === $array_to_translate ) {
 					continue;
 				}
 
@@ -254,7 +254,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 		foreach ( $path as $path_element ) {
 			if (
 				! is_array( $array ) ||
-				( ! is_string( $path_element ) && ! is_integer( $path_element ) && ! is_null( $path_element ) ) ||
+				( ! is_string( $path_element ) && ! is_integer( $path_element ) && null !== $path_element ) ||
 				! array_key_exists( $path_element, $array )
 			) {
 				return $default;

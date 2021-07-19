@@ -3156,7 +3156,36 @@ Feature: Generate a POT file of a WordPress project
       msgid "Notice"
       """
 
-Scenario: Skips theme.json file if skip-theme-json flag provided
+
+  Scenario: Skips theme.json file if skip-theme-json flag provided
+    Given an empty foo-theme directory
+    And a foo-theme/theme.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "color": {
+            "palette": [
+              { "slug": "black", "color": "#000000", "name": "Black" }
+            ]
+          }
+        }
+      }
+      """
+
+    When I try `wp i18n make-pot foo-theme --skip-theme-json`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the foo-theme/foo-theme.pot file should exist
+    But the foo-theme/foo-theme.pot file should not contain:
+      """
+      msgctxt "Color name"
+      msgid "Black"
+      """
+
+  Scenario: Extract strings from the top-level section of theme.json files
     Given an empty foo-theme directory
     And a foo-theme/theme.json file:
       """
@@ -3231,34 +3260,6 @@ Scenario: Skips theme.json file if skip-theme-json flag provided
                 ]
               }
             }
-          }
-        }
-      }
-      """
-
-    When I try `wp i18n make-pot foo-theme --skip-theme-json`
-    Then STDOUT should be:
-      """
-      Success: POT file successfully generated!
-      """
-    And the foo-theme/foo-theme.pot file should exist
-    But the foo-theme/foo-theme.pot file should not contain:
-      """
-      msgctxt "Color name"
-      msgid "Black"
-      """
-
-  Scenario: Extract strings from the top-level section of theme.json files
-    Given an empty foo-theme directory
-    And a foo-theme/theme.json file:
-      """
-      {
-        "version": "1",
-        "settings": {
-          "color": {
-            "palette": [
-              { "slug": "black", "color": "#000000", "name": "Black" }
-            ]
           }
         }
       }

@@ -39,12 +39,16 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 			return;
 		}
 
+		$add_reference = ! empty( $options['addReferences'] );
+
 		foreach ( $file_data as $key => $original ) {
 			switch ( $key ) {
 				case 'title':
 				case 'description':
 					$translation = $translations->insert( sprintf( 'block %s', $key ), $original );
-					$translation->addReference( $file );
+					if ( $add_reference ) {
+						$translation->addReference( $file );
+					}
 					break;
 				case 'keywords':
 					if ( ! is_array( $original ) ) {
@@ -53,7 +57,9 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 
 					foreach ( $original as $msg ) {
 						$translation = $translations->insert( 'block keyword', $msg );
-						$translation->addReference( $file );
+						if ( $add_reference ) {
+							$translation->addReference( $file );
+						}
 					}
 
 					break;
@@ -64,7 +70,9 @@ final class BlockExtractor extends Extractor implements ExtractorInterface {
 
 					foreach ( $original as $msg ) {
 						$translation = $translations->insert( 'block style label', $msg['label'] );
-						$translation->addReference( $file );
+						if ( $add_reference ) {
+							$translation->addReference( $file );
+						}
 					}
 			}
 		}

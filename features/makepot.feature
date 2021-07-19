@@ -1352,6 +1352,70 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored
       """
 
+  Scenario: Omit source code references
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'Hello World', 'foo-plugin' );
+      """
+    And a foo-plugin/file.php file:
+      """
+      <?php
+       __( 'Foo', 'foo-plugin' );
+      """
+    And a foo-plugin/file.js file:
+      """
+      __( 'Bar', 'foo-plugin' );
+      """
+    And a foo-plugin/block.json file:
+      """
+      {
+        "name": "my-plugin/notice",
+        "title": "Notice",
+        "category": "common",
+        "parent": [ "core/group" ],
+        "icon": "star",
+        "description": "Shows warning, error or success notices  ...",
+        "keywords": [ "alert", "message" ],
+        "textdomain": "foo-plugin",
+        "attributes": {
+          "message": {
+            "type": "string",
+            "source": "html",
+            "selector": ".message"
+          }
+        },
+        "styles": [
+          { "name": "default", "label": "Default", "isDefault": true },
+          { "name": "other", "label": "Other" }
+        ],
+        "editorScript": "build/editor.js",
+        "script": "build/main.js",
+        "editorStyle": "build/editor.css",
+        "style": "build/style.css"
+      }
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot --no-location`
+    Then the foo-plugin.pot file should not contain:
+      """
+      #:
+      """
+
   Scenario: Merges translations with the ones from an existing POT file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:

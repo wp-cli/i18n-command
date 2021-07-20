@@ -30,9 +30,14 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $merge = [];
 
 	/**
-	 * @var Translations
+	 * @var Translations[]
 	 */
-	protected $exceptions;
+	protected $exceptions = [];
+
+	/**
+	 * @var bool
+	 */
+	protected $subtract_and_merge;
 
 	/**
 	 * @var array
@@ -189,6 +194,10 @@ class MakePotCommand extends WP_CLI_Command {
 	 * Any string which is found on that denylist will not be extracted.
 	 * This can be useful when you want to create multiple POT files from the same source directory with slightly
 	 * different content and no duplicate strings between them.
+	 *
+	 * [--subtract-and-merge]
+	 * : Whether source code references and comments from the generated POT file should be instead added to the POT file
+	 * used for subtraction. Warning: this modifies the files passed to `--subtract`!
 	 *
 	 * [--include=<paths>]
 	 * : Comma-separated list of files and paths that should be used for string extraction.
@@ -393,31 +402,21 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 		}
 
-		$this->exceptions = new Translations();
-
 		if ( isset( $assoc_args['subtract'] ) ) {
-			$exceptions = explode( ',', $assoc_args['subtract'] );
+			$this->subtract_and_merge = Utils\get_flag_value( $assoc_args, 'subtract-and-merge', false );
 
-			$exceptions = array_filter(
-				$exceptions,
-				function ( $exception ) {
-					if ( ! file_exists( $exception ) ) {
-						WP_CLI::warning( sprintf( 'Invalid file provided to --subtract: %s', $exception ) );
+			$files = explode( ',', $assoc_args['subtract'] );
 
-						return false;
-					}
-
-					$exception_translations = new Translations();
-
-					Po::fromFile( $exception, $exception_translations );
-					$this->exceptions->mergeWith( $exception_translations );
-
-					return true;
+			foreach ( $files as $file ) {
+				if ( ! file_exists( $file ) ) {
+					WP_CLI::warning( sprintf( 'Invalid file provided to --subtract: %s', $file ) );
+					continue;
 				}
-			);
 
-			if ( ! empty( $exceptions ) ) {
-				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', implode( ',', $exceptions ) ), 'make-pot' );
+				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', $file ), 'make-pot' );
+
+				$this->exceptions[ $file ] = new Translations();
+				Po::fromFile( $file, $this->exceptions[ $file ] );
 			}
 		}
 
@@ -666,9 +665,23 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::error( $e->getMessage() );
 		}
 
-		foreach ( $this->exceptions as $translation ) {
-			if ( $translations->find( $translation ) ) {
-				unset( $translations[ $translation->getId() ] );
+		foreach ( $this->exceptions as $file => $exception_translations ) {
+			/** @var Translation $exception_translation */
+			foreach ( $exception_translations as $exception_translation ) {
+				if ( ! $translations->find( $exception_translation ) ) {
+					continue;
+				}
+
+				if ( $this->subtract_and_merge ) {
+					$translation = $translations[ $exception_translation->getId() ];
+					$exception_translation->mergeWith( $translation );
+				}
+
+				unset( $translations[ $exception_translation->getId() ] );
+			}
+
+			if ( $this->subtract_and_merge ) {
+				PotGenerator::toFile( $exception_translations, $file );
 			}
 		}
 

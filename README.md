@@ -31,7 +31,7 @@ wp i18n
 Create a POT file for a WordPress project.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--location] [--skip-js] [--skip-php] [--skip-block-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--subtract-and-merge] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--location] [--skip-js] [--skip-php] [--skip-block-json] [--skip-theme-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
 ~~~
 
 Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
@@ -66,6 +66,10 @@ if the source directory is detected as either a plugin or theme.
 		This can be useful when you want to create multiple POT files from the same source directory with slightly
 		different content and no duplicate strings between them.
 
+	[--subtract-and-merge]
+		Whether source code references and comments from the generated POT file should be instead added to the POT file
+		used for subtraction. Warning: this modifies the files passed to `--subtract`!
+
 	[--include=<paths>]
 		Comma-separated list of files and paths that should be used for string extraction.
 		If provided, only these files and folders will be taken into account for string extraction.
@@ -96,6 +100,9 @@ if the source directory is detected as either a plugin or theme.
 
 	[--skip-block-json]
 		Skips string extraction from block.json files.
+
+	[--skip-theme-json]
+		Skips string extraction from theme.json files.
 
 	[--skip-audit]
 		Skips string audit where it tries to find possible mistakes in translatable strings. Useful when running in an

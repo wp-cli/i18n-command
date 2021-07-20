@@ -196,7 +196,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 * different content and no duplicate strings between them.
 	 *
 	 * [--subtract-and-merge]
-	 * : Whether source code references from the generated POT file should be instead added to the POT file
+	 * : Whether source code references and comments from the generated POT file should be instead added to the POT file
 	 * used for subtraction. Warning: this modifies the files passed to `--subtract`!
 	 *
 	 * [--include=<paths>]

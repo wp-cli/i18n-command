@@ -48,6 +48,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * [--pretty-print]
 	 * : Pretty-print resulting JSON files.
 	 *
+	 * [--use-map[=<paths>]]
+	 * : Whether to use a mapping file for the strings. Separate with `,` to specify multiple. Defaults to `build/map.json`.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create JSON files for all PO files in the languages directory
@@ -63,6 +66,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$purge           = Utils\get_flag_value( $assoc_args, 'purge', true );
 		$update_mo_files = Utils\get_flag_value( $assoc_args, 'update-mo-files', true );
+		$map_paths       = Utils\get_flag_value( $assoc_args, 'use-map', false );
 
 		if ( Utils\get_flag_value( $assoc_args, 'pretty-print', false ) ) {
 			$this->json_options |= JSON_PRETTY_PRINT;
@@ -79,6 +83,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 		if ( isset( $args[1] ) ) {
 			$destination = $args[1];
 		}
+
+		$map = $this->build_map( $map_paths );
 
 		// Two is_dir() checks in case of a race condition.
 		if ( ! is_dir( $destination )
@@ -99,7 +105,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension() ) {
-				$result        = $this->make_json( $file->getRealPath(), $destination );
+				$result        = $this->make_json( $file->getRealPath(), $destination, $map );
 				$result_count += count( $result );
 
 				if ( $purge ) {
@@ -128,13 +134,77 @@ class MakeJsonCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Collect maps from paths, normalize and merge
+	 *
+	 * @param string $paths argument. False to do nothing.
+	 * @return array|null Mapping array. Null if no maps specified.
+	 */
+	protected function build_map( $paths ) {
+		if ( false === $paths ) {
+			return null;
+		}
+
+		$map = [];
+
+		if ( true === $paths ) {
+			$paths = [ 'build' . DIRECTORY_SEPARATOR . 'map.json' ];
+		} else {
+			$paths = array_unique( array_filter( explode( ',', $paths ) ) );
+		}
+		WP_CLI::debug( sprintf( 'Using files %s', implode( ', ', $paths ) ), 'make-json' );
+
+		foreach ( $paths as $path ) {
+			if ( ! file_exists( $path ) || is_dir( $path ) ) {
+				WP_CLI::warning( sprintf( 'File %s does not exist', $path ) );
+				continue;
+			}
+
+			$json = json_decode( file_get_contents( $path ), true );
+			if ( ! is_array( $json ) ) {
+				WP_CLI::warning( sprintf( 'File %s contained invalid map', $path ) );
+				continue;
+			}
+
+			$key_num = count( $json );
+			// normalize contents to string[]
+			$json = array_map(
+				function ( $value ) {
+					if ( is_array( $value ) ) {
+						$value = array_values( array_filter( $value, 'is_string' ) );
+						if ( ! empty( $value ) ) {
+							return $value;
+						}
+					}
+
+					if ( is_string( $value ) ) {
+						return [ $value ];
+					}
+
+					return null;
+				},
+				$json
+			);
+			WP_CLI::debug( sprintf( 'Dropped %d keys from %s', count( $json ) - $key_num, $path ), 'make-json' );
+
+			$map = array_merge_recursive( $map, $json );
+		}
+
+		if ( empty( $map ) ) {
+			WP_CLI::error( 'No valid keys found. No file was created.' );
+		}
+
+		return $map;
+	}
+
+	/**
 	 * Splits a single PO file into multiple JSON files.
 	 *
 	 * @param string $source_file Path to the source file.
 	 * @param string $destination Path to the destination directory.
+	 * @param array  $map               Source to build file mapping.
 	 * @return array List of created JSON files.
 	 */
-	protected function make_json( $source_file, $destination ) {
+	protected function make_json( $source_file, $destination, $map ) {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
 		$translations = new Translations();
@@ -146,6 +216,36 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		foreach ( $translations as $index => $translation ) {
 			/** @var Translation $translation */
+
+			$references = $translation->getReferences();
+
+			if ( ! is_null( $map ) ) {
+				// translate using map
+				$temp = array_map(
+					function ( $reference ) use ( &$map ) {
+						$file = $reference[0];
+
+						if ( array_key_exists( $file, $map ) ) {
+							return $map[ $file ];
+						}
+
+						return null;
+					},
+					$references
+				);
+				// this is now an array of arrays of sources, translate to array of sources
+				$references = [];
+				foreach ( $temp as $sources ) {
+					$references = array_merge( $references, $sources );
+				}
+				// and wrap to array
+				$references = array_map(
+					function ( $value ) {
+						return [ $value ];
+					},
+					$references
+				);
+			}
 
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
@@ -162,7 +262,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 					return null;
 				},
-				$translation->getReferences()
+				$references
 			);
 
 			$sources = array_unique( array_filter( $sources ) );

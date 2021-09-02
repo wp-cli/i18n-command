@@ -86,7 +86,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		$map = $this->build_map( $map_paths );
 		if ( is_array( $map ) && empty( $map ) ) {
-			WP_CLI::error( 'No valid keys found. No file was created.' );
+			WP_CLI::warning( 'No valid keys found. No file was created.' );
+			return;
 		}
 
 		// Two is_dir() checks in case of a race condition.
@@ -235,6 +236,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 				// this is now an array of arrays of sources, translate to array of sources
 				$references = [];
 				foreach ( $temp as $sources ) {
+					if ( is_null( $sources ) ) {
+						continue;
+					}
 					$references = array_merge( $references, $sources );
 				}
 				// and wrap to array

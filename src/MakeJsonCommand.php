@@ -85,6 +85,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 		}
 
 		$map = $this->build_map( $map_paths );
+		if ( is_array( $map ) && empty( $map ) ) {
+			WP_CLI::error( 'No valid keys found. No file was created.' );
+		}
 
 		// Two is_dir() checks in case of a race condition.
 		if ( ! is_dir( $destination )
@@ -136,7 +139,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Collect maps from paths, normalize and merge
 	 *
-	 * @param string $paths argument. False to do nothing.
+	 * @param string|bool $paths argument. False to do nothing.
 	 * @return array|null Mapping array. Null if no maps specified.
 	 */
 	protected function build_map( $paths ) {
@@ -187,10 +190,6 @@ class MakeJsonCommand extends WP_CLI_Command {
 			WP_CLI::debug( sprintf( 'Dropped %d keys from %s', count( $json ) - $key_num, $path ), 'make-json' );
 
 			$map = array_merge_recursive( $map, $json );
-		}
-
-		if ( empty( $map ) ) {
-			WP_CLI::error( 'No valid keys found. No file was created.' );
 		}
 
 		return $map;

@@ -37,13 +37,15 @@ class MakeJsonMapTest extends TestCase {
 	}
 
 	public function test_invalid_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/invalid.json' );
+		$maps     = self::$base . 'maps/invalid.json';
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [];
 		$this->assertEquals( $expected, $result );
 	}
 
 	public function test_basic_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/basic.json' );
+		$maps     = self::$base . 'maps/basic.json';
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js'   => [ 'dist/index.js' ],
 			'src/include.js' => [ 'dist/index.js' ],
@@ -52,7 +54,8 @@ class MakeJsonMapTest extends TestCase {
 	}
 
 	public function test_mixed_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/mixed.json' );
+		$maps     = self::$base . 'maps/mixed.json';
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js' => [ 'dist/index.js' ],
 			'src/other.js' => [ 'dist/index.js' ],
@@ -61,7 +64,8 @@ class MakeJsonMapTest extends TestCase {
 	}
 
 	public function test_other_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/other.json' );
+		$maps     = self::$base . 'maps/other.json';
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js'   => [ 'dist/index.js' ],
 			'src/include.js' => [ 'dist/index.js', 'dist/other.js' ],
@@ -70,7 +74,8 @@ class MakeJsonMapTest extends TestCase {
 	}
 
 	public function test_invalid_values_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/invalid_values.json' );
+		$maps     = self::$base . 'maps/invalid_values.json';
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js' => null,
 			'src/other.js' => null,
@@ -80,7 +85,8 @@ class MakeJsonMapTest extends TestCase {
 	}
 
 	public function test_merge_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/basic.json,' . self::$base . 'maps/mixed.json' );
+		$maps     = [ self::$base . 'maps/basic.json', self::$base . 'maps/mixed.json' ];
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			// double is expected because it's in both files. no use bothering to remove it, that's done in make_json anyways
 			'src/index.js'   => [ 'dist/index.js', 'dist/index.js' ],
@@ -91,7 +97,8 @@ class MakeJsonMapTest extends TestCase {
 	}
 
 	public function test_merge_same_map() {
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/basic.json,' . self::$base . 'maps/mixed.json,' . self::$base . 'maps/other.json' );
+		$maps     = [ self::$base . 'maps/basic.json', self::$base . 'maps/mixed.json', self::$base . 'maps/other.json' ];
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js'   => [ 'dist/index.js', 'dist/index.js', 'dist/index.js' ],
 			'src/other.js'   => [ 'dist/index.js' ],
@@ -102,7 +109,8 @@ class MakeJsonMapTest extends TestCase {
 
 	public function test_merge_invalid_values_map() {
 		// merge both ways
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/basic.json,' . self::$base . 'maps/invalid_values.json' );
+		$maps     = [ self::$base . 'maps/basic.json', self::$base . 'maps/invalid_values.json' ];
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js'   => [ 'dist/index.js', null ],
 			'src/other.js'   => null,
@@ -111,7 +119,8 @@ class MakeJsonMapTest extends TestCase {
 		];
 		$this->assertEquals( $expected, $result );
 
-		$result   = self::$build_map->invoke( self::$obj, self::$base . 'maps/invalid_values.json,' . self::$base . 'maps/basic.json' );
+		$maps     = [ self::$base . 'maps/invalid_values.json', self::$base . 'maps/basic.json' ];
+		$result   = self::$build_map->invoke( self::$obj, $maps );
 		$expected = [
 			'src/index.js'   => [ null, 'dist/index.js' ],
 			'src/other.js'   => null,

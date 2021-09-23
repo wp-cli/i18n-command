@@ -48,8 +48,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * [--pretty-print]
 	 * : Pretty-print resulting JSON files.
 	 *
-	 * [--use-map[=<paths>]]
-	 * : Whether to use a mapping file for the strings. Separate with `,` to specify multiple. Defaults to `build/map.json`.
+	 * [--use-map=<paths_or_maps>]
+	 * : Whether to use a mapping file for the strings, as a JSON value, array to specify multiple.
+	 * Each element can either be a string (file path) or object (map).
 	 *
 	 * ## EXAMPLES
 	 *
@@ -59,11 +60,21 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *     # Create JSON files for my-plugin-de_DE.po and leave the PO file untouched.
 	 *     $ wp i18n make-json my-plugin-de_DE.po /tmp --no-purge
 	 *
+	 *     # Create JSON files with mapping
+	 *     $ wp i18n make-json languages --use-map=build/map.json
+	 *
+	 *     # Create JSON files with multiple mappings
+	 *     $ wp i18n make-json languages '--use-map=["build/map.json","build/map2.json"]'
+	 *
+	 *     # Create JSON files with object mapping
+	 *     $ wp i18n make-json languages '--use-map={"source/index.js":"build/index.js"}'
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
+		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, array( 'use-map' ) );
 		$purge           = Utils\get_flag_value( $assoc_args, 'purge', true );
 		$update_mo_files = Utils\get_flag_value( $assoc_args, 'update-mo-files', true );
 		$map_paths       = Utils\get_flag_value( $assoc_args, 'use-map', false );
@@ -86,8 +97,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		$map = $this->build_map( $map_paths );
 		if ( is_array( $map ) && empty( $map ) ) {
-			WP_CLI::warning( 'No valid keys found. No file was created.' );
-			return;
+			WP_CLI::error( 'No valid keys found. No file was created.' );
 		}
 
 		// Two is_dir() checks in case of a race condition.
@@ -140,36 +150,52 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Collect maps from paths, normalize and merge
 	 *
-	 * @param string|bool $paths argument. False to do nothing.
-	 * @return array|null Mapping array. Null if no maps specified.
+	 * @param string|array|bool $paths_or_maps argument. False to do nothing.
+	 * @return array|null       Mapping array. Null if no maps specified.
 	 */
-	protected function build_map( $paths ) {
-		if ( false === $paths ) {
+	protected function build_map( $paths_or_maps ) {
+		if ( false === $paths_or_maps ) {
 			return null;
 		}
 
 		$map = [];
 
-		if ( true === $paths ) {
-			$paths = [ 'build' . DIRECTORY_SEPARATOR . 'map.json' ];
-		} else {
-			$paths = array_unique( array_filter( explode( ',', $paths ) ) );
+		// not an array: single value could also be object (associative array)
+		if ( ! is_array( $paths_or_maps ) || empty( array_filter( array_keys( $paths_or_maps ), 'is_int' ) ) ) {
+			$paths_or_maps = [ $paths_or_maps ];
 		}
-		WP_CLI::debug( sprintf( 'Using files %s', implode( ', ', $paths ) ), 'make-json' );
+		$paths = array_filter( $paths_or_maps, 'is_string' );
+		WP_CLI::debug( sprintf( 'Using %d map files: %s', count( $paths ), implode( ', ', $paths ) ), 'make-json' );
+		$maps = array_filter( $paths_or_maps, 'is_array' );
+		WP_CLI::debug( sprintf( 'Using %d inline map objects', count( $maps ) ), 'make-json' );
+		WP_CLI::debug( sprintf( 'Dropping %d invalid values from map argument', count( $paths_or_maps ) - count( $paths ) - count( $maps ) ), 'make-json' );
+
+		$to_transform = array_map(
+			function ( $value, $index ) {
+				return [ $value, sprintf( 'inline object %d', $index ) ];
+			},
+			$maps,
+			array_keys( $maps )
+		);
 
 		foreach ( $paths as $path ) {
 			if ( ! file_exists( $path ) || is_dir( $path ) ) {
-				WP_CLI::warning( sprintf( 'File %s does not exist', $path ) );
+				WP_CLI::warning( sprintf( 'Map file %s does not exist', $path ) );
 				continue;
 			}
 
 			$json = json_decode( file_get_contents( $path ), true );
 			if ( ! is_array( $json ) ) {
-				WP_CLI::warning( sprintf( 'File %s contained invalid map', $path ) );
+				WP_CLI::warning( sprintf( 'Map file %s invalid', $path ) );
 				continue;
 			}
 
-			$key_num = count( $json );
+			$to_transform[] = [ $json, $path ];
+		}
+
+		foreach ( $to_transform as $transform ) {
+			list( $json, $file ) = $transform;
+			$key_num             = count( $json );
 			// normalize contents to string[]
 			$json = array_map(
 				function ( $value ) {
@@ -188,7 +214,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 				},
 				$json
 			);
-			WP_CLI::debug( sprintf( 'Dropped %d keys from %s', count( $json ) - $key_num, $path ), 'make-json' );
+			WP_CLI::debug( sprintf( 'Dropped %d keys from %s', count( $json ) - $key_num, $file ), 'make-json' );
 
 			$map = array_merge_recursive( $map, $json );
 		}
@@ -199,10 +225,10 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Splits a single PO file into multiple JSON files.
 	 *
-	 * @param string $source_file Path to the source file.
-	 * @param string $destination Path to the destination directory.
-	 * @param array  $map               Source to build file mapping.
-	 * @return array List of created JSON files.
+	 * @param string     $source_file Path to the source file.
+	 * @param string     $destination Path to the destination directory.
+	 * @param array|null $map               Source to build file mapping.
+	 * @return array     List of created JSON files.
 	 */
 	protected function make_json( $source_file, $destination, $map ) {
 		/** @var Translations[] $mapping */
@@ -216,39 +242,6 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		foreach ( $translations as $index => $translation ) {
 			/** @var Translation $translation */
-
-			$references = $translation->getReferences();
-
-			if ( ! is_null( $map ) ) {
-				// translate using map
-				$temp = array_map(
-					function ( $reference ) use ( &$map ) {
-						$file = $reference[0];
-
-						if ( array_key_exists( $file, $map ) ) {
-							return $map[ $file ];
-						}
-
-						return null;
-					},
-					$references
-				);
-				// this is now an array of arrays of sources, translate to array of sources
-				$references = [];
-				foreach ( $temp as $sources ) {
-					if ( is_null( $sources ) ) {
-						continue;
-					}
-					$references = array_merge( $references, $sources );
-				}
-				// and wrap to array
-				$references = array_map(
-					function ( $value ) {
-						return [ $value ];
-					},
-					$references
-				);
-			}
 
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
@@ -265,7 +258,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 					return null;
 				},
-				$references
+				$this->reference_map( $translation->getReferences(), $map )
 			);
 
 			$sources = array_unique( array_filter( $sources ) );
@@ -296,6 +289,49 @@ class MakeJsonCommand extends WP_CLI_Command {
 		$result += $this->build_json_files( $mapping, $base_file_name, $destination );
 
 		return $result;
+	}
+
+	/**
+	 * Takes the references and applies map, if given
+	 *
+	 * @param array      $references translation references
+	 * @param array|null $map file mapping
+	 * @return array     mapped references
+	 */
+	protected function reference_map( $references, $map ) {
+		if ( is_null( $map ) ) {
+			return $references;
+		}
+
+		// translate using map
+		$temp = array_map(
+			function ( $reference ) use ( &$map ) {
+				$file = $reference[0];
+
+				if ( array_key_exists( $file, $map ) ) {
+					return $map[ $file ];
+				}
+
+				return null;
+			},
+			$references
+		);
+		// this is now an array of arrays of sources, translate to array of sources
+		$references = [];
+		foreach ( $temp as $sources ) {
+			if ( is_null( $sources ) ) {
+				continue;
+			}
+			$references = array_merge( $references, $sources );
+		}
+		// and wrap to array
+		$references = array_map(
+			function ( $value ) {
+				return [ $value ];
+			},
+			$references
+		);
+		return $references;
 	}
 
 	/**

@@ -627,6 +627,37 @@ Feature: Generate a POT file of a WordPress project
       #. translators: this comment block is indented with a tab and should get extracted too.
       """
 
+  Scenario: Remove duplicate translator comments
+    Given I run `echo "\t"`
+    And save STDOUT as {TAB}
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      /* translators: This is a duplicate comment! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* translators: This is a duplicate comment! */
+      __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      #. translators: This is a duplicate comment!
+      #. translators: This is a duplicate comment!
+      """
+
   Scenario: Generates a POT file for a child theme with no other files
     When I run `wp scaffold child-theme foobar --parent_theme=twentyseventeen --theme_name="Foo Bar" --author="Jane Doe" --author_uri="https://example.com" --theme_uri="https://foobar.example.com"`
     Then the wp-content/themes/foobar directory should exist

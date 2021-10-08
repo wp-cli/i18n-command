@@ -628,8 +628,6 @@ Feature: Generate a POT file of a WordPress project
       """
 
   Scenario: Remove duplicate translator comments
-    Given I run `echo "\t"`
-    And save STDOUT as {TAB}
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
@@ -652,6 +650,10 @@ Feature: Generate a POT file of a WordPress project
       Success: POT file successfully generated!
       """
     And the foo-plugin/foo-plugin.pot file should exist
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: This is a duplicate comment!
+      """
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
       #. translators: This is a duplicate comment!
@@ -739,7 +741,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should not contain:
       """
-      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      Warning: The string "Hello World" has 2 different translator comments.
       """
 
   Scenario: Does not print a warning for translator comments clashing with meta data

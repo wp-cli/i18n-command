@@ -715,6 +715,33 @@ Feature: Generate a POT file of a WordPress project
       Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
       """
 
+  Scenario: Does not print a warning when two identical strings have the same translator comment
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Plugin name
+       */
+
+      /* translators: This is a duplicate comment! */
+      __( 'Hello World', 'foo-plugin' );
+
+      /* translators: This is a duplicate comment! */
+      __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated!
+      """
+    And STDERR should not contain:
+      """
+      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      """
+
   Scenario: Does not print a warning for translator comments clashing with meta data
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

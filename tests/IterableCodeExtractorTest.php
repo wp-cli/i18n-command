@@ -132,6 +132,7 @@ class IterableCodeExtractorTest extends TestCase {
 			static::$base . 'foo/bar/foofoo/minified.min.js',
 			static::$base . 'hoge/should_NOT_be_included.js',
 			static::$base . 'vendor/vendor-file.php',
+			static::$base . 'vendor/vendor1/vendor1-file.php',
 		);
 		$this->assertEquals( $expected, $result );
 	}
@@ -141,6 +142,14 @@ class IterableCodeExtractorTest extends TestCase {
 		$excludes = [ 'vendor' ];
 		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
 		$expected = static::$base . 'vendor/vendor-file.php';
+		$this->assertContains( $expected, $result );
+	}
+
+	public function test_can_include_folder_in_excluded_folder() {
+		$includes = [ 'vendor/vendor1' ];
+		$excludes = [ 'vendor' ];
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, $includes, $excludes, [ 'php', 'js' ] );
+		$expected = static::$base . 'vendor/vendor1/vendor1-file.php';
 		$this->assertContains( $expected, $result );
 	}
 

@@ -168,6 +168,7 @@ trait IterableCodeExtractor {
 
 		/** @var string $root_relative_path */
 		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
+		$root_relative_path = self::trim_leading_slash( $root_relative_path );
 
 		foreach ( $matchers as $path_or_file ) {
 			// If the matcher contains no wildcards and the path matches the start of the matcher.
@@ -230,6 +231,11 @@ trait IterableCodeExtractor {
 					if ( ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) && $iterator->hasChildren() ) {
 						// Always include directories that may have matching children even if they are excluded.
 						return static::containsMatchingChildren( $file, $include );
+					}
+
+					// Include directories that are excluded but include score is higher.
+					if ( 0 < $exclusion_score && $inclusion_score >= $exclusion_score && $iterator->hasChildren() ) {
+						return true;
 					}
 
 					if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {

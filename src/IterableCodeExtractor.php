@@ -234,7 +234,7 @@ trait IterableCodeExtractor {
 					}
 
 					// Include directories that are excluded but include score is higher.
-					if ( 0 < $exclusion_score && $inclusion_score >= $exclusion_score && $iterator->hasChildren() ) {
+					if ( $exclusion_score > 0 && $inclusion_score >= $exclusion_score && $iterator->hasChildren() ) {
 						return true;
 					}
 

@@ -12,6 +12,7 @@
     ],
     "require": {
         "gettext/gettext": "^4.8",
+        "illuminate/view": "^8.83",
         "mck89/peast": "^1.13.11",
         "wp-cli/wp-cli": "^2.5"
     },

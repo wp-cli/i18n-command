@@ -238,7 +238,7 @@ trait IterableCodeExtractor {
 						return true;
 					}
 
-					if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
+					if ( ! $file->isFile() || ! in_array( static::file_extensions_multi($file), $extensions, true ) ) {
 						return false;
 					}
 
@@ -250,7 +250,7 @@ trait IterableCodeExtractor {
 
 		foreach ( $files as $file ) {
 			/** @var SplFileInfo $file */
-			if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
+			if ( ! $file->isFile() || ! in_array( static::file_extensions_multi($file), $extensions, true ) ) {
 				continue;
 			}
 
@@ -260,6 +260,18 @@ trait IterableCodeExtractor {
 		sort( $filtered_files, SORT_NATURAL | SORT_FLAG_CASE );
 
 		return $filtered_files;
+	}
+	
+	private static function file_extensions_multi($file) {
+		$FILE_EXTENSION_SEPARATOR = '.';
+
+		$filename = $file->getFilename();
+		$parts = explode($FILE_EXTENSION_SEPARATOR, $filename, 2);
+		if(count($parts) <= 1) {
+			// if ever something goes wrong, fall back to SPL
+			return $file->getExtension();
+		}
+		return $parts[1];
 	}
 
 	/**

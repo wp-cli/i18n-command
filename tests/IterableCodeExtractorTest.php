@@ -126,6 +126,7 @@ class IterableCodeExtractorTest extends TestCase {
 		$expected = array(
 			static::$base . 'baz/includes/should_be_included.js',
 			static::$base . 'foo-plugin/foo-plugin.php',
+			static::$base . 'foo-theme/foo-theme-file.blade.php',
 			static::$base . 'foo/bar/excluded/ignored.js',
 			static::$base . 'foo/bar/foo/bar/foo/bar/deep_directory_also_included.php',
 			static::$base . 'foo/bar/foofoo/included.js',

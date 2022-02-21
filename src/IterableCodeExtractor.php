@@ -262,11 +262,24 @@ trait IterableCodeExtractor {
 		return $filtered_files;
 	}
 
+	/**
+	 * Determines whether the file extension of a file matches any of the given file extensions.
+	 *
+	 * @param SplFileInfo $file       File or directory.
+	 * @param array       $extensions List of file extensions to match.
+	 * @return bool Whether the file has a file extension that matches any of the ones in the list.
+	 */
 	private static function file_has_file_extension( $file, $extensions ) {
 		return in_array( $file->getExtension(), $extensions, true ) ||
 			in_array( static::file_get_extension_multi( $file ), $extensions, true );
 	}
 
+	/**
+	 * Gets the single- (e.g. `php`) or multi-file extension (e.g. `blade.php`) of a file.
+	 *
+	 * @param SplFileInfo $file File or directory.
+	 * @return string The single- or multi-file extension of the file.
+	 */
 	private static function file_get_extension_multi( $file ) {
 		$file_extension_separator = '.';
 

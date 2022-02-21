@@ -3,11 +3,11 @@
 namespace WP_CLI\I18n;
 
 use Exception;
-use Gettext\Extractors\Blade;
 use Gettext\Translations;
 use WP_CLI;
+use WP_CLI\I18n;
 
-final class BladeCodeExtractor extends Blade {
+final class BladeCodeExtractor extends BladeGettextExtractor {
 	use IterableCodeExtractor;
 
 	public static $options = [

@@ -620,8 +620,6 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( ! $this->skip_blade ) {
 				$options = [
-					// Extract 'Template Name' headers in theme files.
-					'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),
 					'include'            => $this->include,
 					'exclude'            => $this->exclude,
 					'extensions'         => [ 'blade.php' ],

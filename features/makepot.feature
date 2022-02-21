@@ -2911,9 +2911,23 @@ Feature: Generate a POT file of a WordPress project
       msgid "Bar"
       """
 
-  Scenario: Extract strings from a Blade-PHP file
-    Given an empty example-project directory
-    And a example-project/stuff.blade.php file:
+  Scenario: Extract strings from a Blade-PHP file in a theme
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name:     Foo Theme
+      Theme URI:      https://example.com
+      Description:
+      Author:
+      Author URI:
+      Version:        0.1.0
+      License:        GPL-2.0+
+      Text Domain:    foo-theme
+      Domain Path:    /languages
+      */
+      """
+    And a foo-theme/stuff.blade.php file:
       """
 	  @php
 		__('Test');
@@ -2935,14 +2949,11 @@ Feature: Generate a POT file of a WordPress project
       @endsection
       """
 
-    When I try `wp i18n make-pot example-project result.pot --ignore-domain --debug`
+    When I try `wp i18n make-pot foo-theme result.pot --ignore-domain --debug`
     Then STDOUT should be:
       """
+      Theme stylesheet detected.
       Success: POT file successfully generated!
-      """
-    And STDERR should contain:
-      """
-      No valid theme stylesheet or plugin file found, treating as a regular project.
       """
     And the result.pot file should contain:
       """

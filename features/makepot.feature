@@ -2911,7 +2911,7 @@ Feature: Generate a POT file of a WordPress project
       msgid "Bar"
       """
 
-  Scenario: Extract strings from a Blade-PHP file in a theme
+  Scenario: Extract strings from a Blade-PHP file in a theme (ignoring domains)
     Given an empty foo-theme directory
     And a foo-theme/style.css file:
       """
@@ -2924,7 +2924,6 @@ Feature: Generate a POT file of a WordPress project
       Version:        0.1.0
       License:        GPL-2.0+
       Text Domain:    foo-theme
-      Domain Path:    /languages
       */
       """
     And a foo-theme/stuff.blade.php file:
@@ -2934,14 +2933,14 @@ Feature: Generate a POT file of a WordPress project
 	  @endphp
       @extends('layouts.app')
 	  
-	  @php(__('Another test.', 'domain'))
+	  @php(__('Another test.', 'some-other-domain'))
 
       @section('content')
         @include('partials.page-header')
 
         @if (! have_posts())
           <x-alert type="warning">
-            {!! __('Page not found.', 'foo-plugin') !!}
+            {!! __('Page not found.', 'foo-theme') !!}
           </x-alert>
 
           {!! get_search_form(false) !!}
@@ -2966,6 +2965,58 @@ Feature: Generate a POT file of a WordPress project
     And the result.pot file should contain:
       """
       msgid "Another test."
+      """
+
+  Scenario: Extract strings from a Blade-PHP file in a theme
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name:     Foo Theme
+      Theme URI:      https://example.com
+      Description:
+      Author:
+      Author URI:
+      Version:        0.1.0
+      License:        GPL-2.0+
+      Text Domain:    foo-theme
+      */
+      """
+    And a foo-theme/stuff.blade.php file:
+      """
+	  @php
+		__('Test');
+	  @endphp
+      @extends('layouts.app')
+	  
+	  @php(__('Another test.', 'some-other-domain'))
+
+      @section('content')
+        @include('partials.page-header')
+
+        @if (! have_posts())
+          <x-alert type="warning">
+            {!! __('Page not found.', 'foo-theme') !!}
+          </x-alert>
+
+          {!! get_search_form(false) !!}
+        @endif
+      @endsection
+      """
+
+    When I try `wp i18n make-pot foo-theme result.pot --debug`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated!
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Test"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Page not found."
       """
 
   Scenario: Custom package name

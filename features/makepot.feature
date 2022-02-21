@@ -2911,6 +2911,7 @@ Feature: Generate a POT file of a WordPress project
       msgid "Bar"
       """
 
+  @blade
   Scenario: Extract strings from a Blade-PHP file in a theme (ignoring domains)
     Given an empty foo-theme directory
     And a foo-theme/style.css file:
@@ -2967,6 +2968,7 @@ Feature: Generate a POT file of a WordPress project
       msgid "Another test."
       """
 
+  @blade
   Scenario: Extract strings from a Blade-PHP file in a theme
     Given an empty foo-theme directory
     And a foo-theme/style.css file:

@@ -122,7 +122,7 @@ class IterableCodeExtractorTest extends TestCase {
 	}
 
 	public function test_can_return_all_directory_files_sorted() {
-		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ '*' ], [], [ 'php', 'js' ] );
+		$result   = IterableCodeExtractor::getFilesFromDirectory( self::$base, [ '*' ], [], [ 'php', 'blade.php', 'js' ] );
 		$expected = array(
 			static::$base . 'baz/includes/should_be_included.js',
 			static::$base . 'foo-plugin/foo-plugin.php',

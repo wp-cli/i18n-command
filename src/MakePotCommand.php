@@ -620,10 +620,10 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( ! $this->skip_blade ) {
 				$options = [
-					'include'            => $this->include,
-					'exclude'            => $this->exclude,
-					'extensions'         => [ 'blade.php' ],
-					'addReferences'      => $this->location,
+					'include'       => $this->include,
+					'exclude'       => $this->exclude,
+					'extensions'    => [ 'blade.php' ],
+					'addReferences' => $this->location,
 				];
 				BladeCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}

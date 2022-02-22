@@ -13,6 +13,11 @@ use eftec\bladeone\BladeOne;
  */
 class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 
+	/**
+	 * Prepares a Blade compiler/engine and returns it.
+	 *
+	 * @return BladeOne
+	 */
 	protected static function getBladeCompiler() {
 		$cache_path     = empty( $options['cachePath'] ) ? sys_get_temp_dir() : $options['cachePath'];
 		$blade_compiler = new BladeOne( null, $cache_path );
@@ -24,15 +29,20 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 		return $blade_compiler;
 	}
 
+	/**
+	 * Compiles the Blade template string into a PHP string in one step.
+	 *
+	 * @param string $string Blade string to be compiled to a PHP string
+	 * @return string
+	 */
 	protected static function compileBladeToPhp( $string ) {
 		return static::getBladeCompiler()->compileString( $string );
 	}
 
-
-	// Note: In PhpCode class fromString() uses fromStringMultiple()
-
 	/**
 	 * {@inheritdoc}
+	 *
+	 * Note: In the parent PhpCode class fromString() uses fromStringMultiple() (overriden here)
 	 */
 	public static function fromStringMultiple( $string, array $translations, array $options = [] ) {
 		$php_string = static::compileBladeToPhp( $string );

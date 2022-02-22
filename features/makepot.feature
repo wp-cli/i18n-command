@@ -2933,7 +2933,7 @@ Feature: Generate a POT file of a WordPress project
 		__('Test');
 	  @endphp
       @extends('layouts.app')
-	  
+
 	  @php(__('Another test.', 'some-other-domain'))
 
       @section('content')
@@ -2990,7 +2990,7 @@ Feature: Generate a POT file of a WordPress project
 		__('Test');
 	  @endphp
       @extends('layouts.app')
-	  
+
 	  @php(__('Another test.', 'some-other-domain'))
 
       @section('content')
@@ -3011,10 +3011,6 @@ Feature: Generate a POT file of a WordPress project
       """
       Theme stylesheet detected.
       Success: POT file successfully generated!
-      """
-    And the result.pot file should contain:
-      """
-      msgid "Test"
       """
     And the result.pot file should contain:
       """

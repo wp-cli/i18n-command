@@ -5,7 +5,6 @@ namespace WP_CLI\I18n;
 use Exception;
 use Gettext\Translations;
 use WP_CLI;
-use WP_CLI\I18n;
 
 final class BladeCodeExtractor extends BladeGettextExtractor {
 	use IterableCodeExtractor;
@@ -52,7 +51,7 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
-			parent::fromString( $string, $translations, $options ); // pass-through
+			static::fromStringMultiple( $string, [ $translations ], $options );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(

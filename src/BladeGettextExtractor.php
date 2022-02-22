@@ -10,26 +10,24 @@ use eftec\bladeone\BladeOne;
 /**
  * Class to get gettext strings from blade.php files returning arrays.
  */
-class BladeGettextExtractor extends \Gettext\Extractors\Extractor implements \Gettext\Extractors\ExtractorInterface
-{
-    /**
-     * {@inheritdoc}
-     */
-    public static function fromString($string, Translations $translations, array $options = [])
-    {
-        if (empty($options['facade'])) {
-            $cachePath = empty($options['cachePath']) ? sys_get_temp_dir() : $options['cachePath'];
-            $bladeCompiler = new BladeOne(null, $cachePath);
+class BladeGettextExtractor extends \Gettext\Extractors\Extractor implements \Gettext\Extractors\ExtractorInterface {
+	/**
+	 * {@inheritdoc}
+	 */
+	public static function fromString( $string, Translations $translations, array $options = [] ) {
+		if ( empty( $options['facade'] ) ) {
+			$cache_path     = empty( $options['cachePath'] ) ? sys_get_temp_dir() : $options['cachePath'];
+			$blade_compiler = new BladeOne( null, $cache_path );
 
-            if (method_exists($bladeCompiler, 'withoutComponentTags')) {
-                $bladeCompiler->withoutComponentTags();
-            }
+			if ( method_exists( $blade_compiler, 'withoutComponentTags' ) ) {
+				$blade_compiler->withoutComponentTags();
+			}
 
-            $string = $bladeCompiler->compileString($string);
-        } else {
-            $string = $options['facade']::compileString($string);
-        }
+			$string = $blade_compiler->compileString( $string );
+		} else {
+			$string = $options['facade']::compileString( $string );
+		}
 
-        \Gettext\Extractors\PhpCode::fromString($string, $translations, $options);
-    }
+		\Gettext\Extractors\PhpCode::fromString( $string, $translations, $options );
+	}
 }

@@ -264,6 +264,7 @@ trait IterableCodeExtractor {
 
 	/**
 	 * Determines whether the file extension of a file matches any of the given file extensions.
+	 * The end/last part of a multi file extension must also match (`js` of `min.js`).
 	 *
 	 * @param SplFileInfo $file       File or directory.
 	 * @param array       $extensions List of file extensions to match.

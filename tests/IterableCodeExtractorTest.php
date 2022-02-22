@@ -204,4 +204,47 @@ class IterableCodeExtractorTest extends TestCase {
 		$expected = static::$base . 'symlinked/includes/should_be_included.js';
 		$this->assertContains( $expected, $result );
 	}
+
+	// IterableCodeExtractor::file_get_extension_multi is a private method
+	protected static function get_method_as_public( $class_name, $method_name ) {
+		$class  = new \ReflectionClass( $class_name );
+		$method = $class->getMethod( $method_name );
+		$method->setAccessible( true );
+		return $method;
+	}
+
+	protected static function file_get_extension_multi_invoke( $file ) {
+		$file_get_extension_multi_method = static::get_method_as_public( 'WP_CLI\I18n\IterableCodeExtractor', 'file_get_extension_multi' );
+		return $file_get_extension_multi_method->invokeArgs( null, [ $file ] );
+	}
+
+	protected static function file_has_file_extension_invoke( $file, $extensions ) {
+		$file_get_extension_multi_method = static::get_method_as_public( 'WP_CLI\I18n\IterableCodeExtractor', 'file_has_file_extension' );
+		return $file_get_extension_multi_method->invokeArgs( null, [ $file, $extensions ] );
+	}
+
+	public function test_gets_file_extensions_correctly() {
+		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ) ), 'js' );
+		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ) ), 'php' );
+		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ) ), 'blade.php' );
+	}
+
+	public function test_matches_file_extensions_correctly() {
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'js' ] ), true );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'js', 'php', 'blade.php' ] ), true );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'php' ] ), false );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'php', 'blade.php' ] ), false );
+
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'php', 'js' ] ), true );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'php', 'blade.php' ] ), true );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'blade.php', 'js' ] ), false );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'js', 'blade.php' ] ), false );
+
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'php', 'blade.php', 'js' ] ), true );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'blade.php' ] ), true );
+		// end/last part of a multi-extension must also matched
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'js', 'php' ] ), true );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'js' ] ), false );
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'js', 'json' ] ), false );
+	}
 }

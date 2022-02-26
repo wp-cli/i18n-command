@@ -223,28 +223,46 @@ class IterableCodeExtractorTest extends TestCase {
 		return $file_get_extension_multi_method->invokeArgs( null, [ $file, $extensions ] );
 	}
 
-	public function test_gets_file_extensions_correctly() {
-		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ) ), 'js' );
-		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ) ), 'php' );
-		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ) ), 'blade.php' );
+	/**
+	 * @dataProvider file_extension_extract_provider
+	 */
+	public function test_gets_file_extension_correctly( $rel_input_file, $expected_extension ) {
+		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . $rel_input_file ) ), $expected_extension );
 	}
 
-	public function test_matches_file_extensions_correctly() {
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'js' ] ), true );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'js', 'php', 'blade.php' ] ), true );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'php' ] ), false );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo/bar/foofoo/included.js' ), [ 'php', 'blade.php' ] ), false );
+	public function file_extension_extract_provider() {
+		return [
+			[ 'foo/bar/foofoo/included.js', 'js' ],
+			[ 'foo-plugin/foo-plugin.php', 'php' ],
+			[ 'foo-theme/foo-theme-file.blade.php', 'blade.php' ],
+		];
+	}
 
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'php', 'js' ] ), true );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'php', 'blade.php' ] ), true );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'blade.php', 'js' ] ), false );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-plugin/foo-plugin.php' ), [ 'js', 'blade.php' ] ), false );
+	/**
+	 * @dataProvider file_extensions_matches_provider
+	 */
+	public function test_matches_file_extensions_correctly( $rel_input_file, $matching_extensions, $expected_result ) {
+		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . $rel_input_file ), $matching_extensions ), $expected_result );
+	}
 
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'php', 'blade.php', 'js' ] ), true );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'blade.php' ] ), true );
-		// end/last part of a multi-extension must also matched
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'js', 'php' ] ), true );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'js' ] ), false );
-		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . 'foo-theme/foo-theme-file.blade.php' ), [ 'js', 'json' ] ), false );
+	public function file_extensions_matches_provider() {
+		return [
+			[ 'foo/bar/foofoo/included.js', [ 'js' ], true ],
+			[ 'foo/bar/foofoo/included.js', [ 'js', 'php', 'blade.php' ], true ],
+			[ 'foo/bar/foofoo/included.js', [ 'php' ], false ],
+			[ 'foo/bar/foofoo/included.js', [ 'php', 'blade.php' ], false ],
+
+			[ 'foo-plugin/foo-plugin.php', [ 'php', 'js' ], true ],
+			[ 'foo-plugin/foo-plugin.php', [ 'php', 'blade.php' ], true ],
+			[ 'foo-plugin/foo-plugin.php', [ 'blade.php', 'js' ], false ],
+			[ 'foo-plugin/foo-plugin.php', [ 'js', 'blade.php' ], false ],
+
+			[ 'foo-theme/foo-theme-file.blade.php', [ 'php', 'blade.php' ], true ],
+			[ 'foo-theme/foo-theme-file.blade.php', [ 'blade.php' ], true ],
+			// end/last part of a multi-extension must also matched
+			[ 'foo-theme/foo-theme-file.blade.php', [ 'js', 'php' ], true ],
+			[ 'foo-theme/foo-theme-file.blade.php', [ 'js' ], false ],
+			[ 'foo-theme/foo-theme-file.blade.php', [ 'js', 'json' ], false ],
+		];
 	}
 }

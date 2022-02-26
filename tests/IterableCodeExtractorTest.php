@@ -259,10 +259,11 @@ class IterableCodeExtractorTest extends TestCase {
 
 			[ 'foo-theme/foo-theme-file.blade.php', [ 'php', 'blade.php' ], true ],
 			[ 'foo-theme/foo-theme-file.blade.php', [ 'blade.php' ], true ],
-			// end/last part of a multi-extension must also matched
+			// the last part of a multi file-extension must also match single file-extensions (e.g. `min.js` matches `js`)
 			[ 'foo-theme/foo-theme-file.blade.php', [ 'js', 'php' ], true ],
 			[ 'foo-theme/foo-theme-file.blade.php', [ 'js' ], false ],
-			[ 'foo-theme/foo-theme-file.blade.php', [ 'js', 'json' ], false ],
+			[ 'foo/bar/foofoo/minified.min.js', [ 'js', 'json', 'php' ], true ],
+			[ 'foo/bar/foofoo/minified.min.js', [ 'json', 'php' ], false ],
 		];
 	}
 }

@@ -77,7 +77,16 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 					}
 				}
 			} else {
-				$array_to_translate = self::array_get( $theme_json, $path );
+				if ( empty( $path ) ) {
+					// We want to translate a top-level key, so we extract it.
+					$array_to_translate = [
+						[
+							$key => $theme_json[ $key ]
+						]
+					];
+				} else {
+					$array_to_translate = self::array_get( $theme_json, $path );
+				}
 				if ( null === $array_to_translate ) {
 					continue;
 				}
@@ -207,6 +216,14 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	private static function extract_paths_to_translate( $i18n_partial, $current_path = [] ) {
 		$result = [];
 		foreach ( $i18n_partial as $property => $partial_child ) {
+			if ( is_string( $partial_child ) ) {
+				$result[] = [
+					'path'    => $current_path,
+					'key'     => $property,
+					'context' => $partial_child,
+				];
+				continue;
+			}
 			if ( is_numeric( $property ) ) {
 				foreach ( $partial_child as $key => $context ) {
 					$result[] = [

@@ -31,10 +31,10 @@ wp i18n
 Create a POT file for a WordPress project.
 
 ~~~
-wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--subtract-and-merge] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--location] [--skip-js] [--skip-php] [--skip-block-json] [--skip-theme-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
+wp i18n make-pot <source> [<destination>] [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--merge[=<paths>]] [--subtract=<paths>] [--subtract-and-merge] [--include=<paths>] [--exclude=<paths>] [--headers=<headers>] [--location] [--skip-js] [--skip-php] [--skip-blade] [--skip-block-json] [--skip-theme-json] [--skip-audit] [--file-comment=<file-comment>] [--package-name=<name>]
 ~~~
 
-Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
+Scans PHP, Blade-PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
 if the source directory is detected as either a plugin or theme.
 
 **OPTIONS**
@@ -97,6 +97,9 @@ if the source directory is detected as either a plugin or theme.
 
 	[--skip-php]
 		Skips PHP string extraction.
+
+	[--skip-blade]
+		Skips Blade-PHP string extraction.
 
 	[--skip-block-json]
 		Skips string extraction from block.json files.

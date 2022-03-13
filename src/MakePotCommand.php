@@ -72,6 +72,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var bool
 	 */
+	protected $skip_blade = false;
+
+	/**
+	 * @var bool
+	 */
 	protected $skip_block_json = false;
 
 	/**
@@ -163,7 +168,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Create a POT file for a WordPress project.
 	 *
-	 * Scans PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
+	 * Scans PHP, Blade-PHP and JavaScript files for translatable strings, as well as theme stylesheets and plugin files
 	 * if the source directory is detected as either a plugin or theme.
 	 *
 	 * ## OPTIONS
@@ -226,6 +231,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * [--skip-php]
 	 * : Skips PHP string extraction.
+	 *
+	 * [--skip-blade]
+	 * : Skips Blade-PHP string extraction.
 	 *
 	 * [--skip-block-json]
 	 * : Skips string extraction from block.json files.
@@ -311,6 +319,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
+		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
 		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
 		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
 		$this->skip_audit      = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
@@ -607,6 +616,16 @@ class MakePotCommand extends WP_CLI_Command {
 					'addReferences'      => $this->location,
 				];
 				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
+			}
+
+			if ( ! $this->skip_blade ) {
+				$options = [
+					'include'       => $this->include,
+					'exclude'       => $this->exclude,
+					'extensions'    => [ 'blade.php' ],
+					'addReferences' => $this->location,
+				];
+				BladeCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}
 
 			if ( ! $this->skip_js ) {

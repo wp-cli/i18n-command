@@ -238,7 +238,7 @@ trait IterableCodeExtractor {
 						return true;
 					}
 
-					if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
+					if ( ! $file->isFile() || ! static::file_has_file_extension( $file, $extensions ) ) {
 						return false;
 					}
 
@@ -250,7 +250,7 @@ trait IterableCodeExtractor {
 
 		foreach ( $files as $file ) {
 			/** @var SplFileInfo $file */
-			if ( ! $file->isFile() || ! in_array( $file->getExtension(), $extensions, true ) ) {
+			if ( ! $file->isFile() || ! static::file_has_file_extension( $file, $extensions ) ) {
 				continue;
 			}
 
@@ -260,6 +260,37 @@ trait IterableCodeExtractor {
 		sort( $filtered_files, SORT_NATURAL | SORT_FLAG_CASE );
 
 		return $filtered_files;
+	}
+
+	/**
+	 * Determines whether the file extension of a file matches any of the given file extensions.
+	 * The end/last part of a multi file extension must also match (`js` of `min.js`).
+	 *
+	 * @param SplFileInfo $file       File or directory.
+	 * @param array       $extensions List of file extensions to match.
+	 * @return bool Whether the file has a file extension that matches any of the ones in the list.
+	 */
+	private static function file_has_file_extension( $file, $extensions ) {
+		return in_array( $file->getExtension(), $extensions, true ) ||
+			in_array( static::file_get_extension_multi( $file ), $extensions, true );
+	}
+
+	/**
+	 * Gets the single- (e.g. `php`) or multi-file extension (e.g. `blade.php`) of a file.
+	 *
+	 * @param SplFileInfo $file File or directory.
+	 * @return string The single- or multi-file extension of the file.
+	 */
+	private static function file_get_extension_multi( $file ) {
+		$file_extension_separator = '.';
+
+		$filename = $file->getFilename();
+		$parts    = explode( $file_extension_separator, $filename, 2 );
+		if ( count( $parts ) <= 1 ) {
+			// if ever something goes wrong, fall back to SPL
+			return $file->getExtension();
+		}
+		return $parts[1];
 	}
 
 	/**

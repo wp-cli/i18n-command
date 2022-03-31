@@ -51,7 +51,8 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 			 * One example of such a path would be:
 			 * [ 'settings', 'blocks', '*', 'color', 'palette' ]
 			 */
-			$nodes_to_iterate = array_keys( $path, '*', true );
+			$nodes_to_iterate   = array_keys( $path, '*', true );
+			$array_to_translate = null;
 			if ( ! empty( $nodes_to_iterate ) ) {
 				/*
 				 * At the moment, we only need to support one '*' in the path, so take it directly.
@@ -77,16 +78,19 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 					}
 				}
 			} else {
-				if ( empty( $path ) ) {
-					// We want to translate a top-level key, so we extract it.
+				// We want to translate a top-level key, so we extract it if it exists.
+				if ( empty( $path ) && ! empty( $theme_json[ $key ] ) ) {
 					$array_to_translate = [
 						[
 							$key => $theme_json[ $key ],
 						],
 					];
-				} else {
+				}
+
+				if ( ! empty( $path ) ) {
 					$array_to_translate = self::array_get( $theme_json, $path );
 				}
+
 				if ( null === $array_to_translate ) {
 					continue;
 				}

@@ -3591,7 +3591,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-theme/foo-theme.pot file should contain:
       """
-      msgctxt "Style variation title"
+      msgctxt "Style variation name"
       msgid "My style variation"
       """
 

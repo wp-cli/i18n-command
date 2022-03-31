@@ -3621,3 +3621,35 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Color name"
       msgid "Black"
       """
+
+  Scenario: Extract strings from style variations
+    Given an empty foo-theme/styles directory
+    And a foo-theme/styles/my-style.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "blocks": {
+            "core/paragraph": {
+              "color": {
+                "palette": [
+                  { "slug": "black", "color": "#000000", "name": "Black" }
+                ]
+              }
+            }
+          }
+        }
+      }
+      """
+    
+    When I try `wp i18n make-pot foo-theme`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated!
+      """
+    And the foo-theme/foo-theme.pot file should exist
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Color name"
+      msgid "Black"
+      """

@@ -3501,7 +3501,6 @@ Feature: Generate a POT file of a WordPress project
       msgid "Notice"
       """
 
-
   Scenario: Skips theme.json file if skip-theme-json flag provided
     Given an empty foo-theme directory
     And a foo-theme/theme.json file:
@@ -3536,6 +3535,7 @@ Feature: Generate a POT file of a WordPress project
       """
       {
         "version": "1",
+        "title": "My style variation",
         "settings": {
           "color": {
             "duotone": [
@@ -3588,6 +3588,11 @@ Feature: Generate a POT file of a WordPress project
       """
       msgctxt "Font size name"
       msgid "Small"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Style variation name"
+      msgid "My style variation"
       """
 
   Scenario: Extract strings from the blocks section of theme.json files

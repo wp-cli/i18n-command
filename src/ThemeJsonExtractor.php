@@ -51,7 +51,8 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 			 * One example of such a path would be:
 			 * [ 'settings', 'blocks', '*', 'color', 'palette' ]
 			 */
-			$nodes_to_iterate = array_keys( $path, '*', true );
+			$nodes_to_iterate   = array_keys( $path, '*', true );
+			$array_to_translate = null;
 			if ( ! empty( $nodes_to_iterate ) ) {
 				/*
 				 * At the moment, we only need to support one '*' in the path, so take it directly.
@@ -77,7 +78,19 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 					}
 				}
 			} else {
-				$array_to_translate = self::array_get( $theme_json, $path );
+				// We want to translate a top-level key, so we extract it if it exists.
+				if ( empty( $path ) && ! empty( $theme_json[ $key ] ) ) {
+					$array_to_translate = [
+						[
+							$key => $theme_json[ $key ],
+						],
+					];
+				}
+
+				if ( ! empty( $path ) ) {
+					$array_to_translate = self::array_get( $theme_json, $path );
+				}
+
 				if ( null === $array_to_translate ) {
 					continue;
 				}
@@ -207,6 +220,14 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	private static function extract_paths_to_translate( $i18n_partial, $current_path = [] ) {
 		$result = [];
 		foreach ( $i18n_partial as $property => $partial_child ) {
+			if ( is_string( $partial_child ) ) {
+				$result[] = [
+					'path'    => $current_path,
+					'key'     => $property,
+					'context' => $partial_child,
+				];
+				continue;
+			}
 			if ( is_numeric( $property ) ) {
 				foreach ( $partial_child as $key => $context ) {
 					$result[] = [

@@ -81,8 +81,8 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 					// We want to translate a top-level key, so we extract it.
 					$array_to_translate = [
 						[
-							$key => $theme_json[ $key ]
-						]
+							$key => $theme_json[ $key ],
+						],
 					];
 				} else {
 					$array_to_translate = self::array_get( $theme_json, $path );

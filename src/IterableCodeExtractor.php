@@ -67,11 +67,18 @@ trait IterableCodeExtractor {
 			}
 
 			if ( ! empty( $options['wpExtractPatterns'] ) ) {
-				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Title' => 'Title' ] );
+				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Title' => 'Title', 'Description' => 'Description' ] );
 
 				if ( ! empty( $headers['Title'] ) ) {
 					$translation = new Translation( '', $headers['Title'] );
 					$translation->addExtractedComment( 'Title of the pattern' );
+
+					$translations[] = $translation;
+				}
+
+				if ( ! empty( $headers['Description'] ) ) {
+					$translation = new Translation( '', $headers['Description'] );
+					$translation->addExtractedComment( 'Description of the pattern' );
 
 					$translations[] = $translation;
 				}

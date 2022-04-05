@@ -76,15 +76,15 @@ trait IterableCodeExtractor {
 				);
 
 				if ( ! empty( $headers['Title'] ) ) {
-					$translation = new Translation( '', $headers['Title'] );
-					$translation->addExtractedComment( 'Title of the pattern' );
+					$translation = new Translation( 'Title of the pattern', $headers['Title'] );
+					$translation->addReference( $options[ 'file' ] );
 
 					$translations[] = $translation;
 				}
 
 				if ( ! empty( $headers['Description'] ) ) {
-					$translation = new Translation( '', $headers['Description'] );
-					$translation->addExtractedComment( 'Description of the pattern' );
+					$translation = new Translation( 'Description of the pattern', $headers['Description'] );
+					$translation->addReference( $options[ 'file' ] );
 
 					$translations[] = $translation;
 				}

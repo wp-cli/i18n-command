@@ -24,7 +24,7 @@ trait IterableCodeExtractor {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
 	 *     @type bool  $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
-	 *     @type bool  $wpExtractPatterns  Extract 'Title' headers in pattern files. Default 'false'.
+	 *     @type bool  $wpExtractPatterns  Extract 'Title' and 'Description' headers in pattern files. Default 'false'.
 	 *     @type array $restrictFileNames  Skip all files which are not included in this array.
 	 * }
 	 * @return null

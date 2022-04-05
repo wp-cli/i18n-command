@@ -77,14 +77,14 @@ trait IterableCodeExtractor {
 
 				if ( ! empty( $headers['Title'] ) ) {
 					$translation = new Translation( 'Pattern title', $headers['Title'] );
-					$translation->addReference( $options[ 'file' ] );
+					$translation->addReference( $options['file'] );
 
 					$translations[] = $translation;
 				}
 
 				if ( ! empty( $headers['Description'] ) ) {
 					$translation = new Translation( 'Pattern description', $headers['Description'] );
-					$translation->addReference( $options[ 'file' ] );
+					$translation->addReference( $options['file'] );
 
 					$translations[] = $translation;
 				}

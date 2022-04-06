@@ -620,7 +620,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( ! $this->skip_php ) {
 				$options = [
-					// Extract 'Title' headers from pattern files.
+					// Extract 'Title' and 'Description' headers from pattern files.
 					'wpExtractPatterns' => isset( $this->main_file_data['Theme Name'] ),
 					'include'           => array_merge( $this->include, array( 'patterns' ) ),
 					'exclude'           => $this->exclude,

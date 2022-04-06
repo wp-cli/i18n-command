@@ -3659,7 +3659,6 @@ Feature: Generate a POT file of a WordPress project
       msgid "Black"
       """
 
-  @patterns
   Scenario: Extract strings from the patterns directory
     Given an empty foo-theme/patterns directory
     And a foo-theme/patterns/my-pattern.php file:

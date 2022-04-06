@@ -618,6 +618,17 @@ class MakePotCommand extends WP_CLI_Command {
 				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}
 
+			if ( ! $this->skip_php ) {
+				$options = [
+					// Extract 'Title' and 'Description' headers from pattern files.
+					'wpExtractPatterns' => isset( $this->main_file_data['Theme Name'] ),
+					'include'           => array_merge( $this->include, array( 'patterns' ) ),
+					'exclude'           => $this->exclude,
+					'extensions'        => [ 'php' ],
+				];
+				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
+			}
+
 			if ( ! $this->skip_blade ) {
 				$options = [
 					'include'       => $this->include,

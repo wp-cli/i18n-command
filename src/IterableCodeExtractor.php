@@ -24,6 +24,7 @@ trait IterableCodeExtractor {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
 	 *     @type bool  $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type bool  $wpExtractPatterns  Extract 'Title' and 'Description' headers in pattern files. Default 'false'.
 	 *     @type array $restrictFileNames  Skip all files which are not included in this array.
 	 * }
 	 * @return null
@@ -60,6 +61,30 @@ trait IterableCodeExtractor {
 				if ( ! empty( $headers['Template Name'] ) ) {
 					$translation = new Translation( '', $headers['Template Name'] );
 					$translation->addExtractedComment( 'Template Name of the theme' );
+
+					$translations[] = $translation;
+				}
+			}
+
+			if ( ! empty( $options['wpExtractPatterns'] ) ) {
+				$headers = MakePotCommand::get_file_data_from_string(
+					$string,
+					[
+						'Title'       => 'Title',
+						'Description' => 'Description',
+					]
+				);
+
+				if ( ! empty( $headers['Title'] ) ) {
+					$translation = new Translation( 'Pattern title', $headers['Title'] );
+					$translation->addReference( $options['file'] );
+
+					$translations[] = $translation;
+				}
+
+				if ( ! empty( $headers['Description'] ) ) {
+					$translation = new Translation( 'Pattern description', $headers['Description'] );
+					$translation->addReference( $options['file'] );
 
 					$translations[] = $translation;
 				}

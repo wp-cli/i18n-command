@@ -3658,3 +3658,40 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Color name"
       msgid "Black"
       """
+
+  Scenario: Extract strings from the patterns directory
+    Given an empty foo-theme/patterns directory
+    And a foo-theme/patterns/my-pattern.php file:
+      """
+      <?php
+      /**
+       * Title: My pattern title.
+       * Description: My pattern description.
+       */
+      """
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name: foo theme
+      */
+      """
+
+    When I try `wp i18n make-pot foo-theme`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated!
+      """
+    And the foo-theme/foo-theme.pot file should exist
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      #: patterns/my-pattern.php
+      msgctxt "Pattern title"
+      msgid "My pattern title."
+      msgstr ""
+
+      #: patterns/my-pattern.php
+      msgctxt "Pattern description"
+      msgid "My pattern description."
+      msgstr ""
+      """

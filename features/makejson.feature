@@ -919,7 +919,7 @@ Feature: Split PO files into JSON files.
 
   Scenario: Prefixes the destination file name with the text domain if missing
     Given an empty foo-theme directory
-    And a foo-theme/fde_DE.po file:
+    And a foo-theme/de_DE.po file:
       """
       # Copyright (C) 2018 Foo Theme
       # This file is distributed under the same license as the Foo Plugin package.

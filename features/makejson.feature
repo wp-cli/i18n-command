@@ -662,7 +662,7 @@ Feature: Split PO files into JSON files.
       """
       "lang":"invalid"
       """
-  
+
   Scenario: Should translate with single map file
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -696,7 +696,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages --use-map=build/map.json` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -707,7 +707,7 @@ Feature: Split PO files into JSON files.
       """
       "source":"build\/index.js"
       """
-  
+
   Scenario: Should translate with custom map files, mapping one input to multiple outputs
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -747,7 +747,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages '--use-map=["build/map1.json","build/map2.json"]'` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -762,7 +762,7 @@ Feature: Split PO files into JSON files.
       """
       "source":"build\/other.js"
       """
-  
+
   Scenario: Should remove translations not mapped
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -796,14 +796,14 @@ Feature: Split PO files into JSON files.
       msgid "Text"
       msgstr "Text"
       """
-    
+
     When I try `wp i18n make-json languages --use-map=build/map.json` from 'foo-plugin'
     Then STDOUT should contain:
       """
       Success: Created 0 files.
       """
     And the return code should be 0
-  
+
   Scenario: Should ignore nonexistant files given as map
     Given an empty foo-plugin directory
 
@@ -816,7 +816,7 @@ Feature: Split PO files into JSON files.
       """
       No valid keys found. No file was created.
       """
-  
+
   Scenario: Should ignore invalid files given as map
     Given an empty foo-plugin directory
     And a foo-plugin/invalid.json file:
@@ -829,7 +829,7 @@ Feature: Split PO files into JSON files.
       """
       Map file foo-plugin/invalid.json invalid
       """
-  
+
   Scenario: Should be able to use given objects as map
     Given an empty foo-plugin directory
     And an empty foo-plugin/languages directory
@@ -856,7 +856,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages '--use-map={"src/index.js": "build/index.js"}'` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -867,7 +867,7 @@ Feature: Split PO files into JSON files.
       """
       "source":"build\/index.js"
       """
-  
+
   Scenario: Should translate with custom map file and inline map, mapping one input to multiple outputs
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -901,7 +901,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages '--use-map=[{"src/index.js": "build/index.js"},"build/map.json"]'` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -917,4 +917,37 @@ Feature: Split PO files into JSON files.
       "source":"build\/other.js"
       """
 
+  Scenario: Prefixes the destination file name with the text domain if missing
+    Given an empty foo-theme directory
+    And a foo-theme/fde_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Theme
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-theme\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-theme.js:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+      """
+
+    When I run `wp i18n make-json foo-theme`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
 

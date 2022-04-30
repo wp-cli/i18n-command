@@ -132,12 +132,11 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 					if ( $update_mo_files ) {
 						$file_basename    = basename( $file->getFilename(), '.po' );
-						$destination_file = "{$destination}/{$file_basename}.mo";
+						$destination_file = "$destination/$file_basename.mo";
 
 						$translations = Translations::fromPoFile( $file->getPathname() );
 						if ( ! $translations->toMoFile( $destination_file ) ) {
-							WP_CLI::warning( "Could not create file {$destination_file}" );
-							continue;
+							WP_CLI::warning( "Could not create file $destination_file" );
 						}
 					}
 				}
@@ -171,7 +170,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		WP_CLI::debug( sprintf( 'Dropping %d invalid values from map argument', count( $paths_or_maps ) - count( $paths ) - count( $maps ) ), 'make-json' );
 
 		$to_transform = array_map(
-			function ( $value, $index ) {
+			static function ( $value, $index ) {
 				return [ $value, sprintf( 'inline object %d', $index ) ];
 			},
 			$maps,
@@ -198,7 +197,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			$key_num             = count( $json );
 			// normalize contents to string[]
 			$json = array_map(
-				function ( $value ) {
+				static function ($value ) {
 					if ( is_array( $value ) ) {
 						$value = array_values( array_filter( $value, 'is_string' ) );
 						if ( ! empty( $value ) ) {
@@ -240,12 +239,18 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		$base_file_name = basename( $source_file, '.po' );
 
-		foreach ( $translations as $index => $translation ) {
+		$domain = $translations->getDomain();
+
+		$base_file_name_with_domain = $domain && 0 !== strpos( $base_file_name, $domain ) ?
+			"$domain-$base_file_name" :
+			$base_file_name;
+
+		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
-				function ( $reference ) {
+				static function ( $reference ) {
 					$file = $reference[0];
 
 					if ( substr( $file, - 7 ) === '.min.js' ) {
@@ -286,7 +291,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			}
 		}
 
-		$result += $this->build_json_files( $mapping, $base_file_name, $destination );
+		$result += $this->build_json_files( $mapping, $base_file_name_with_domain, $destination );
 
 		return $result;
 	}
@@ -305,7 +310,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		// translate using map
 		$temp = array_map(
-			function ( $reference ) use ( &$map ) {
+			static function ( $reference ) use ( &$map ) {
 				$file = $reference[0];
 
 				if ( array_key_exists( $file, $map ) ) {
@@ -325,13 +330,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 			$references = array_merge( $references, $sources );
 		}
 		// and wrap to array
-		$references = array_map(
-			function ( $value ) {
+		return array_map(
+			static function ( $value ) {
 				return [ $value ];
 			},
 			$references
 		);
-		return $references;
 	}
 
 	/**
@@ -352,7 +356,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			/** @var Translations $translations */
 
 			$hash             = md5( $file );
-			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";
+			$destination_file = "$destination/$base_file_name-$hash.json";
 
 			$success = JedGenerator::toFile(
 				$translations,

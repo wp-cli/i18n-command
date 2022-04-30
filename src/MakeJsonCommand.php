@@ -197,7 +197,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			$key_num             = count( $json );
 			// normalize contents to string[]
 			$json = array_map(
-				static function ($value ) {
+				static function ( $value ) {
 					if ( is_array( $value ) ) {
 						$value = array_values( array_filter( $value, 'is_string' ) );
 						if ( ! empty( $value ) ) {

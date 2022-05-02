@@ -2,13 +2,10 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Extractor;
-use Gettext\Extractors\ExtractorInterface;
 use Gettext\Translations;
 use WP_CLI;
 
 final class BlockExtractor extends JsonSchemaExtractor {
-
 	/**
 	 * @inheritdoc
 	 */
@@ -31,7 +28,7 @@ final class BlockExtractor extends JsonSchemaExtractor {
 			return;
 		}
 
-		$domain = isset( $file_data['textdomain'] ) ? $file_data['textdomain'] : null;
+		$domain = isset( $json['textdomain'] ) ? $json['textdomain'] : null;
 
 		// Always allow missing domain or when --ignore-domain is used, but skip if domains don't match.
 		if ( null !== $translations->getDomain() && null !== $domain && $domain !== $translations->getDomain() ) {

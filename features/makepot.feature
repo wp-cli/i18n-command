@@ -3128,7 +3128,14 @@ Feature: Generate a POT file of a WordPress project
         "editorScript": "build/editor.js",
         "script": "build/main.js",
         "editorStyle": "build/editor.css",
-        "style": "build/style.css"
+        "style": "build/style.css",
+        "variations": [
+          {
+            "title": "Notice Variation A",
+            "description": "Just a variation",
+            "keywords": [ "msgvariation", "anotherkeyword" ]
+          }
+        ]
       }
       """
 
@@ -3186,6 +3193,38 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "Other"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block variation title"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Notice Variation A"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block variation description"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Just a variation"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block variation keyword"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "msgvariation"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block variation keyword"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "anotherkeyword"
       """
 
   Scenario: Ignores block.json files with other text domain
@@ -3646,7 +3685,7 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    
+
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """

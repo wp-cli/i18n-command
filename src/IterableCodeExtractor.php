@@ -106,7 +106,7 @@ trait IterableCodeExtractor {
 	 *     @type array $exclude           A list of path to exclude. Default [].
 	 *     @type array $extensions        A list of extensions to process. Default [].
 	 * }
-	 * @return null
+	 * @return void
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		$dir = Utils\normalize_path( $dir );

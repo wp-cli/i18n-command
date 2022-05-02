@@ -664,7 +664,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( ! $this->skip_block_json ) {
-				JsonSchemaExtractor::fromDirectory(
+				BlockExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
@@ -692,6 +692,7 @@ class MakePotCommand extends WP_CLI_Command {
 						'include'           => $this->include,
 						'exclude'           => $this->exclude,
 						'extensions'        => [ 'json' ],
+						'addReferences'     => $this->location,
 					]
 				);
 			}
@@ -707,6 +708,7 @@ class MakePotCommand extends WP_CLI_Command {
 						'include'        => array_merge( $this->include, array( 'styles' ) ),
 						'exclude'        => $this->exclude,
 						'extensions'     => [ 'json' ],
+						'addReferences'  => $this->location,
 					]
 				);
 			}

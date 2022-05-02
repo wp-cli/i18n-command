@@ -664,10 +664,12 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( ! $this->skip_block_json ) {
-				BlockExtractor::fromDirectory(
+				JsonSchemaExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
+						'schema'            => JsonSchemaExtractor::BLOCK_JSON_SOURCE,
+						'schemaFallback'    => JsonSchemaExtractor::BLOCK_JSON_FALLBACK,
 						// Only look for block.json files, nothing else.
 						'restrictFileNames' => [ 'block.json' ],
 						'include'           => $this->include,
@@ -680,10 +682,12 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( ! $this->skip_theme_json ) {
 				// Look for the top-level theme.json file, nothing else.
-				ThemeJsonExtractor::fromDirectory(
+				JsonSchemaExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
+						'schema'            => JsonSchemaExtractor::THEME_JSON_SOURCE,
+						'schemaFallback'    => JsonSchemaExtractor::THEME_JSON_FALLBACK,
 						'restrictFileNames' => [ 'theme.json' ],
 						'include'           => $this->include,
 						'exclude'           => $this->exclude,
@@ -694,13 +698,15 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( ! $this->skip_theme_json ) {
 				// Look for any JSON file within the 'styles' directory.
-				ThemeJsonExtractor::fromDirectory(
+				JsonSchemaExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
-						'include'    => array_merge( $this->include, array( 'styles' ) ),
-						'exclude'    => $this->exclude,
-						'extensions' => [ 'json' ],
+						'schema'         => JsonSchemaExtractor::THEME_JSON_SOURCE,
+						'schemaFallback' => JsonSchemaExtractor::THEME_JSON_FALLBACK,
+						'include'        => array_merge( $this->include, array( 'styles' ) ),
+						'exclude'        => $this->exclude,
+						'extensions'     => [ 'json' ],
 					]
 				);
 			}

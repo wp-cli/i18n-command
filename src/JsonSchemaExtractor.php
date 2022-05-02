@@ -3,12 +3,11 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Extractors\Extractor;
-use Gettext\Extractors\ExtractorInterface;
 use Gettext\Translations;
 use WP_CLI;
 use WP_CLI\Utils;
 
-final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
+final class JsonSchemaExtractor extends Extractor {
 	use IterableCodeExtractor;
 
 	/**
@@ -19,10 +18,31 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	const THEME_JSON_SOURCE = 'https://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json';
 
 	/**
+	 * Fallback theme-18n.json file path.
+	 *
+	 * @var string
+	 */
+	const THEME_JSON_FALLBACK = __DIR__ . '/../assets/theme-i18n.json';
+
+	/**
+	 * Source URL from which to download the latest block-i18n.json file.
+	 *
+	 * @var string
+	 */
+	const BLOCK_JSON_SOURCE = 'https://develop.svn.wordpress.org/trunk/src/wp-includes/block-i18n.json';
+
+	/**
+	 * Fallback block-18n.json file path.
+	 *
+	 * @var string
+	 */
+	const BLOCK_JSON_FALLBACK = __DIR__ . '/../assets/block-i18n.json';
+
+	/**
 	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		$file = $options['file'];
+		$file = $options['schema'];
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		$theme_json = json_decode( $string, true );
@@ -40,7 +60,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 			return;
 		}
 
-		$fields = self::get_fields_to_translate();
+		$fields = self::get_fields_to_translate( $options );
 		foreach ( $fields as $field ) {
 			$path    = $field['path'];
 			$key     = $field['key'];
@@ -157,12 +177,12 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 *
 	 * @return array An array of theme.json fields that are translatable and the keys that are translatable.
 	 */
-	private static function get_fields_to_translate() {
-		$json = self::remote_get( self::THEME_JSON_SOURCE );
+	private static function get_fields_to_translate( $options ) {
+		$json = self::remote_get( $options['schema'] );
 
 		if ( empty( $json ) ) {
 			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback', 'make-pot' );
-			$json = file_get_contents( __DIR__ . '/../assets/theme-i18n.json' );
+			$json = file_get_contents( $options['schemaFallback'] );
 		}
 
 		$file_structure = json_decode( $json, true );
@@ -238,9 +258,10 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 				}
 				return $result;
 			}
-			$result = array_merge(
+
+			array_push(
 				$result,
-				self::extract_paths_to_translate( $partial_child, array_merge( $current_path, [ $property ] ) )
+				...self::extract_paths_to_translate( $partial_child, array_merge( $current_path, [ $property ] ) )
 			);
 		}
 		return $result;
@@ -278,7 +299,7 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 		foreach ( $path as $path_element ) {
 			if (
 				! is_array( $array ) ||
-				( ! is_string( $path_element ) && ! is_integer( $path_element ) && null !== $path_element ) ||
+				( ! is_string( $path_element ) && ! is_int( $path_element ) && null !== $path_element ) ||
 				! array_key_exists( $path_element, $array )
 			) {
 				return $default;

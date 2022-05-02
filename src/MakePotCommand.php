@@ -810,10 +810,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $comments_count > 1 ) {
 					$message = sprintf(
-						'The string "%1$s" has %2$d different translator comments. %3$s',
+						"The string \"%1\$s\" has %2\$d different translator comments. %3\$s\n%4\$s",
 						$translation->getOriginal(),
 						$comments_count,
-						$all_locations
+						$all_locations,
+						implode( "\n", $unique_comments )
 					);
 					WP_CLI::warning( $message );
 				}

@@ -56,7 +56,7 @@ trait IterableCodeExtractor {
 			}
 
 			if ( ! empty( $options['wpExtractTemplates'] ) ) {
-				$headers = MakePotCommand::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
+				$headers = FileDataExtractor::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers['Template Name'] ) ) {
 					$translation = new Translation( '', $headers['Template Name'] );
@@ -67,7 +67,7 @@ trait IterableCodeExtractor {
 			}
 
 			if ( ! empty( $options['wpExtractPatterns'] ) ) {
-				$headers = MakePotCommand::get_file_data_from_string(
+				$headers = FileDataExtractor::get_file_data_from_string(
 					$string,
 					[
 						'Title'       => 'Title',

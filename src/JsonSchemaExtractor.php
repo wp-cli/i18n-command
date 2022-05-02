@@ -42,12 +42,12 @@ final class JsonSchemaExtractor extends Extractor {
 	 * @inheritdoc
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
-		$file = $options['schema'];
+		$file = $options['file'];
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
-		$theme_json = json_decode( $string, true );
+		$i18n_schema = json_decode( $string, true );
 
-		if ( null === $theme_json ) {
+		if ( null === $i18n_schema ) {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: error code %2$s',
@@ -81,7 +81,7 @@ final class JsonSchemaExtractor extends Extractor {
 				 */
 				$base_path = array_slice( $path, 0, $nodes_to_iterate[0] );
 				$data_path = array_slice( $path, $nodes_to_iterate[0] + 1 );
-				$base_tree = self::array_get( $theme_json, $base_path, [] );
+				$base_tree = self::array_get( $i18n_schema, $base_path, [] );
 				foreach ( $base_tree as $node_data ) {
 					$array_to_translate = self::array_get( $node_data, $data_path );
 					if ( null === $array_to_translate ) {
@@ -99,16 +99,16 @@ final class JsonSchemaExtractor extends Extractor {
 				}
 			} else {
 				// We want to translate a top-level key, so we extract it if it exists.
-				if ( empty( $path ) && ! empty( $theme_json[ $key ] ) ) {
+				if ( empty( $path ) && ! empty( $i18n_schema[ $key ] ) ) {
 					$array_to_translate = [
 						[
-							$key => $theme_json[ $key ],
+							$key => $i18n_schema[ $key ],
 						],
 					];
 				}
 
 				if ( ! empty( $path ) ) {
-					$array_to_translate = self::array_get( $theme_json, $path );
+					$array_to_translate = self::array_get( $i18n_schema, $path );
 				}
 
 				if ( null === $array_to_translate ) {

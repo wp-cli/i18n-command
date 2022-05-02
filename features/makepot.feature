@@ -1,7 +1,7 @@
 Feature: Generate a POT file of a WordPress project
 
   Background:
-    Given a WP install
+    Given an empty directory
 
   Scenario: Bail for invalid source directories
     When I try `wp i18n make-pot foo bar/baz.pot`
@@ -3646,7 +3646,7 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    
+
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """

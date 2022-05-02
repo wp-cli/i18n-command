@@ -1,7 +1,7 @@
 Feature: Split PO files into JSON files.
 
   Background:
-    Given a WP install
+    Given an empty directory
 
   Scenario: Bail for invalid source file or directory
     When I try `wp i18n make-json foo`
@@ -662,7 +662,7 @@ Feature: Split PO files into JSON files.
       """
       "lang":"invalid"
       """
-  
+
   Scenario: Should translate with single map file
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -696,7 +696,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages --use-map=build/map.json` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -707,7 +707,7 @@ Feature: Split PO files into JSON files.
       """
       "source":"build\/index.js"
       """
-  
+
   Scenario: Should translate with custom map files, mapping one input to multiple outputs
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -747,7 +747,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages '--use-map=["build/map1.json","build/map2.json"]'` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -762,7 +762,7 @@ Feature: Split PO files into JSON files.
       """
       "source":"build\/other.js"
       """
-  
+
   Scenario: Should remove translations not mapped
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -796,14 +796,14 @@ Feature: Split PO files into JSON files.
       msgid "Text"
       msgstr "Text"
       """
-    
+
     When I try `wp i18n make-json languages --use-map=build/map.json` from 'foo-plugin'
     Then STDOUT should contain:
       """
       Success: Created 0 files.
       """
     And the return code should be 0
-  
+
   Scenario: Should ignore nonexistant files given as map
     Given an empty foo-plugin directory
 
@@ -816,7 +816,7 @@ Feature: Split PO files into JSON files.
       """
       No valid keys found. No file was created.
       """
-  
+
   Scenario: Should ignore invalid files given as map
     Given an empty foo-plugin directory
     And a foo-plugin/invalid.json file:
@@ -829,7 +829,7 @@ Feature: Split PO files into JSON files.
       """
       Map file foo-plugin/invalid.json invalid
       """
-  
+
   Scenario: Should be able to use given objects as map
     Given an empty foo-plugin directory
     And an empty foo-plugin/languages directory
@@ -856,7 +856,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages '--use-map={"src/index.js": "build/index.js"}'` from 'foo-plugin'
     Then STDOUT should contain:
       """
@@ -867,7 +867,7 @@ Feature: Split PO files into JSON files.
       """
       "source":"build\/index.js"
       """
-  
+
   Scenario: Should translate with custom map file and inline map, mapping one input to multiple outputs
     Given an empty foo-plugin directory
     And an empty foo-plugin/build directory
@@ -901,7 +901,7 @@ Feature: Split PO files into JSON files.
       msgid "Title"
       msgstr "Titel"
       """
-    
+
     When I run `wp i18n make-json languages '--use-map=[{"src/index.js": "build/index.js"},"build/map.json"]'` from 'foo-plugin'
     Then STDOUT should contain:
       """

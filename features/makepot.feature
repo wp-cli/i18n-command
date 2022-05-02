@@ -714,7 +714,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7, foo-plugin.php:10)
       """
 
   Scenario: Does not print a warning when two identical strings have the same translator comment
@@ -932,7 +932,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should not contain:
       """
-      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      Warning: The string "Hello World" has 2 different translator comments.
       """
 
   Scenario: Skips excluded folders
@@ -3646,7 +3646,7 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    
+
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """

@@ -746,8 +746,10 @@ class MakePotCommand extends WP_CLI_Command {
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
+			$references = $translation->getReferences();
+
 			// File headers don't have any file references.
-			$location = $translation->hasReferences() ? '(' . implode( ':', $reference[0] ) . ')' : '';
+			$location = $translation->hasReferences() ? '(' . implode( ':', $references[0] ) . ')' : '';
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (

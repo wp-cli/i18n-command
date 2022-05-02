@@ -714,7 +714,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7, foo-plugin.php:10)
+      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
       translators: Translators 1!
       Translators: Translators 2!
       """

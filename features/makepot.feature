@@ -1,7 +1,7 @@
 Feature: Generate a POT file of a WordPress project
 
   Background:
-    Given an empty directory
+    Given a WP install
 
   Scenario: Bail for invalid source directories
     When I try `wp i18n make-pot foo bar/baz.pot`

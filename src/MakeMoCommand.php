@@ -22,6 +22,14 @@ class MakeMoCommand extends WP_CLI_Command {
 	 * [<destination>]
 	 * : Path to the destination directory for the resulting MO files. Defaults to the source directory.
 	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Create MO files for all PO files in the current directory.
+	 *     $ wp i18n make-mo .
+	 *
+	 *     # Create a MO file from a single PO file in a specific directory.
+	 *     $ wp i18n make-mo example-plugin-de_DE.po languages
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException

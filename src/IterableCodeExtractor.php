@@ -165,13 +165,13 @@ trait IterableCodeExtractor {
 			// If the matcher contains no wildcards and matches the end of the path.
 			if (
 				false === strpos( $path_or_file, '*' ) &&
-				false !== mb_ereg( $pattern . '$', $root_relative_path )
+				preg_match( '#' . $pattern . '$' . '#', $root_relative_path )
 			) {
 				return $base_score * 10;
 			}
 
 			// If the matcher matches the end of the path or a full directory contained.
-			if ( false !== mb_ereg( $pattern . '(/|$)', $root_relative_path ) ) {
+			if ( preg_match( '#' . $pattern . '(/|$)' . '#', $root_relative_path ) ) {
 				return $base_score;
 			}
 		}

@@ -672,28 +672,15 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( ! $this->skip_theme_json ) {
-				// Look for the top-level theme.json file, nothing else.
+				// This will look for the top-level theme.json file, as well as
+				// any JSON file within the top-level styles/ directory.
 				ThemeJsonExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
-						'restrictFileNames' => [ 'theme.json' ],
 						'include'           => $this->include,
 						'exclude'           => $this->exclude,
 						'extensions'        => [ 'json' ],
-					]
-				);
-			}
-
-			if ( ! $this->skip_theme_json ) {
-				// Look for any JSON file within the 'styles' directory.
-				ThemeJsonExtractor::fromDirectory(
-					$this->source,
-					$translations,
-					[
-						'include'    => array_merge( $this->include, array( 'styles' ) ),
-						'exclude'    => $this->exclude,
-						'extensions' => [ 'json' ],
 					]
 				);
 			}

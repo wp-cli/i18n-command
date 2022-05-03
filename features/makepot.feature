@@ -3646,7 +3646,24 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    
+    And a foo-theme/incorrect/styles/my-style.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "blocks": {
+            "core/paragraph": {
+              "color": {
+                "palette": [
+                  { "slug": "white", "color": "#ffffff", "name": "White" }
+                ]
+              }
+            }
+          }
+        }
+      }
+      """
+
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """
@@ -3658,6 +3675,10 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Color name"
       msgid "Black"
       """
+    And the foo-theme/foo-theme.pot file should not contain:
+      """
+      msgid "White"
+      """
 
   Scenario: Extract strings from the patterns directory
     Given an empty foo-theme/patterns directory
@@ -3667,6 +3688,14 @@ Feature: Generate a POT file of a WordPress project
       /**
        * Title: My pattern title.
        * Description: My pattern description.
+       */
+      """
+    And a foo-theme/incorrect/patterns/other-pattern.php file:
+      """
+      <?php
+      /**
+       * Title: Other pattern title.
+       * Description: Other pattern description.
        */
       """
     And a foo-theme/style.css file:
@@ -3694,4 +3723,12 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Pattern description"
       msgid "My pattern description."
       msgstr ""
+      """
+    And the foo-theme/foo-theme.pot file should not contain:
+      """
+      msgid "Other pattern title."
+      """
+    And the foo-theme/foo-theme.pot file should not contain:
+      """
+      msgid "Other pattern description."
       """

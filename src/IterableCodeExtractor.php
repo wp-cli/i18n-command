@@ -66,7 +66,8 @@ trait IterableCodeExtractor {
 				}
 			}
 
-			if ( ! empty( $options['wpExtractPatterns'] ) ) {
+			// Patterns are only supported when in a top-level patterns/ folder.
+			if ( ! empty( $options['wpExtractPatterns'] ) && 0 === strpos( $options['file'], 'patterns/' ) ) {
 				$headers = MakePotCommand::get_file_data_from_string(
 					$string,
 					[

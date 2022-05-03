@@ -23,6 +23,15 @@ final class ThemeJsonExtractor extends Extractor implements ExtractorInterface {
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$file = $options['file'];
+
+		// Only support top-level theme.json file or any JSON file within a top-level styles/ folder.
+		if (
+			'theme.json' !== $file &&
+			0 !== strpos( $file, 'styles/' )
+		) {
+			return;
+		}
+
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		$theme_json = json_decode( $string, true );

@@ -678,9 +678,9 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
-						'include'           => $this->include,
-						'exclude'           => $this->exclude,
-						'extensions'        => [ 'json' ],
+						'include'    => $this->include,
+						'exclude'    => $this->exclude,
+						'extensions' => [ 'json' ],
 					]
 				);
 			}

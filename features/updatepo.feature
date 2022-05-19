@@ -69,6 +69,10 @@ Feature: Update existing PO files from a POT file
       #: foo-plugin.php:15
       msgid "Another new string"
       msgstr ""
+
+      #: foo-plugin.php:30
+      msgid "You have %d new message"
+      msgid_plural "You have %d new messages"
       """
     And a foo-plugin/foo-plugin-de_DE.po file:
       """
@@ -93,6 +97,12 @@ Feature: Update existing PO files from a POT file
       #: foo-plugin.php:10
       msgid "Some string"
       msgstr "Some translated string"
+
+      #: foo-plugin.php:60
+      msgid "You have %d new message"
+      msgid_plural "You have %d new messages"
+      msgstr[0] "Sie haben %d neue Nachricht"
+      msgstr[1] "Sie haben %d neue Nachrichten"
       """
 
     When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
@@ -107,10 +117,20 @@ Feature: Update existing PO files from a POT file
       #: foo-plugin.php:1
       msgid "Some string"
       msgstr "Some translated string"
-
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
       #: foo-plugin.php:15
       msgid "Another new string"
       msgstr ""
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:30
+      msgid "You have %d new message"
+      msgid_plural "You have %d new messages"
+      msgstr[0] "Sie haben %d neue Nachricht"
+      msgstr[1] "Sie haben %d neue Nachrichten"
       """
     And the foo-plugin/foo-plugin-de_DE.po file should not contain:
       """

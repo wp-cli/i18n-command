@@ -39,6 +39,7 @@
             "i18n",
             "i18n make-pot",
             "i18n make-json",
+            "i18n make-mo",
             "i18n update-po"
         ]
     },

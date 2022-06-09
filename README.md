@@ -196,6 +196,32 @@ about WordPress JavaScript internationalization.
     # Create JSON files with object mapping
     $ wp i18n make-json languages '--use-map={"source/index.js":"build/index.js"}'
 
+
+
+### wp i18n make-mo
+
+Create MO files from PO files.
+
+~~~
+wp i18n make-mo <source> [<destination>]
+~~~
+
+**OPTIONS**
+
+	<source>
+		Path to an existing PO file or a directory containing multiple PO files.
+
+	[<destination>]
+		Path to the destination directory for the resulting MO files. Defaults to the source directory.
+
+**EXAMPLES**
+
+    # Create MO files for all PO files in the current directory.
+    $ wp i18n make-mo .
+
+    # Create a MO file from a single PO file in a specific directory.
+    $ wp i18n make-mo example-plugin-de_DE.po languages
+
 ## Installing
 
 This package is included with WP-CLI itself, no additional installation necessary.

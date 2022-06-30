@@ -222,6 +222,27 @@ wp i18n make-mo <source> [<destination>]
     # Create a MO file from a single PO file in a specific directory.
     $ wp i18n make-mo example-plugin-de_DE.po languages
 
+
+
+### wp i18n update-po
+
+Update PO files from a POT file.
+
+~~~
+wp i18n update-po <source> [<destination>]
+~~~
+
+This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/manual/html_node/msgmerge-Invocation.html) command.
+
+**OPTIONS**
+
+	<source>
+		Path to an existing POT file to use for updating
+
+	[<destination>]
+		PO file to update or a directory containing multiple PO files.
+		  Defaults to all PO files in the source directory.
+
 ## Installing
 
 This package is included with WP-CLI itself, no additional installation necessary.

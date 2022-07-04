@@ -38,9 +38,15 @@ class JsonSchemaExtractor extends Extractor {
 	 */
 	const BLOCK_JSON_FALLBACK = __DIR__ . '/../assets/block-i18n.json';
 
+	/**
+	 * Static cache for the remote schema files.
+	 *
+	 * @var array<string, string>
+	 */
 	protected static $schema_cache = [];
 
 	/**
+	 * Load the i18n from a remote URL or fall back to a local schema in case of an error.
 	 * @param string $schema i18n schema URL.
 	 * @param string $fallback Fallback i18n schema JSON file.
 	 * @return array|mixed
@@ -78,7 +84,7 @@ class JsonSchemaExtractor extends Extractor {
 	 */
 	public static function fromString( $string, Translations $translations, array $options = [] ) {
 		$file = $options['file'];
-		WP_CLI::debug( "Parsing file $file", 'make-pot' );
+		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		$schema = self::load_schema( $options['schema'], $options['schemaFallback'] );
 
@@ -168,9 +174,9 @@ class JsonSchemaExtractor extends Extractor {
 		if (
 			! $response->success
 			|| 200 > (int) $response->status_code
-			|| 300 <= $response->status_code
+			|| 300 <= (int) $response->status_code
 		) {
-			WP_CLI::debug( "Failed to download from URL $url", 'make-pot' );
+			WP_CLI::debug( "Failed to download from URL {$url}", 'make-pot' );
 			return '';
 		}
 

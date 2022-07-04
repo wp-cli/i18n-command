@@ -698,13 +698,12 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
-
-						'schema'            => JsonSchemaExtractor::THEME_JSON_SOURCE,
-						'schemaFallback'    => JsonSchemaExtractor::THEME_JSON_FALLBACK,
-						'include'           => $this->include,
-						'exclude'           => $this->exclude,
-						'extensions'        => [ 'json' ],
-						'addReferences'     => $this->location,
+						'schema'         => JsonSchemaExtractor::THEME_JSON_SOURCE,
+						'schemaFallback' => JsonSchemaExtractor::THEME_JSON_FALLBACK,
+						'include'        => $this->include,
+						'exclude'        => $this->exclude,
+						'extensions'     => [ 'json' ],
+						'addReferences'  => $this->location,
 					]
 				);
 			}

@@ -606,6 +606,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 		unset( $this->main_file_data['Version'], $this->main_file_data['License'], $this->main_file_data['Domain Path'], $this->main_file_data['Text Domain'] );
 
+		$is_theme = isset( $this->main_file_data['Theme Name'] );
+
 		// Set entries from main file data.
 		foreach ( $this->main_file_data as $header => $data ) {
 			if ( empty( $data ) ) {
@@ -614,7 +616,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			$translation = new Translation( '', $data );
 
-			if ( isset( $this->main_file_data['Theme Name'] ) ) {
+			if ( $is_theme ) {
 				$translation->addExtractedComment( sprintf( '%s of the theme', $header ) );
 			} else {
 				$translation->addExtractedComment( sprintf( '%s of the plugin', $header ) );
@@ -627,22 +629,13 @@ class MakePotCommand extends WP_CLI_Command {
 			if ( ! $this->skip_php ) {
 				$options = [
 					// Extract 'Template Name' headers in theme files.
-					'wpExtractTemplates' => isset( $this->main_file_data['Theme Name'] ),
+					'wpExtractTemplates' => $is_theme,
+					// Extract 'Title' and 'Description' headers from pattern files.
+					'wpExtractPatterns'  => $is_theme,
 					'include'            => $this->include,
 					'exclude'            => $this->exclude,
 					'extensions'         => [ 'php' ],
 					'addReferences'      => $this->location,
-				];
-				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
-			}
-
-			if ( ! $this->skip_php ) {
-				$options = [
-					// Extract 'Title' and 'Description' headers from pattern files.
-					'wpExtractPatterns' => isset( $this->main_file_data['Theme Name'] ),
-					'include'           => array_merge( $this->include, array( 'patterns' ) ),
-					'exclude'           => $this->exclude,
-					'extensions'        => [ 'php' ],
 				];
 				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}
@@ -699,31 +692,15 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( ! $this->skip_theme_json ) {
-				// Look for the top-level theme.json file, nothing else.
-				JsonSchemaExtractor::fromDirectory(
-					$this->source,
-					$translations,
-					[
-						'schema'            => JsonSchemaExtractor::THEME_JSON_SOURCE,
-						'schemaFallback'    => JsonSchemaExtractor::THEME_JSON_FALLBACK,
-						'restrictFileNames' => [ 'theme.json' ],
-						'include'           => $this->include,
-						'exclude'           => $this->exclude,
-						'extensions'        => [ 'json' ],
-						'addReferences'     => $this->location,
-					]
-				);
-			}
-
-			if ( ! $this->skip_theme_json ) {
-				// Look for any JSON file within the 'styles' directory.
-				JsonSchemaExtractor::fromDirectory(
+				// This will look for the top-level theme.json file, as well as
+				// any JSON file within the top-level styles/ directory.
+				ThemeJsonExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
 						'schema'         => JsonSchemaExtractor::THEME_JSON_SOURCE,
 						'schemaFallback' => JsonSchemaExtractor::THEME_JSON_FALLBACK,
-						'include'        => array_merge( $this->include, array( 'styles' ) ),
+						'include'        => $this->include,
 						'exclude'        => $this->exclude,
 						'extensions'     => [ 'json' ],
 						'addReferences'  => $this->location,

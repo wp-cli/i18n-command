@@ -242,7 +242,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		$domain = $translations->getDomain();
 
 		if ( $domain && 0 !== strpos( $base_file_name, $domain ) ) {
-			$base_file_name = "$domain-$base_file_name";
+			$base_file_name = "{$domain}-{$base_file_name}";
 		}
 
 		foreach ( $translations as $translation ) {

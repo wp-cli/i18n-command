@@ -322,7 +322,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			if ( is_null( $sources ) ) {
 				continue;
 			}
-			$references = array_merge( $references, $sources );
+			array_push( $references, ...$sources );
 		}
 		// and wrap to array
 		$references = array_map(

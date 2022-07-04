@@ -468,7 +468,13 @@ class MakePotCommand extends WP_CLI_Command {
 		foreach ( $files as $file ) {
 			// wp-content/themes/my-theme/style.css
 			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
-				$theme_data = static::get_file_data( $file->getRealPath(), array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
+				$theme_data = FileDataExtractor::get_file_data(
+					$file->getRealPath(),
+					array_combine(
+						$this->get_file_headers( 'theme' ),
+						$this->get_file_headers( 'theme' )
+					)
+				);
 
 				// Stop when it contains a valid Theme Name header.
 				if ( ! empty( $theme_data['Theme Name'] ) ) {
@@ -483,7 +489,13 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// wp-content/themes/my-themes/theme-a/style.css
 			if ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
-				$theme_data = static::get_file_data( $file->getRealPath() . '/style.css', array_combine( $this->get_file_headers( 'theme' ), $this->get_file_headers( 'theme' ) ) );
+				$theme_data = FileDataExtractor::get_file_data(
+					$file->getRealPath() . '/style.css',
+					array_combine(
+						$this->get_file_headers( 'theme' ),
+						$this->get_file_headers( 'theme' )
+					)
+				);
 
 				// Stop when it contains a valid Theme Name header.
 				if ( ! empty( $theme_data['Theme Name'] ) ) {
@@ -498,7 +510,13 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// wp-content/plugins/my-plugin/my-plugin.php
 			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
-				$plugin_data = static::get_file_data( $file->getRealPath(), array_combine( $this->get_file_headers( 'plugin' ), $this->get_file_headers( 'plugin' ) ) );
+				$plugin_data = FileDataExtractor::get_file_data(
+					$file->getRealPath(),
+					array_combine(
+						$this->get_file_headers( 'plugin' ),
+						$this->get_file_headers( 'plugin' )
+					)
+				);
 
 				// Stop when we find a file with a valid Plugin Name header.
 				if ( ! empty( $plugin_data['Plugin Name'] ) ) {
@@ -661,6 +679,8 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
+						'schema'            => JsonSchemaExtractor::BLOCK_JSON_SOURCE,
+						'schemaFallback'    => JsonSchemaExtractor::BLOCK_JSON_FALLBACK,
 						// Only look for block.json files, nothing else.
 						'restrictFileNames' => [ 'block.json' ],
 						'include'           => $this->include,
@@ -678,9 +698,13 @@ class MakePotCommand extends WP_CLI_Command {
 					$this->source,
 					$translations,
 					[
-						'include'    => $this->include,
-						'exclude'    => $this->exclude,
-						'extensions' => [ 'json' ],
+
+						'schema'            => JsonSchemaExtractor::THEME_JSON_SOURCE,
+						'schemaFallback'    => JsonSchemaExtractor::THEME_JSON_FALLBACK,
+						'include'           => $this->include,
+						'exclude'           => $this->exclude,
+						'extensions'        => [ 'json' ],
+						'addReferences'     => $this->location,
 					]
 				);
 			}
@@ -729,7 +753,7 @@ class MakePotCommand extends WP_CLI_Command {
 			$references = $translation->getReferences();
 
 			// File headers don't have any file references.
-			$location = $translation->hasReferences() ? '(' . implode( ':', array_shift( $references ) ) . ')' : '';
+			$location = $translation->hasReferences() ? '(' . implode( ':', $references[0] ) . ')' : '';
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
@@ -785,10 +809,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $comments_count > 1 ) {
 					$message = sprintf(
-						'The string "%1$s" has %2$d different translator comments. %3$s',
+						"The string \"%1\$s\" has %2\$d different translator comments. %3\$s\n%4\$s",
 						$translation->getOriginal(),
 						$comments_count,
-						$location
+						$location,
+						implode( "\n", $unique_comments )
 					);
 					WP_CLI::warning( $message );
 				}
@@ -959,71 +984,5 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		return preg_match( '/\$wp_version\s*=\s*\'(.*?)\';/', file_get_contents( $version_php ), $matches ) ? $matches[1] : false;
-	}
-
-	/**
-	 * Retrieves metadata from a file.
-	 *
-	 * Searches for metadata in the first 8kiB of a file, such as a plugin or theme.
-	 * Each piece of metadata must be on its own line. Fields can not span multiple
-	 * lines, the value will get cut at the end of the first line.
-	 *
-	 * If the file data is not within that first 8kiB, then the author should correct
-	 * their plugin file and move the data headers to the top.
-	 *
-	 * @see get_file_data()
-	 *
-	 * @param string $file Path to the file.
-	 * @param array $headers List of headers, in the format array('HeaderKey' => 'Header Name').
-	 *
-	 * @return array Array of file headers in `HeaderKey => Header Value` format.
-	 */
-	protected static function get_file_data( $file, $headers ) {
-		// We don't need to write to the file, so just open for reading.
-		$fp = fopen( $file, 'rb' );
-
-		// Pull only the first 8kiB of the file in.
-		$file_data = fread( $fp, 8192 );
-
-		// PHP will close file handle, but we are good citizens.
-		fclose( $fp );
-
-		// Make sure we catch CR-only line endings.
-		$file_data = str_replace( "\r", "\n", $file_data );
-
-		return static::get_file_data_from_string( $file_data, $headers );
-	}
-
-	/**
-	 * Retrieves metadata from a string.
-	 *
-	 * @param string $string String to look for metadata in.
-	 * @param array $headers List of headers.
-	 *
-	 * @return array Array of file headers in `HeaderKey => Header Value` format.
-	 */
-	public static function get_file_data_from_string( $string, $headers ) {
-		foreach ( $headers as $field => $regex ) {
-			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $string, $match ) && $match[1] ) {
-				$headers[ $field ] = static::_cleanup_header_comment( $match[1] );
-			} else {
-				$headers[ $field ] = '';
-			}
-		}
-
-		return $headers;
-	}
-
-	/**
-	 * Strip close comment and close php tags from file headers used by WP.
-	 *
-	 * @see _cleanup_header_comment()
-	 *
-	 * @param string $str Header comment to clean up.
-	 *
-	 * @return string
-	 */
-	protected static function _cleanup_header_comment( $str ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Not changing because third-party commands might use/extend.
-		return trim( preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str ) );
 	}
 }

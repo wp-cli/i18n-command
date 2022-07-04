@@ -241,9 +241,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		$domain = $translations->getDomain();
 
-		$base_file_name_with_domain = $domain && 0 !== strpos( $base_file_name, $domain ) ?
-			"$domain-$base_file_name" :
-			$base_file_name;
+		if ( $domain && 0 !== strpos( $base_file_name, $domain ) ) {
+			$base_file_name = "$domain-$base_file_name";
+		}
 
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
@@ -291,7 +291,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			}
 		}
 
-		$result += $this->build_json_files( $mapping, $base_file_name_with_domain, $destination );
+		$result += $this->build_json_files( $mapping, $base_file_name, $destination );
 
 		return $result;
 	}

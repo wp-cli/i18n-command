@@ -749,7 +749,7 @@ class MakePotCommand extends WP_CLI_Command {
 			$references = $translation->getReferences();
 
 			// File headers don't have any file references.
-			$location = $translation->hasReferences() ? '(' . implode( ':', array_shift( $references ) ) . ')' : '';
+			$location = $translation->hasReferences() ? '(' . implode( ':', $references[0] ) . ')' : '';
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
@@ -805,10 +805,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $comments_count > 1 ) {
 					$message = sprintf(
-						'The string "%1$s" has %2$d different translator comments. %3$s',
+						"The string \"%1\$s\" has %2\$d different translator comments. %3\$s\n%4\$s",
 						$translation->getOriginal(),
 						$comments_count,
-						$location
+						$location,
+						implode( "\n", $unique_comments )
 					);
 					WP_CLI::warning( $message );
 				}

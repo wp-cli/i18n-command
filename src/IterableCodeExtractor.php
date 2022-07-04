@@ -145,7 +145,7 @@ trait IterableCodeExtractor {
 		$root_relative_path = str_replace( static::$dir, '', $file->getPathname() );
 
 		foreach ( $matchers as $path_or_file ) {
-			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ), '/' );
+			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ), '#' );
 			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern );
 
 			// Base score is the amount of nested directories, discounting wildcards.

@@ -21,6 +21,7 @@
         "wp-cli/wp-cli-tests": "^3.1"
     },
     "suggest": {
+        "ext-json": "Used for reading and generating JSON translation files",
         "ext-mbstring": "Used for calculating include/exclude matches in code extraction"
     },
     "config": {

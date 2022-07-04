@@ -13,7 +13,7 @@ use WP_CLI\Utils;
 
 trait IterableCodeExtractor {
 
-	private static $dir = '';
+	protected static $dir = '';
 
 	/**
 	 * Extract the translations from a file.
@@ -106,7 +106,7 @@ trait IterableCodeExtractor {
 	 *     @type array $exclude           A list of path to exclude. Default [].
 	 *     @type array $extensions        A list of extensions to process. Default [].
 	 * }
-	 * @return null
+	 * @return void
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
 		$dir = Utils\normalize_path( $dir );
@@ -193,7 +193,7 @@ trait IterableCodeExtractor {
 
 		/** @var string $root_relative_path */
 		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
-		$root_relative_path = self::trim_leading_slash( $root_relative_path );
+		$root_relative_path = static::trim_leading_slash( $root_relative_path );
 
 		foreach ( $matchers as $path_or_file ) {
 			// If the matcher contains no wildcards and the path matches the start of the matcher.
@@ -295,7 +295,7 @@ trait IterableCodeExtractor {
 	 * @param array       $extensions List of file extensions to match.
 	 * @return bool Whether the file has a file extension that matches any of the ones in the list.
 	 */
-	private static function file_has_file_extension( $file, $extensions ) {
+	protected static function file_has_file_extension( $file, $extensions ) {
 		return in_array( $file->getExtension(), $extensions, true ) ||
 			in_array( static::file_get_extension_multi( $file ), $extensions, true );
 	}
@@ -306,7 +306,7 @@ trait IterableCodeExtractor {
 	 * @param SplFileInfo $file File or directory.
 	 * @return string The single- or multi-file extension of the file.
 	 */
-	private static function file_get_extension_multi( $file ) {
+	protected static function file_get_extension_multi( $file ) {
 		$file_extension_separator = '.';
 
 		$filename = $file->getFilename();
@@ -324,7 +324,7 @@ trait IterableCodeExtractor {
 	 * @param string $path Path to trim.
 	 * @return string Trimmed path.
 	 */
-	private static function trim_leading_slash( $path ) {
+	protected static function trim_leading_slash( $path ) {
 		return ltrim( $path, '/' );
 	}
 }

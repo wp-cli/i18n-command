@@ -917,4 +917,37 @@ Feature: Split PO files into JSON files.
       "source":"build\/other.js"
       """
 
+  Scenario: Prefixes the destination file name with the text domain if missing
+    Given an empty foo-theme directory
+    And a foo-theme/de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Theme
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-theme\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-theme.js:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+      """
+
+    When I run `wp i18n make-json foo-theme`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
 

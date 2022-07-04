@@ -26,3 +26,7 @@ labels:
     color: c5def5
   - name: command:i18n-make-json
     color: c5def5
+  - name: command:i18n-make-mo
+    color: c5def5
+  - name: command:i18n-update-po
+    color: c5def5

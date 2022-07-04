@@ -21,6 +21,7 @@
         "wp-cli/wp-cli-tests": "^3.1"
     },
     "suggest": {
+        "ext-json": "Used for reading and generating JSON translation files",
         "ext-mbstring": "Used for calculating include/exclude matches in code extraction"
     },
     "config": {
@@ -38,7 +39,9 @@
         "commands": [
             "i18n",
             "i18n make-pot",
-            "i18n make-json"
+            "i18n make-json",
+            "i18n make-mo",
+            "i18n update-po"
         ]
     },
     "autoload": {

@@ -1,7 +1,7 @@
 Feature: Split PO files into JSON files.
 
   Background:
-    Given a WP install
+    Given an empty directory
 
   Scenario: Bail for invalid source file or directory
     When I try `wp i18n make-json foo`

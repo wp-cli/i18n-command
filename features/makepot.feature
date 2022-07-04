@@ -3646,7 +3646,7 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    
+
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """

@@ -1,7 +1,7 @@
 Feature: Generate MO files from PO files
 
   Background:
-    Given a WP install
+    Given an empty directory
 
   Scenario: Bail for invalid source directories
     When I try `wp i18n make-mo foo`

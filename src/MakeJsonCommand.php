@@ -132,11 +132,11 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 					if ( $update_mo_files ) {
 						$file_basename    = basename( $file->getFilename(), '.po' );
-						$destination_file = "$destination/$file_basename.mo";
+						$destination_file = "{$destination}/{$file_basename}.mo";
 
 						$translations = Translations::fromPoFile( $file->getPathname() );
 						if ( ! $translations->toMoFile( $destination_file ) ) {
-							WP_CLI::warning( "Could not create file $destination_file" );
+							WP_CLI::warning( "Could not create file {$destination_file}" );
 						}
 					}
 				}
@@ -356,7 +356,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			/** @var Translations $translations */
 
 			$hash             = md5( $file );
-			$destination_file = "$destination/$base_file_name-$hash.json";
+			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";
 
 			$success = JedGenerator::toFile(
 				$translations,

@@ -356,7 +356,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 			/** @var Translations $translations */
 
 			$hash             = md5( $file );
-			$destination_file = "${destination}/{$base_file_name}-{$hash}.json";
+			$destination_file = "{$destination}/{$base_file_name}-{$hash}.json";
 
 			$success = JedGenerator::toFile(
 				$translations,

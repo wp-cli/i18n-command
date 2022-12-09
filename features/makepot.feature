@@ -378,6 +378,10 @@ Feature: Generate a POT file of a WordPress project
 
       __unsupported_func( '__unsupported_func', 'foo-plugin' );
       __( 'wrong-domain', 'wrong-domain' );
+
+      // See https://github.com/wp-cli/i18n-command/issues/344
+      \__( '\__', 'foo-plugin' );
+      \_e( '\_e', 'foo-plugin' );
       """
 
     When I run `wp i18n make-pot foo-plugin`
@@ -538,6 +542,14 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
       msgid "wrong-domain"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "\\__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "\\_e"
       """
 
   Scenario: Extract translator comments

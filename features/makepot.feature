@@ -545,11 +545,11 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgid "\__"
+      msgid "\\__"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """
-      msgid "\_e"
+      msgid "\\_e"
       """
 
   Scenario: Extract translator comments

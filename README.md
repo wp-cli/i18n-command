@@ -79,7 +79,7 @@ if the source directory is detected as either a plugin or theme.
 
 	[--exclude=<paths>]
 		Comma-separated list of files and paths that should be skipped for string extraction.
-		For example, `--exclude=".github,myfile.php` would ignore any strings found within `myfile.php` or the `.github`
+		For example, `--exclude=.github,myfile.php` would ignore any strings found within `myfile.php` or the `.github`
 		folder. Simple glob patterns can be used, i.e. `--exclude=foo-*.php` excludes any PHP file with the `foo-`
 		prefix. Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`. The
 		following files and folders are always excluded: node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js.

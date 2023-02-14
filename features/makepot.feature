@@ -3786,7 +3786,6 @@ Feature: Generate a POT file of a WordPress project
       msgid "Other pattern description."
       """
 
-  @daniel
   Scenario: Ignores a standard set of directories as expected
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

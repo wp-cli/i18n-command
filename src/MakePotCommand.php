@@ -47,7 +47,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * @var array
 	 */
-	protected $exclude = [ 'node_modules', '.git', '.svn', '.CVS', '.hg', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js' ];
+	protected $exclude = [ 'node_modules', '.*', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js', 'test', 'tests' ];
 
 	/**
 	 * @var string

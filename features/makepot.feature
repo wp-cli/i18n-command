@@ -3785,3 +3785,84 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "Other pattern description."
       """
+
+  Scenario: Ignores a standard set of directories as expected
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       __( 'foo-plugin/foo-plugin.php', 'foo-plugin' );
+      """
+    And a foo-plugin/.git/foo-plugin.php file:
+      """
+      <?php
+      __( 'foo-plugin/.git/foo-plugin.php', 'foo-plugin' );
+      """
+    And a foo-plugin/not.git/foo-plugin.php file:
+      """
+      <?php
+      __( 'foo-plugin/not.git/foo-plugin.php', 'foo-plugin' );
+      """
+    And a foo-plugin/subdir/.git/foo-plugin.php file:
+      """
+      <?php
+      __( 'foo-plugin/subdir/.git/foo-plugin.php', 'foo-plugin' );
+      """
+    And a foo-plugin/subdir/not.git/foo-plugin.php file:
+      """
+      <?php
+      __( 'foo-plugin/subdir/not.git/foo-plugin.php', 'foo-plugin' );
+      """
+    And a foo-plugin/tests/foo-plugin.php file:
+      """
+      <?php
+      __( 'foo-plugin/tests/foo-plugin.php', 'foo-plugin' );
+      """
+    And a foo-plugin/longertests/foo-plugin.php file:
+      """
+      <?php
+      __( 'foo-plugin/longertests/foo-plugin.php', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    Then the foo-plugin.pot file should contain:
+      """
+      msgid "foo-plugin/foo-plugin.php"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "foo-plugin/.git/foo-plugin.php"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "foo-plugin/not.git/foo-plugin.php"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "foo-plugin/subdir/.git/foo-plugin.php"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "foo-plugin/subdir/not.git/foo-plugin.php"
+      """
+    And the foo-plugin.pot file should not contain:
+      """
+      msgid "foo-plugin/tests/foo-plugin.php"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      msgid "foo-plugin/longertests/foo-plugin.php"
+      """

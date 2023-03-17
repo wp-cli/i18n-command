@@ -350,3 +350,41 @@ Feature: Update existing PO files from a POT file
       msgid "Another new string"
       msgstr ""
       """
+  Scenario: Return error in case of incorrect destination set
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #. translators: New Comment.
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+
+      #: foo-plugin.php:15
+      msgid "Another new string"
+      msgstr ""
+
+      #: foo-plugin.php:30
+      msgid "You have %d new message"
+      msgid_plural "You have %d new messages"
+      """
+    When I try `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/test`
+    Then STDERR should contain:
+      """
+      Error: Destination file/folder does not exist!
+      """
+    And the return code should be 1

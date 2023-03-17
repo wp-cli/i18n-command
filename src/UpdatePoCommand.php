@@ -43,6 +43,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$destination = $args[1];
 		}
 
+		if ( ! file_exists( $destination ) ) {
+			WP_CLI::error( 'Destination file/folder does not exist!' );
+		}
+
 		if ( is_file( $destination ) ) {
 			$files = [ new SplFileInfo( $destination ) ];
 		} else {

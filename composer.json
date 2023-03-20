@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "eftec/bladeone": "3.52",
+        "eftec/bladeone": "4.8.2",
         "gettext/gettext": "^4.8",
         "mck89/peast": "^1.13.11",
         "wp-cli/wp-cli": "^2.5"

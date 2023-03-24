@@ -242,8 +242,8 @@ trait IterableCodeExtractor {
 					/** @var SplFileInfo $file */
 
 					// Normalize include and exclude paths.
-					$include = array_map( 'static::trim_leading_slash', $include );
-					$exclude = array_map( 'static::trim_leading_slash', $exclude );
+					$include = array_map( self::class . '::trim_leading_slash', $include );
+					$exclude = array_map( self::class . '::trim_leading_slash', $exclude );
 
 					// If no $include is passed everything gets the weakest possible matching score.
 					$inclusion_score = empty( $include ) ? 0.1 : static::calculateMatchScore( $file, $include );

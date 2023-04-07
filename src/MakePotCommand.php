@@ -282,7 +282,7 @@ class MakePotCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$this->handle_arguments( $args, $assoc_args );
 
-		$translations = $this->extract_strings();
+		$translations = $this->extract_strings( $args );
 
 		if ( ! $translations ) {
 			WP_CLI::warning( 'No strings found' );
@@ -578,9 +578,10 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @throws WP_CLI\ExitException
 	 *
+	 * @param  array $args  Command arguments.
 	 * @return Translations A Translation set.
 	 */
-	protected function extract_strings() {
+	protected function extract_strings( $args ) {
 		$translations = new Translations();
 
 		// Add existing strings first but don't keep headers.
@@ -732,7 +733,7 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( ! $this->skip_audit ) {
-			$this->audit_strings( $translations );
+			$this->audit_strings( $translations, $args );
 		}
 
 		return $translations;
@@ -744,15 +745,16 @@ class MakePotCommand extends WP_CLI_Command {
 	 * Goes through all extracted strings to find possible mistakes.
 	 *
 	 * @param Translations $translations Translations object.
+	 * @param array        $args         Command arguments.
 	 */
-	protected function audit_strings( $translations ) {
+	protected function audit_strings( $translations, $args ) {
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
 			$references = $translation->getReferences();
 
 			// File headers don't have any file references.
-			$location = $translation->hasReferences() ? '(' . implode( ':', $references[0] ) . ')' : '';
+			$location = $translation->hasReferences() ? realpath( $args[0] ) . '/' . implode( ':', $references[0] ) : '';
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
@@ -760,9 +762,9 @@ class MakePotCommand extends WP_CLI_Command {
 				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $placeholders ) >= 1
 			) {
 				$message = sprintf(
-					'The string "%1$s" contains placeholders but has no "translators:" comment to clarify their meaning. %2$s',
-					$translation->getOriginal(),
-					$location
+					'%1$s: The string "%2$s" contains placeholders but has no "translators:" comment to clarify their meaning.',
+					$location,
+					$translation->getOriginal()
 				);
 				WP_CLI::warning( $message );
 			}
@@ -808,10 +810,10 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $comments_count > 1 ) {
 					$message = sprintf(
-						"The string \"%1\$s\" has %2\$d different translator comments. %3\$s\n%4\$s",
+						"%1\$s: The string \"%2\$s\" has %3\$d different translator comments. %4\$s",
+						$location,
 						$translation->getOriginal(),
 						$comments_count,
-						$location,
 						implode( "\n", $unique_comments )
 					);
 					WP_CLI::warning( $message );
@@ -824,7 +826,7 @@ class MakePotCommand extends WP_CLI_Command {
 			// Check 3: Flag empty strings without any translatable content.
 			if ( '' === $non_placeholder_content ) {
 				$message = sprintf(
-					'Found string without translatable content. %s',
+					'%s: Found string without translatable content.',
 					$location
 				);
 				WP_CLI::warning( $message );
@@ -836,7 +838,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( $unordered_matches_count >= 2 ) {
 				$message = sprintf(
-					'Multiple placeholders should be ordered. %s',
+					'%s: Multiple placeholders should be ordered.',
 					$location
 				);
 				WP_CLI::warning( $message );
@@ -853,7 +855,7 @@ class MakePotCommand extends WP_CLI_Command {
 				if ( count( $single_placeholders ) < count( $plural_placeholders ) ) {
 					// Check 5: Flag things like _n( 'One comment', '%s Comments' )
 					$message = sprintf(
-						'Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals %s',
+						'%s: Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals.',
 						$location
 					);
 					WP_CLI::warning( $message );
@@ -865,7 +867,7 @@ class MakePotCommand extends WP_CLI_Command {
 					// Check 6: Flag things like _n( '%s Comment (%d)', '%s Comments (%s)' )
 					if ( $single_placeholders !== $plural_placeholders ) {
 						$message = sprintf(
-							'Mismatched placeholders for singular and plural string. %s',
+							'%s: Mismatched placeholders for singular and plural string.',
 							$location
 						);
 						WP_CLI::warning( $message );

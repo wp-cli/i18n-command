@@ -726,7 +726,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Warning: The string "Hello World" has 2 different translator comments. (foo-plugin.php:7)
+      Warning: foo-plugin.php:7: The string "Hello World" has 2 different translator comments.
       translators: Translators 1!
       Translators: Translators 2!
       """
@@ -812,7 +812,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Warning: Found string without translatable content. (foo-plugin.php:6)
+      Warning: foo-plugin.php:6: Found string without translatable content.
       """
 
   Scenario: Prints a warning for a string with missing translator comment
@@ -836,7 +836,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Warning: The string "Hello, %s" contains placeholders but has no "translators:" comment to clarify their meaning. (foo-plugin.php:6)
+      Warning: foo-plugin.php:6: The string "Hello, %s" contains placeholders but has no "translators:" comment to clarify their meaning.
       """
 
   Scenario: Prints a warning for missing singular placeholder
@@ -863,7 +863,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals (foo-plugin.php:7)
+      foo-plugin.php:7: Missing singular placeholder, needed for some languages. See https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals
       """
 
   Scenario: Prints a warning for mismatched placeholders
@@ -891,7 +891,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Mismatched placeholders for singular and plural string. (foo-plugin.php:7)
+      foo-plugin.php:7: Mismatched placeholders for singular and plural string.
       """
 
   Scenario: Prints a warning for multiple unordered placeholders
@@ -919,7 +919,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      Multiple placeholders should be ordered. (foo-plugin.php:7)
+      foo-plugin.php:7: Multiple placeholders should be ordered.
       """
 
   Scenario: Prints no warnings when audit is being skipped.

@@ -18,12 +18,25 @@ class PhpArrayGenerator extends PhpArray {
 	/**
 	 * {@inheritdoc}
 	 */
-	public static function toString(Translations $translations, array $options = []) {
-		$array = static::generate($translations, $options);
+	public static function toString( Translations $translations, array $options = [] ) {
+		$array = static::generate( $translations, $options );
 
-		// TODO: Manually add certain headers like generator to $array.
+		$headers = [
+			'Plural-Forms' => 'plural-forms',
+			'X-Generator'  => 'generator',
+			'X-Domain'     => 'domain',
+			'Language'     => 'language',
+		];
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, true ) .';';
+		foreach ( $translations->getHeaders() as $name => $value ) {
+			if ( ! isset( $headers[ $name ] ) ) {
+				continue;
+			}
+
+			$array[ $headers[ $name] ] = $value;
+		}
+
+		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, true ) . ';';
 	}
 
 	/**

@@ -113,11 +113,15 @@ Feature: Generate PHP files from PO files
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      Language: de_DE
+      'language'=>'de_DE',
       """
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      X-Domain: foo-plugin
+      'domain'=>'foo-plugin'
+      """
+    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+      """
+      'plural-forms'=>'nplurals=2; plural=(n != 1)'
       """
 
   Scenario: Does include translations

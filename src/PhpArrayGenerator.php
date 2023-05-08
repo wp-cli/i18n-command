@@ -33,7 +33,7 @@ class PhpArrayGenerator extends PhpArray {
 				continue;
 			}
 
-			$array[ $headers[ $name] ] = $value;
+			$array[ $headers[ $name ] ] = $value;
 		}
 
 		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, true ) . ';';

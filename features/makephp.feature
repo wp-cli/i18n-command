@@ -111,9 +111,10 @@ Feature: Generate PHP files from PO files
       Success: Created 1 file.
       """
     And the return code should be 0
+    And STDERR should be empty
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      'language'=>'de_DE',
+      'language'=>'de_DE'
       """
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
@@ -121,7 +122,11 @@ Feature: Generate PHP files from PO files
       """
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      'plural-forms'=>'nplurals=2; plural=(n != 1)'
+      'plural-forms'=>'nplurals=2; plural=(n != 1);'
+      """
+    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+      """
+      'messages'=>[''=>['Foo Plugin'=>[0=>'Foo Plugin']]]
       """
 
   Scenario: Does include translations
@@ -158,5 +163,5 @@ Feature: Generate PHP files from PO files
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      Bar Plugin
+      'messages'=>[''=>['Foo Plugin'=>[0=>'Bar Plugin']]]
       """

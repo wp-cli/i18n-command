@@ -50,20 +50,20 @@ class PhpArrayGenerator extends PhpArray {
 	 * @return string|void The variable representation or void.
 	 */
 	public static function var_export( $value, $return_only = false ) {
-		if ( is_array( $value ) ) {
-			$entries = array();
-			foreach ( $value as $key => $val ) {
-				$entries[] = var_export( $key, true ) . '=>' . static::var_export( $val, true );
-			}
-
-			$code = '[' . implode( ',', $entries ) . ']';
-			if ( $return_only ) {
-				return $code;
-			}
-
-			echo $code;
-		} else {
+		if ( ! is_array( $value ) ) {
 			return var_export( $value, $return_only );
 		}
+
+		$entries = array();
+		foreach ( $value as $key => $val ) {
+			$entries[] = var_export( $key, true ) . '=>' . static::var_export( $val, true );
+		}
+
+		$code = '[' . implode( ',', $entries ) . ']';
+		if ( $return_only ) {
+			return $code;
+		}
+
+		echo $code;
 	}
 }

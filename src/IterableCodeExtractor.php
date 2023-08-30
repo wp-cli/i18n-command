@@ -41,9 +41,9 @@ trait IterableCodeExtractor {
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
 
-			$string = file_get_contents( $file );
+			$text = file_get_contents( $file );
 
-			if ( ! $string ) {
+			if ( ! $text ) {
 				WP_CLI::debug(
 					sprintf(
 						'Could not load file %1s',
@@ -56,7 +56,7 @@ trait IterableCodeExtractor {
 			}
 
 			if ( ! empty( $options['wpExtractTemplates'] ) ) {
-				$headers = FileDataExtractor::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
+				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers['Template Name'] ) ) {
 					$translation = new Translation( '', $headers['Template Name'] );
@@ -69,7 +69,7 @@ trait IterableCodeExtractor {
 			// Patterns are only supported when in a top-level patterns/ folder.
 			if ( ! empty( $options['wpExtractPatterns'] ) && 0 === strpos( $options['file'], 'patterns/' ) ) {
 				$headers = FileDataExtractor::get_file_data_from_string(
-					$string,
+					$text,
 					[
 						'Title'       => 'Title',
 						'Description' => 'Description',
@@ -91,7 +91,7 @@ trait IterableCodeExtractor {
 				}
 			}
 
-			static::fromString( $string, $translations, $options );
+			static::fromString( $text, $translations, $options );
 		}
 	}
 

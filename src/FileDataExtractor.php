@@ -39,14 +39,14 @@ class FileDataExtractor {
 	/**
 	 * Retrieves metadata from a string.
 	 *
-	 * @param string $string String to look for metadata in.
+	 * @param string $text String to look for metadata in.
 	 * @param array $headers List of headers.
 	 *
 	 * @return array Array of file headers in `HeaderKey => Header Value` format.
 	 */
-	public static function get_file_data_from_string( $string, $headers ) {
+	public static function get_file_data_from_string( $text, $headers ) {
 		foreach ( $headers as $field => $regex ) {
-			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $string, $match ) && $match[1] ) {
+			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $text, $match ) && $match[1] ) {
 				$headers[ $field ] = static::_cleanup_header_comment( $match[1] );
 			} else {
 				$headers[ $field ] = '';

@@ -24,7 +24,7 @@ final class MapCodeExtractor extends JsCode {
 	/**
 	 * {@inheritdoc}
 	 */
-	public static function fromString( $string, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		if ( ! array_key_exists( 'file', $options ) || substr( $options['file'], -7 ) !== '.js.map' ) {
 			return;
 		}
@@ -33,17 +33,17 @@ final class MapCodeExtractor extends JsCode {
 		try {
 			$options += self::$options;
 
-			$map_object = json_decode( $string );
+			$map_object = json_decode( $text );
 
 			if ( ! isset( $map_object->sourcesContent ) || ! is_array( $map_object->sourcesContent ) ) {
 				return;
 			}
 
-			$string = implode( "\n", $map_object->sourcesContent );
+			$text = implode( "\n", $map_object->sourcesContent );
 
 			WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
-			$functions = new JsFunctionsScanner( $string );
+			$functions = new JsFunctionsScanner( $text );
 
 			$functions->enableCommentsExtraction( $options['extractComments'] );
 			$functions->saveGettextFunctions( $translations, $options );

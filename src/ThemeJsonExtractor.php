@@ -13,7 +13,7 @@ final class ThemeJsonExtractor extends JsonSchemaExtractor {
 	/**
 	 * @inheritdoc
 	 */
-	public static function fromString( $string, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		$file = $options['file'];
 
 		// Only support top-level theme.json file or any JSON file within a top-level styles/ folder.
@@ -24,6 +24,6 @@ final class ThemeJsonExtractor extends JsonSchemaExtractor {
 			return;
 		}
 
-		parent::fromString( $string, $translations, $options );
+		parent::fromString( $text, $translations, $options );
 	}
 }

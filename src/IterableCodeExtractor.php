@@ -41,9 +41,9 @@ trait IterableCodeExtractor {
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
 
-			$string = file_get_contents( $file );
+			$text = file_get_contents( $file );
 
-			if ( ! $string ) {
+			if ( ! $text ) {
 				WP_CLI::debug(
 					sprintf(
 						'Could not load file %1s',
@@ -56,7 +56,7 @@ trait IterableCodeExtractor {
 			}
 
 			if ( ! empty( $options['wpExtractTemplates'] ) ) {
-				$headers = FileDataExtractor::get_file_data_from_string( $string, [ 'Template Name' => 'Template Name' ] );
+				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers['Template Name'] ) ) {
 					$translation = new Translation( '', $headers['Template Name'] );
@@ -69,7 +69,7 @@ trait IterableCodeExtractor {
 			// Patterns are only supported when in a top-level patterns/ folder.
 			if ( ! empty( $options['wpExtractPatterns'] ) && 0 === strpos( $options['file'], 'patterns/' ) ) {
 				$headers = FileDataExtractor::get_file_data_from_string(
-					$string,
+					$text,
 					[
 						'Title'       => 'Title',
 						'Description' => 'Description',
@@ -91,7 +91,7 @@ trait IterableCodeExtractor {
 				}
 			}
 
-			static::fromString( $string, $translations, $options );
+			static::fromString( $text, $translations, $options );
 		}
 	}
 
@@ -225,29 +225,29 @@ trait IterableCodeExtractor {
 	 * Recursively gets all PHP files within a directory.
 	 *
 	 * @param string $dir A path of a directory.
-	 * @param array $include List of files and directories to include.
-	 * @param array $exclude List of files and directories to skip.
+	 * @param array $includes List of files and directories to include.
+	 * @param array $excludes List of files and directories to skip.
 	 * @param array $extensions List of filename extensions to process.
 	 *
 	 * @return array File list.
 	 */
-	public static function getFilesFromDirectory( $dir, array $include = [], array $exclude = [], $extensions = [] ) {
+	public static function getFilesFromDirectory( $dir, array $includes = [], array $excludes = [], $extensions = [] ) {
 		$filtered_files = [];
 
 		$files = new RecursiveIteratorIterator(
 			new RecursiveCallbackFilterIterator(
 				new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS | RecursiveDirectoryIterator::UNIX_PATHS | RecursiveDirectoryIterator::FOLLOW_SYMLINKS ),
-				static function ( $file, $key, $iterator ) use ( $include, $exclude, $extensions ) {
+				static function ( $file, $key, $iterator ) use ( $includes, $excludes, $extensions ) {
 					/** @var RecursiveCallbackFilterIterator $iterator */
 					/** @var SplFileInfo $file */
 
 					// Normalize include and exclude paths.
-					$include = array_map( self::class . '::trim_leading_slash', $include );
-					$exclude = array_map( self::class . '::trim_leading_slash', $exclude );
+					$includes = array_map( self::class . '::trim_leading_slash', $includes );
+					$excludes = array_map( self::class . '::trim_leading_slash', $excludes );
 
-					// If no $include is passed everything gets the weakest possible matching score.
-					$inclusion_score = empty( $include ) ? 0.1 : static::calculateMatchScore( $file, $include );
-					$exclusion_score = static::calculateMatchScore( $file, $exclude );
+					// If no $includes is passed everything gets the weakest possible matching score.
+					$inclusion_score = empty( $includes ) ? 0.1 : static::calculateMatchScore( $file, $includes );
+					$exclusion_score = static::calculateMatchScore( $file, $excludes );
 
 					// Always include directories that aren't excluded.
 					if ( 0 === $exclusion_score && $iterator->hasChildren() ) {
@@ -256,7 +256,7 @@ trait IterableCodeExtractor {
 
 					if ( ( 0 === $inclusion_score || $exclusion_score > $inclusion_score ) && $iterator->hasChildren() ) {
 						// Always include directories that may have matching children even if they are excluded.
-						return static::containsMatchingChildren( $file, $include );
+						return static::containsMatchingChildren( $file, $includes );
 					}
 
 					// Include directories that are excluded but include score is higher.

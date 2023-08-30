@@ -18,7 +18,7 @@ WP_CLI::add_command(
 	'i18n make-pot',
 	'\WP_CLI\I18n\MakePotCommand',
 	array(
-		'before_invoke' => static function() {
+		'before_invoke' => static function () {
 			if ( ! function_exists( 'mb_ereg' ) ) {
 				WP_CLI::error( 'The mbstring extension is required for string extraction to work reliably.' );
 			}

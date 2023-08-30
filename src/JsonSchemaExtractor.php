@@ -182,5 +182,4 @@ class JsonSchemaExtractor extends Extractor {
 
 		return trim( $response->body );
 	}
-
 }

@@ -51,7 +51,7 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
-			static::fromStringMultiple( $string, [ $translations ], $options );
+			self::fromStringMultiple( $string, [ $translations ], $options );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(

@@ -31,7 +31,7 @@ final class MapCodeExtractor extends JsCode {
 		$options['file'] = substr( $options['file'], 0, -7 ) . '.js';
 
 		try {
-			$options += static::$options;
+			$options += self::$options;
 
 			$map_object = json_decode( $string );
 

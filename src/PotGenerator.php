@@ -89,7 +89,7 @@ class PotGenerator extends PoGenerator {
 			if ( $translation->hasPlural() ) {
 				self::addLines( $lines, $prefix . 'msgid_plural', $translation->getPlural() );
 
-				for ( $i = 0; $i <= $plural_size; $i ++ ) {
+				for ( $i = 0; $i <= $plural_size; $i++ ) {
 					self::addLines( $lines, $prefix . 'msgstr[' . $i . ']', '' );
 				}
 			} else {

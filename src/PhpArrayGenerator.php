@@ -27,7 +27,7 @@ class PhpArrayGenerator extends PhpArray {
 		}
 
 		$headers = [
-			'X-Generator'  => 'x-generator',
+			'X-Generator' => 'x-generator',
 		];
 
 		foreach ( $translations->getHeaders() as $name => $value ) {

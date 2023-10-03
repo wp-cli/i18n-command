@@ -48,11 +48,11 @@ final class PhpCodeExtractor extends PhpCode {
 	/**
 	 * {@inheritdoc}
 	 */
-	public static function fromString( $string, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
-			static::fromStringMultiple( $string, [ $translations ], $options );
+			self::fromStringMultiple( $text, [ $translations ], $options );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(

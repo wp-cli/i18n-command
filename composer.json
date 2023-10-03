@@ -18,7 +18,7 @@
     },
     "require-dev": {
         "wp-cli/scaffold-command": "^1.2 || ^2",
-        "wp-cli/wp-cli-tests": "^3.1"
+        "wp-cli/wp-cli-tests": "^4"
     },
     "suggest": {
         "ext-json": "Used for reading and generating JSON translation files",

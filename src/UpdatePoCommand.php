@@ -78,7 +78,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$result_count++;
+			++$result_count;
 		}
 
 		WP_CLI::success( sprintf( 'Updated %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );

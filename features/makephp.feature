@@ -126,7 +126,7 @@ Feature: Generate PHP files from PO files
       """
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      'messages'=>[''=>['Foo Plugin'=>[0=>'Foo Plugin']]]
+      'messages'=>[''=>['Foo Plugin'=>['Foo Plugin']]]
       """
 
   Scenario: Does include translations
@@ -163,5 +163,5 @@ Feature: Generate PHP files from PO files
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE.php file should contain:
       """
-      'messages'=>[''=>['Foo Plugin'=>[0=>'Bar Plugin']]]
+      'messages'=>[''=>['Foo Plugin'=>['Bar Plugin']]]
       """

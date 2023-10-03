@@ -242,7 +242,7 @@ wp i18n make-php <source> [<destination>]
 
 **EXAMPLES**
 
-    # Create PHP files for all MO files in the current directory.
+    # Create PHP files for all PO files in the current directory.
     $ wp i18n make-php .
 
     # Create a PHP file from a single PO file in a specific directory.

@@ -21,22 +21,58 @@ class PhpArrayGenerator extends PhpArray {
 	public static function toString( Translations $translations, array $options = [] ) {
 		$array = static::generate( $translations, $options );
 
+		$language = $translations->getLanguage();
+		if ( null !== $language ) {
+			$array['language'] = $language;
+		}
+
 		$headers = [
-			'Plural-Forms' => 'plural-forms',
-			'X-Generator'  => 'generator',
-			'X-Domain'     => 'domain',
-			'Language'     => 'language',
+			'X-Generator'  => 'x-generator',
 		];
 
 		foreach ( $translations->getHeaders() as $name => $value ) {
-			if ( ! isset( $headers[ $name ] ) ) {
-				continue;
+			if ( isset( $headers[ $name ] ) ) {
+				$array[ $headers[ $name ] ] = $value;
 			}
-
-			$array[ $headers[ $name ] ] = $value;
 		}
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, true ) . ';';
+		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
+	}
+
+	/**
+	 * Determines if the given array is a list.
+	 *
+	 * An array is considered a list if its keys consist of consecutive numbers from 0 to count($array)-1.
+	 *
+	 * Polyfill for array_is_list() in PHP 8.1.
+	 *
+	 * @see https://github.com/symfony/polyfill-php81/tree/main
+	 *
+	 * @since 4.0.0
+	 *
+	 * @codeCoverageIgnore
+	 *
+	 * @param array<mixed> $arr The array being evaluated.
+	 * @return bool True if array is a list, false otherwise.
+	 */
+	private static function array_is_list( array $arr ) {
+		if ( function_exists( 'array_is_list' ) ) {
+			return array_is_list( $arr );
+		}
+
+		if ( ( array() === $arr ) || ( array_values( $arr ) === $arr ) ) {
+			return true;
+		}
+
+		$next_key = -1;
+
+		foreach ( $arr as $k => $v ) {
+			if ( ++$next_key !== $k ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -45,25 +81,24 @@ class PhpArrayGenerator extends PhpArray {
 	 * Like {@see var_export()} but "minified", using short array syntax
 	 * and no newlines.
 	 *
-	 * @param mixed $value       The variable you want to export.
-	 * @param bool  $return_only Optional. Whether to return the variable representation instead of outputing it. Default false.
-	 * @return string|void The variable representation or void.
+	 * @since 4.0.0
+	 *
+	 * @param mixed $value The variable you want to export.
+	 * @return string The variable representation.
 	 */
-	public static function var_export( $value, $return_only = false ) {
+	private static function var_export( $value ) {
 		if ( ! is_array( $value ) ) {
-			return var_export( $value, $return_only );
+			return var_export( $value, true );
 		}
 
 		$entries = array();
+
+		$is_list = self::array_is_list( $value );
+
 		foreach ( $value as $key => $val ) {
-			$entries[] = var_export( $key, true ) . '=>' . static::var_export( $val, true );
+			$entries[] = $is_list ? self::var_export( $val ) : var_export( $key, true ) . '=>' . self::var_export( $val );
 		}
 
-		$code = '[' . implode( ',', $entries ) . ']';
-		if ( $return_only ) {
-			return $code;
-		}
-
-		echo $code;
+		return '[' . implode( ',', $entries ) . ']';
 	}
 }

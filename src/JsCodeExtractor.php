@@ -27,11 +27,11 @@ final class JsCodeExtractor extends JsCode {
 	/**
 	 * @inheritdoc
 	 */
-	public static function fromString( $string, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
-			static::fromStringMultiple( $string, [ $translations ], $options );
+			self::fromStringMultiple( $text, [ $translations ], $options );
 		} catch ( PeastException $exception ) {
 			WP_CLI::debug(
 				sprintf(
@@ -58,11 +58,11 @@ final class JsCodeExtractor extends JsCode {
 	/**
 	 * @inheritDoc
 	 */
-	public static function fromStringMultiple( $string, array $translations, array $options = [] ) {
-		$options += static::$options;
+	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
+		$options += self::$options;
 
 		/** @var JsFunctionsScanner $functions */
-		$functions = new static::$functionsScannerClass( $string );
+		$functions = new self::$functionsScannerClass( $text );
 		$functions->enableCommentsExtraction( $options['extractComments'] );
 		$functions->saveGettextFunctions( $translations, $options );
 	}

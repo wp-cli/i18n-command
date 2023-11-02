@@ -89,7 +89,7 @@ class PotGenerator extends PoGenerator {
 			if ( $translation->hasPlural() ) {
 				self::addLines( $lines, $prefix . 'msgid_plural', $translation->getPlural() );
 
-				for ( $i = 0; $i <= $plural_size; $i ++ ) {
+				for ( $i = 0; $i <= $plural_size; $i++ ) {
 					self::addLines( $lines, $prefix . 'msgstr[' . $i . ']', '' );
 				}
 			} else {
@@ -105,12 +105,12 @@ class PotGenerator extends PoGenerator {
 	/**
 	 * Escapes and adds double quotes to a string.
 	 *
-	 * @param string $string Multiline string.
+	 * @param string $text Multiline string.
 	 *
 	 * @return string[]
 	 */
-	protected static function multilineQuote( $string ) {
-		$lines = explode( "\n", $string );
+	protected static function multilineQuote( $text ) {
+		$lines = explode( "\n", $text );
 		$last  = count( $lines ) - 1;
 
 		foreach ( $lines as $k => $line ) {

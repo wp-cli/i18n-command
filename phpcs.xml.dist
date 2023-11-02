@@ -63,7 +63,7 @@
 	<!-- Whitelist property name for a a JSON-decoded object. -->
 	<rule ref="WordPress.NamingConventions.ValidVariableName">
 		<properties>
-			<property name="customPropertiesWhitelist" type="array">
+			<property name="allowed_custom_properties" type="array">
 				<element value="sourcesContent"/>
 				<element value="functionsScannerClass"/>
 			</property>

@@ -449,11 +449,11 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Removes leading and trailing slashes of a string.
 	 *
-	 * @param string $string What to add and remove slashes from.
+	 * @param string $text What to add and remove slashes from.
 	 * @return string String without leading and trailing slashes.
 	 */
-	protected function unslashit( $string ) {
-		return ltrim( rtrim( trim( $string ), '/\\' ), '/\\' );
+	protected function unslashit( $text ) {
+		return ltrim( rtrim( trim( $text ), '/\\' ), '/\\' );
 	}
 
 	/**

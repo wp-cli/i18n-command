@@ -82,13 +82,13 @@ class JsonSchemaExtractor extends Extractor {
 	/**
 	 * @inheritdoc
 	 */
-	public static function fromString( $string, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		$file = $options['file'];
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		$schema = self::load_schema( $options['schema'], $options['schemaFallback'] );
 
-		$json = json_decode( $string, true );
+		$json = json_decode( $text, true );
 
 		if ( null === $json ) {
 			WP_CLI::debug(
@@ -182,5 +182,4 @@ class JsonSchemaExtractor extends Extractor {
 
 		return trim( $response->body );
 	}
-
 }

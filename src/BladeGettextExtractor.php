@@ -32,11 +32,11 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	/**
 	 * Compiles the Blade template string into a PHP string in one step.
 	 *
-	 * @param string $string Blade string to be compiled to a PHP string
+	 * @param string $text Blade string to be compiled to a PHP string
 	 * @return string
 	 */
-	protected static function compileBladeToPhp( $string ) {
-		return static::getBladeCompiler()->compileString( $string );
+	protected static function compileBladeToPhp( $text ) {
+		return static::getBladeCompiler()->compileString( $text );
 	}
 
 	/**
@@ -44,8 +44,8 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	 *
 	 * Note: In the parent PhpCode class fromString() uses fromStringMultiple() (overriden here)
 	 */
-	public static function fromStringMultiple( $string, array $translations, array $options = [] ) {
-		$php_string = static::compileBladeToPhp( $string );
+	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
+		$php_string = static::compileBladeToPhp( $text );
 		return parent::fromStringMultiple( $php_string, $translations, $options );
 	}
 }

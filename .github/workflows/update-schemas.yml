@@ -57,7 +57,8 @@ jobs:
     - name: Commit changes
       if: env.CHANGES_DETECTED == 1
       run: |
-        git add README.md
+        git add assets/theme-i18n.json
+        git add assets/block-i18n.json
         git commit -m "Update schema fallback files - $(date +'%Y-%m-%d')"
         git push origin update-schemas
 

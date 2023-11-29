@@ -371,7 +371,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
 
-		if ( ! is_dir( $this->destination ) && ! mkdir( $this->destination, 0777, true ) ) {
+		if ( ! is_dir( dirname( $this->destination ) ) && ! mkdir( dirname( $this->destination ), 0777, true ) ) {
 			WP_CLI::error( 'Could not create destination directory.' );
 		}
 

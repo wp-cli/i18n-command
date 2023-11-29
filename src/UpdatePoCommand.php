@@ -34,7 +34,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$source = realpath( $args[0] );
 		if ( ! $source || ! is_file( $source ) ) {
-			WP_CLI::error( 'Source file does not exist!' );
+			WP_CLI::error( 'Source file does not exist.' );
 		}
 
 		$destination = dirname( $source );
@@ -44,7 +44,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		if ( ! file_exists( $destination ) ) {
-			WP_CLI::error( 'Destination file/folder does not exist!' );
+			WP_CLI::error( 'Destination file/folder does not exist.' );
 		}
 
 		if ( is_file( $destination ) ) {

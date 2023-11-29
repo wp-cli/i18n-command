@@ -26,9 +26,11 @@ class MakePhpCommand extends WP_CLI_Command {
 	 *
 	 *     # Create PHP files for all PO files in the current directory.
 	 *     $ wp i18n make-php .
+	 *     Success: Created 3 files.
 	 *
 	 *     # Create a PHP file from a single PO file in a specific directory.
 	 *     $ wp i18n make-php example-plugin-de_DE.po languages
+	 *     Success: Created 1 file.
 	 *
 	 * @when before_wp_load
 	 *
@@ -37,7 +39,7 @@ class MakePhpCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$source = realpath( $args[0] );
 		if ( ! $source || ( ! is_file( $source ) && ! is_dir( $source ) ) ) {
-			WP_CLI::error( 'Source file or directory does not exist!' );
+			WP_CLI::error( 'Source file or directory does not exist.' );
 		}
 
 		$destination = is_file( $source ) ? dirname( $source ) : $source;
@@ -45,12 +47,8 @@ class MakePhpCommand extends WP_CLI_Command {
 			$destination = $args[1];
 		}
 
-		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( $destination )
-			&& ! mkdir( $destination, 0777, true )
-			&& ! is_dir( $destination )
-		) {
-			WP_CLI::error( 'Could not create destination directory!' );
+		if ( ! is_dir( $destination ) && ! mkdir( $destination, 0777, true ) ) {
+			WP_CLI::error( 'Could not create destination directory.' );
 		}
 
 		if ( is_file( $source ) ) {

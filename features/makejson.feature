@@ -7,7 +7,7 @@ Feature: Split PO files into JSON files.
     When I try `wp i18n make-json foo`
     Then STDERR should contain:
       """
-      Error: Source file or directory does not exist!
+      Error: Source file or directory does not exist.
       """
     And the return code should be 1
 

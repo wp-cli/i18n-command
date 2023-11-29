@@ -40,7 +40,7 @@ class MakeMoCommand extends WP_CLI_Command {
 	public function __invoke( $args, $assoc_args ) {
 		$source = realpath( $args[0] );
 		if ( ! $source || ( ! is_file( $source ) && ! is_dir( $source ) ) ) {
-			WP_CLI::error( 'Source file or directory does not exist!' );
+			WP_CLI::error( 'Source file or directory does not exist.' );
 		}
 
 		$destination      = is_file( $source ) ? dirname( $source ) : $source;
@@ -51,19 +51,15 @@ class MakeMoCommand extends WP_CLI_Command {
 			// Destination is a file, make sure source is also a file
 			if ( ! empty( $destination_pathinfo['filename'] ) && ! empty( $destination_pathinfo['extension'] ) ) {
 				if ( ! is_file( $source ) ) {
-					WP_CLI::error( 'Destination file not supported when source is a directory!' );
+					WP_CLI::error( 'Destination file not supported when source is a directory.' );
 				}
 				$destination      = $destination_pathinfo['dirname'];
 				$custom_file_name = $destination_pathinfo['filename'] . '.' . $destination_pathinfo['extension'];
 			}
 		}
 
-		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( $destination )
-			&& ! mkdir( $destination, 0777, true )
-			&& ! is_dir( $destination )
-		) {
-			WP_CLI::error( 'Could not create destination directory!' );
+		if ( ! is_dir( $destination ) && ! mkdir( $destination, 0777, true ) ) {
+			WP_CLI::error( 'Could not create destination directory.' );
 		}
 
 		if ( is_file( $source ) ) {

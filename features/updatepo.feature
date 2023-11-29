@@ -7,7 +7,7 @@ Feature: Update existing PO files from a POT file
     When I try `wp i18n update-po bar/baz.pot`
     Then STDERR should contain:
       """
-      Error: Source file does not exist!
+      Error: Source file does not exist.
       """
     And the return code should be 1
 
@@ -385,6 +385,6 @@ Feature: Update existing PO files from a POT file
     When I try `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/test`
     Then STDERR should contain:
       """
-      Error: Destination file/folder does not exist!
+      Error: Destination file/folder does not exist.
       """
     And the return code should be 1

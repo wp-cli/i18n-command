@@ -7,7 +7,7 @@ Feature: Generate PHP files from PO files
     When I try `wp i18n make-php foo`
     Then STDERR should contain:
       """
-      Error: Source file or directory does not exist!
+      Error: Source file or directory does not exist.
       """
     And the return code should be 1
 

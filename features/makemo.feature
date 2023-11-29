@@ -7,7 +7,7 @@ Feature: Generate MO files from PO files
     When I try `wp i18n make-mo foo`
     Then STDERR should contain:
       """
-      Error: Source file or directory does not exist!
+      Error: Source file or directory does not exist.
       """
     And the return code should be 1
   Scenario: Bail for destination being a file when source is a folder
@@ -18,7 +18,7 @@ Feature: Generate MO files from PO files
     When I try `wp i18n make-mo foo test.mo `
     Then STDERR should contain:
       """
-      Error: Destination file not supported when source is a directory!
+      Error: Destination file not supported when source is a directory.
       """
     And the return code should be 1
   Scenario: Uses source folder as destination by default

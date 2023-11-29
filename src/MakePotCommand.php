@@ -297,10 +297,10 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( ! PotGenerator::toFile( $translations, $this->destination ) ) {
-			WP_CLI::error( 'Could not generate a POT file!' );
+			WP_CLI::error( 'Could not generate a POT file.' );
 		}
 
-		WP_CLI::success( 'POT file successfully generated!' );
+		WP_CLI::success( 'POT file successfully generated.' );
 	}
 
 	/**
@@ -331,7 +331,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
 		if ( ! $this->source || ! is_dir( $this->source ) ) {
-			WP_CLI::error( 'Not a valid source directory!' );
+			WP_CLI::error( 'Not a valid source directory.' );
 		}
 
 		$this->main_file_data = $this->get_main_file_data();
@@ -371,12 +371,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 		WP_CLI::debug( sprintf( 'Destination: %s', $this->destination ), 'make-pot' );
 
-		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( dirname( $this->destination ) )
-			&& ! mkdir( dirname( $this->destination ), 0777, true )
-			&& ! is_dir( dirname( $this->destination ) )
-		) {
-			WP_CLI::error( 'Could not create destination directory!' );
+		if ( ! is_dir( $this->destination ) && ! mkdir( $this->destination, 0777, true ) ) {
+			WP_CLI::error( 'Could not create destination directory.' );
 		}
 
 		if ( isset( $assoc_args['merge'] ) ) {

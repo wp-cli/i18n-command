@@ -7,7 +7,7 @@ Feature: Generate a POT file of a WordPress project
     When I try `wp i18n make-pot foo bar/baz.pot`
     Then STDERR should contain:
       """
-      Error: Not a valid source directory!
+      Error: Not a valid source directory.
       """
     And the return code should be 1
 
@@ -20,7 +20,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
@@ -35,7 +35,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
@@ -296,7 +296,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the foo-plugin/languages/foo-plugin.pot file should exist
@@ -328,7 +328,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the foo-plugin.pot file should exist
@@ -388,7 +388,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -595,7 +595,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -659,7 +659,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -681,7 +681,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Theme stylesheet detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/themes/foobar/languages/foobar.pot file should exist
@@ -722,7 +722,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -751,7 +751,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should not contain:
       """
@@ -780,7 +780,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should not contain:
       """
@@ -808,7 +808,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -832,7 +832,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -859,7 +859,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -887,7 +887,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -915,7 +915,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -942,7 +942,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should not contain:
       """
@@ -978,7 +978,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -1523,7 +1523,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
@@ -1594,7 +1594,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
@@ -1650,7 +1650,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
@@ -1703,7 +1703,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
@@ -1821,7 +1821,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -1949,7 +1949,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -1983,7 +1983,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -2056,7 +2056,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -2146,7 +2146,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -2241,7 +2241,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin.pot file should contain:
       """
@@ -2281,7 +2281,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -2318,7 +2318,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -2352,7 +2352,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin.pot file should contain:
       """
@@ -2383,7 +2383,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin.pot file should contain:
       """
@@ -2418,7 +2418,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin.pot file should contain:
       """
@@ -2472,7 +2472,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the foo-plugin.pot file should contain:
@@ -2532,7 +2532,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the foo-plugin.pot file should contain:
@@ -2580,7 +2580,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -2611,7 +2611,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -2622,7 +2622,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -2650,7 +2650,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Theme stylesheet detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -2699,7 +2699,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Theme stylesheet detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
 
@@ -2763,7 +2763,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the foo-plugin.pot file should contain:
@@ -2854,7 +2854,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should be empty
     And the foo-plugin.pot file should contain:
@@ -2906,7 +2906,7 @@ Feature: Generate a POT file of a WordPress project
     When I try `wp i18n make-pot example-project result.pot --ignore-domain --debug`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And STDERR should contain:
       """
@@ -2967,7 +2967,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Theme stylesheet detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the result.pot file should contain:
       """
@@ -3024,7 +3024,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Theme stylesheet detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the result.pot file should contain:
       """
@@ -3047,7 +3047,7 @@ Feature: Generate a POT file of a WordPress project
     When I run `wp i18n make-pot example-project result.pot --ignore-domain --package-name="Acme 1.2.3"`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the result.pot file should contain:
       """
@@ -3070,7 +3070,7 @@ Feature: Generate a POT file of a WordPress project
     When I run `wp i18n make-pot example-project result.pot --ignore-domain --file-comment="Copyright (C) 2018 John Doe\nPowered by WP-CLI."`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the result.pot file should contain:
        """
@@ -3104,7 +3104,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the contents of the result.pot file should match /^msgid/
 
@@ -3157,7 +3157,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -3283,7 +3283,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -3348,7 +3348,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -3453,7 +3453,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -3538,7 +3538,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Plugin file detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-plugin/foo-plugin.pot file should exist
     And the foo-plugin/foo-plugin.pot file should contain:
@@ -3573,7 +3573,7 @@ Feature: Generate a POT file of a WordPress project
     When I try `wp i18n make-pot foo-theme --skip-theme-json`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-theme/foo-theme.pot file should exist
     But the foo-theme/foo-theme.pot file should not contain:
@@ -3614,7 +3614,7 @@ Feature: Generate a POT file of a WordPress project
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-theme/foo-theme.pot file should exist
     And the foo-theme/foo-theme.pot file should contain:
@@ -3671,7 +3671,7 @@ Feature: Generate a POT file of a WordPress project
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-theme/foo-theme.pot file should exist
     And the foo-theme/foo-theme.pot file should contain:
@@ -3720,7 +3720,7 @@ Feature: Generate a POT file of a WordPress project
     When I try `wp i18n make-pot foo-theme`
     Then STDOUT should be:
       """
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-theme/foo-theme.pot file should exist
     And the foo-theme/foo-theme.pot file should contain:
@@ -3762,7 +3762,7 @@ Feature: Generate a POT file of a WordPress project
     Then STDOUT should be:
       """
       Theme stylesheet detected.
-      Success: POT file successfully generated!
+      Success: POT file successfully generated.
       """
     And the foo-theme/foo-theme.pot file should exist
     And the foo-theme/foo-theme.pot file should contain:

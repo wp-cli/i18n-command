@@ -630,7 +630,7 @@ class MakePotCommand extends WP_CLI_Command {
 				$translation->addExtractedComment( sprintf( '%s of the plugin', $header ) );
 			}
 
-			if ( $this->main_file_path ) {
+			if ( $this->main_file_path && $this->location ) {
 				$translation->addReference(
 					str_replace( "$this->source/", '', $this->main_file_path )
 				);

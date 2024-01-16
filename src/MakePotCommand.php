@@ -60,6 +60,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $main_file_data = [];
 
 	/**
+	 * @var string
+	 */
+	protected $main_file_path;
+
+	/**
 	 * @var bool
 	 */
 	protected $skip_js = false;
@@ -481,7 +486,8 @@ class MakePotCommand extends WP_CLI_Command {
 					WP_CLI::log( 'Theme stylesheet detected.' );
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() ), 'make-pot' );
 
-					$this->project_type = 'theme';
+					$this->project_type   = 'theme';
+					$this->main_file_path = $file->getRealPath();
 
 					return $theme_data;
 				}
@@ -502,7 +508,8 @@ class MakePotCommand extends WP_CLI_Command {
 					WP_CLI::log( 'Theme stylesheet detected.' );
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() . '/style.css' ), 'make-pot' );
 
-					$this->project_type = 'theme';
+					$this->project_type   = 'theme';
+					$this->main_file_path = $file->getRealPath();
 
 					return $theme_data;
 				}
@@ -523,7 +530,8 @@ class MakePotCommand extends WP_CLI_Command {
 					WP_CLI::log( 'Plugin file detected.' );
 					WP_CLI::debug( sprintf( 'Plugin file: %s', $file->getRealPath() ), 'make-pot' );
 
-					$this->project_type = 'plugin';
+					$this->project_type   = 'plugin';
+					$this->main_file_path = $file->getRealPath();
 
 					return $plugin_data;
 				}
@@ -620,6 +628,12 @@ class MakePotCommand extends WP_CLI_Command {
 				$translation->addExtractedComment( sprintf( '%s of the theme', $header ) );
 			} else {
 				$translation->addExtractedComment( sprintf( '%s of the plugin', $header ) );
+			}
+
+			if ( $this->main_file_path && $this->location ) {
+				$translation->addReference(
+					str_replace( "$this->source/", '', $this->main_file_path )
+				);
 			}
 
 			$translations[] = $translation;

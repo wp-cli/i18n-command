@@ -43,7 +43,7 @@ Feature: Generate PHP files from PO files
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the foo-plugin/foo-plugin-de_DE.php file should exist
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should exist
 
   Scenario: Allows setting custom destination directory
     Given an empty foo-plugin directory
@@ -77,7 +77,7 @@ Feature: Generate PHP files from PO files
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the result/foo-plugin-de_DE.php file should exist
+    And the result/foo-plugin-de_DE.l10n.php file should exist
 
   Scenario: Does include headers
     Given an empty foo-plugin directory
@@ -112,19 +112,19 @@ Feature: Generate PHP files from PO files
       """
     And the return code should be 0
     And STDERR should be empty
-    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       'language'=>'de_DE'
       """
-    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       'domain'=>'foo-plugin'
       """
-    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       'plural-forms'=>'nplurals=2; plural=(n != 1);'
       """
-    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       'messages'=>[''=>['Foo Plugin'=>['Foo Plugin']]]
       """
@@ -161,7 +161,7 @@ Feature: Generate PHP files from PO files
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       'messages'=>[''=>['Foo Plugin'=>['Bar Plugin']]]
       """

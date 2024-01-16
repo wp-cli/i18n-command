@@ -70,7 +70,7 @@ class MakePhpCommand extends WP_CLI_Command {
 			}
 
 			$file_basename    = basename( $file->getFilename(), '.po' );
-			$destination_file = "{$destination}/{$file_basename}.php";
+			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
 			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file ) ) {

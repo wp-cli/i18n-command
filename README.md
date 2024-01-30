@@ -247,9 +247,11 @@ wp i18n make-php <source> [<destination>]
 
     # Create PHP files for all PO files in the current directory.
     $ wp i18n make-php .
+    Success: Created 3 files.
 
     # Create a PHP file from a single PO file in a specific directory.
     $ wp i18n make-php example-plugin-de_DE.po languages
+    Success: Created 1 file.
 
 
 

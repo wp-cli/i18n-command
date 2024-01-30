@@ -1,26 +1,16 @@
-Feature: Generate MO files from PO files
+Feature: Generate PHP files from PO files
 
   Background:
     Given an empty directory
 
   Scenario: Bail for invalid source directories
-    When I try `wp i18n make-mo foo`
+    When I try `wp i18n make-php foo`
     Then STDERR should contain:
       """
       Error: Source file or directory does not exist.
       """
     And the return code should be 1
-  Scenario: Bail for destination being a file when source is a folder
-    Given an empty foo directory
-    And a foo/foo.po file:
-    """
-    """
-    When I try `wp i18n make-mo foo test.mo `
-    Then STDERR should contain:
-      """
-      Error: Destination file not supported when source is a directory.
-      """
-    And the return code should be 1
+
   Scenario: Uses source folder as destination by default
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin-de_DE.po file:
@@ -47,46 +37,14 @@ Feature: Generate MO files from PO files
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n make-mo foo-plugin`
+    When I run `wp i18n make-php foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the foo-plugin/foo-plugin-de_DE.mo file should exist
-  Scenario: Uses the provided destination file name
-    Given a foo.po file:
-    """
-    """
-    When I run `wp i18n make-mo foo.po bar.mo`
-    Then STDOUT should contain:
-      """
-      Success: Created 1 file.
-      """
-    And the return code should be 0
-    And the bar.mo file should exist
-  Scenario: Uses the provided destination file name with no extension
-    Given a foo.po file:
-    """
-    """
-    When I run `wp i18n make-mo foo.po bar`
-    Then STDOUT should contain:
-      """
-      Success: Created 1 file.
-      """
-    And the return code should be 0
-    And the bar file should exist
-  Scenario: Preserves the provided source name with no destination
-    Given a foo.po file:
-    """
-    """
-    When I run `wp i18n make-mo foo.po`
-    Then STDOUT should contain:
-      """
-      Success: Created 1 file.
-      """
-    And the return code should be 0
-    And the foo.mo file should exist
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should exist
+
   Scenario: Allows setting custom destination directory
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin-de_DE.po file:
@@ -113,13 +71,13 @@ Feature: Generate MO files from PO files
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n make-mo foo-plugin result`
+    When I run `wp i18n make-php foo-plugin result`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the result/foo-plugin-de_DE.mo file should exist
+    And the result/foo-plugin-de_DE.l10n.php file should exist
 
   Scenario: Does include headers
     Given an empty foo-plugin directory
@@ -147,19 +105,28 @@ Feature: Generate MO files from PO files
       msgstr "Foo Plugin"
       """
 
-    When I run `wp i18n make-mo foo-plugin`
+    When I run `wp i18n make-php foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the foo-plugin/foo-plugin-de_DE.mo file should contain:
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      Language: de_DE
+      'language'=>'de_DE'
       """
-    And the foo-plugin/foo-plugin-de_DE.mo file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      X-Domain: foo-plugin
+      'domain'=>'foo-plugin'
+      """
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
+      """
+      'plural-forms'=>'nplurals=2; plural=(n != 1);'
+      """
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
+      """
+      'messages'=>[''=>['Foo Plugin'=>['Foo Plugin']]]
       """
 
   Scenario: Does include translations
@@ -188,13 +155,13 @@ Feature: Generate MO files from PO files
       msgstr "Bar Plugin"
       """
 
-    When I run `wp i18n make-mo foo-plugin`
+    When I run `wp i18n make-php foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the foo-plugin/foo-plugin-de_DE.mo file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      Bar Plugin
+      'messages'=>[''=>['Foo Plugin'=>['Bar Plugin']]]
       """

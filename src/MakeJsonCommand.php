@@ -86,7 +86,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		$source = realpath( $args[0] );
 
 		if ( ! $source || ( ! is_file( $source ) && ! is_dir( $source ) ) ) {
-			WP_CLI::error( 'Source file or directory does not exist!' );
+			WP_CLI::error( 'Source file or directory does not exist.' );
 		}
 
 		$destination = is_file( $source ) ? dirname( $source ) : $source;
@@ -100,12 +100,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 			WP_CLI::error( 'No valid keys found. No file was created.' );
 		}
 
-		// Two is_dir() checks in case of a race condition.
-		if ( ! is_dir( $destination )
-			&& ! mkdir( $destination, 0777, true )
-			&& ! is_dir( $destination )
-		) {
-			WP_CLI::error( 'Could not create destination directory!' );
+		if ( ! is_dir( $destination ) && ! mkdir( $destination, 0777, true ) ) {
+			WP_CLI::error( 'Could not create destination directory.' );
 		}
 
 		$result_count = 0;

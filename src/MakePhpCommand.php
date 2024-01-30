@@ -10,9 +10,9 @@ use WP_CLI;
 use WP_CLI\Utils;
 use WP_CLI_Command;
 
-class MakeMoCommand extends WP_CLI_Command {
+class MakePhpCommand extends WP_CLI_Command {
 	/**
-	 * Create MO files from PO files.
+	 * Create PHP files from PO files.
 	 *
 	 * ## OPTIONS
 	 *
@@ -20,18 +20,17 @@ class MakeMoCommand extends WP_CLI_Command {
 	 * : Path to an existing PO file or a directory containing multiple PO files.
 	 *
 	 * [<destination>]
-	 * : Path to the destination file or directory for the resulting MO files. Defaults to the source directory.
+	 * : Path to the destination directory for the resulting PHP files. Defaults to the source directory.
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Create MO files for all PO files in the current directory.
-	 *     $ wp i18n make-mo .
+	 *     # Create PHP files for all PO files in the current directory.
+	 *     $ wp i18n make-php .
+	 *     Success: Created 3 files.
 	 *
-	 *     # Create a MO file from a single PO file in a specific directory.
-	 *     $ wp i18n make-mo example-plugin-de_DE.po languages
-	 *
-	 *     # Create a MO file from a single PO file to a specific file destination
-	 *     $ wp i18n make-mo example-plugin-de_DE.po languages/bar.mo
+	 *     # Create a PHP file from a single PO file in a specific directory.
+	 *     $ wp i18n make-php example-plugin-de_DE.po languages
+	 *     Success: Created 1 file.
 	 *
 	 * @when before_wp_load
 	 *
@@ -43,19 +42,9 @@ class MakeMoCommand extends WP_CLI_Command {
 			WP_CLI::error( 'Source file or directory does not exist.' );
 		}
 
-		$destination      = is_file( $source ) ? dirname( $source ) : $source;
-		$custom_file_name = null;
+		$destination = is_file( $source ) ? dirname( $source ) : $source;
 		if ( isset( $args[1] ) ) {
-			$destination          = $args[1];
-			$destination_pathinfo = pathinfo( $destination );
-			// Destination is a file, make sure source is also a file
-			if ( ! empty( $destination_pathinfo['filename'] ) && ! empty( $destination_pathinfo['extension'] ) ) {
-				if ( ! is_file( $source ) ) {
-					WP_CLI::error( 'Destination file not supported when source is a directory.' );
-				}
-				$destination      = $destination_pathinfo['dirname'];
-				$custom_file_name = $destination_pathinfo['filename'] . '.' . $destination_pathinfo['extension'];
-			}
+			$destination = $args[1];
 		}
 
 		if ( ! is_dir( $destination ) && ! mkdir( $destination, 0777, true ) ) {
@@ -80,15 +69,11 @@ class MakeMoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$file_basename = basename( $file->getFilename(), '.po' );
-			$file_name     = $file_basename . '.mo';
-			if ( $custom_file_name ) {
-				$file_name = $custom_file_name;
-			}
-			$destination_file = "{$destination}/{$file_name}";
+			$file_basename    = basename( $file->getFilename(), '.po' );
+			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
-			if ( ! $translations->toMoFile( $destination_file ) ) {
+			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;
 			}

@@ -64,7 +64,7 @@ class PhpArrayGenerator extends PhpArray {
 	 * @return array
 	 */
 	protected static function toArray( Translations $translations, $include_headers, $force_array = false ) {
-		$messages    = [];
+		$messages = [];
 
 		if ( $include_headers ) {
 			$messages[''] = [

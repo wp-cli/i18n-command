@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Generators\PhpArray;
+use Gettext\Translation;
 use Gettext\Translations;
 
 /**
@@ -37,6 +38,67 @@ class PhpArrayGenerator extends PhpArray {
 		}
 
 		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
+	}
+
+	/**
+	 * Generates an array with the translations.
+	 *
+	 * @param Translations $translations
+	 * @param array        $options
+	 *
+	 * @return array
+	 */
+	public static function generate( Translations $translations, array $options = [] ) {
+		$options += static::$options;
+
+		return static::toArray( $translations, $options['includeHeaders'] );
+	}
+
+	/**
+	 * Returns a flat array.
+	 *
+	 * @param Translations $translations
+	 * @param bool         $include_headers
+	 * @param bool         $force_array Unused.
+	 *
+	 * @return array
+	 */
+	protected static function toArray( Translations $translations, $include_headers, $force_array = false ) {
+		$messages    = [];
+
+		if ( $include_headers ) {
+			$messages[''] = [
+				'' => [ static::generateHeaders( $translations ) ],
+			];
+		}
+
+		/**
+		 * @var Translation $translation
+		 */
+		foreach ( $translations as $translation ) {
+			if ( $translation->isDisabled() ) {
+				continue;
+			}
+
+			$context  = $translation->getContext();
+			$original = $translation->getOriginal();
+
+			$key = $context ? $context . "\4" . $original : $original;
+
+			if ( $translation->hasPluralTranslations() ) {
+				$msg_translations = $translation->getPluralTranslations();
+				array_unshift( $msg_translations, $translation->getTranslation() );
+				$messages[ $key ] = implode( "\0", $msg_translations );
+			} else {
+				$messages[ $key ] = $translation->getTranslation();
+			}
+		}
+
+		return [
+			'domain'       => $translations->getDomain(),
+			'plural-forms' => $translations->getHeader( 'Plural-Forms' ),
+			'messages'     => $messages,
+		];
 	}
 
 	/**

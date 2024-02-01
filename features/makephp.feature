@@ -151,8 +151,19 @@ Feature: Generate PHP files from PO files
       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
       #: foo-plugin.js:15
+      msgctxt "Plugin Name"
+      msgid "Foo Plugin (EN)"
+      msgstr "Foo Plugin (DE)"
+
+      #: foo-plugin.js:15
       msgid "Foo Plugin"
       msgstr "Bar Plugin"
+
+      #: foo-plugin.php:60
+      msgid "You have %d new message"
+      msgid_plural "You have %d new messages"
+      msgstr[0] "Sie haben %d neue Nachricht"
+      msgstr[1] "Sie haben %d neue Nachrichten"
       """
 
     When I run `wp i18n make-php foo-plugin`
@@ -163,5 +174,5 @@ Feature: Generate PHP files from PO files
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      'messages'=>[''=>['Foo Plugin'=>['Bar Plugin']]]
+      return ['domain'=>'foo-plugin','plural-forms'=>'nplurals=2; plural=(n != 1);','messages'=>['Plugin NameFoo Plugin (EN)'=>'Foo Plugin (DE)','Foo Plugin'=>'Bar Plugin','You have %d new message'=>'Sie haben %d neue Nachricht' . "\0" . 'Sie haben %d neue Nachrichten'],'language'=>'de_DE'];
       """

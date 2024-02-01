@@ -126,7 +126,7 @@ Feature: Generate PHP files from PO files
       """
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      'messages'=>[''=>['Foo Plugin'=>['Foo Plugin']]]
+      'messages'=>['Foo Plugin'=>'Foo Plugin']
       """
 
   Scenario: Does include translations

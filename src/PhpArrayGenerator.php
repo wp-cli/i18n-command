@@ -22,21 +22,6 @@ class PhpArrayGenerator extends PhpArray {
 	public static function toString( Translations $translations, array $options = [] ) {
 		$array = static::generate( $translations, $options );
 
-		$language = $translations->getLanguage();
-		if ( null !== $language ) {
-			$array['language'] = $language;
-		}
-
-		$headers = [
-			'X-Generator' => 'x-generator',
-		];
-
-		foreach ( $translations->getHeaders() as $name => $value ) {
-			if ( isset( $headers[ $name ] ) ) {
-				$array[ $headers[ $name ] ] = $value;
-			}
-		}
-
 		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
 	}
 
@@ -55,7 +40,7 @@ class PhpArrayGenerator extends PhpArray {
 	}
 
 	/**
-	 * Returns a flat array.
+	 * Returns an array containing headers and translations.
 	 *
 	 * @param Translations $translations
 	 * @param bool         $include_headers
@@ -66,10 +51,27 @@ class PhpArrayGenerator extends PhpArray {
 	protected static function toArray( Translations $translations, $include_headers, $force_array = false ) {
 		$messages = [];
 
-		if ( $include_headers ) {
-			$messages[''] = [
-				'' => [ static::generateHeaders( $translations ) ],
-			];
+		$result = [
+			'domain'       => $translations->getDomain(),
+			'plural-forms' => $translations->getHeader( 'Plural-Forms' ),
+		];
+
+		$language = $translations->getLanguage();
+		if ( null !== $language ) {
+			$result['language'] = $language;
+		}
+
+		$headers_allowlist = [
+			'POT-Creation-Date'  => 'pot-creation-date',
+			'PO-Revision-Date'   => 'po-revision-date',
+			'Project-Id-Version' => 'project-id-version',
+			'X-Generator'        => 'x-generator',
+		];
+
+		foreach ( $translations->getHeaders() as $name => $value ) {
+			if ( isset( $headers_allowlist[ $name ] ) ) {
+				$result[ $headers_allowlist[ $name ] ] = $value;
+			}
 		}
 
 		/**
@@ -94,11 +96,9 @@ class PhpArrayGenerator extends PhpArray {
 			}
 		}
 
-		return [
-			'domain'       => $translations->getDomain(),
-			'plural-forms' => $translations->getHeader( 'Plural-Forms' ),
-			'messages'     => $messages,
-		];
+		$result['messages'] = $messages;
+
+		return $result;
 	}
 
 	/**

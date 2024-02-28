@@ -78,7 +78,7 @@ class PhpArrayGenerator extends PhpArray {
 		 * @var Translation $translation
 		 */
 		foreach ( $translations as $translation ) {
-			if ( $translation->isDisabled() ) {
+			if ( $translation->isDisabled() || ! $translation->hasTranslation() ) {
 				continue;
 			}
 

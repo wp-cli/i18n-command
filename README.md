@@ -134,12 +134,14 @@ if the source directory is detected as either a plugin or theme.
 
 **EXAMPLES**
 
-    # Create a POT file for the WordPress plugin/theme in the current directory
+    # Create a POT file for the WordPress plugin/theme in the current directory.
     $ wp i18n make-pot . languages/my-plugin.pot
 
     # Create a POT file for the continents and cities list in WordPress core.
-    $ wp i18n make-pot . continents-and-cities.pot --include="wp-admin/includes/continents-cities.php"
-    --ignore-domain
+    $ wp i18n make-pot . continents-and-cities.pot --include="wp-admin/includes/continents-cities.php" --ignore-domain
+
+    # Create a POT file for the WordPress theme in the current directory with custom headers.
+    $ wp i18n make-pot . languages/my-theme.pot --headers='{"Report-Msgid-Bugs-To":"https://github.com/theme-author/my-theme/","POT-Creation-Date":""}'
 
 
 

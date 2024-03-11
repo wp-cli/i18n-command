@@ -29,7 +29,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     # Update all PO files from a POT file in the same directory.
+	 *     # Update all PO files from a POT file in the current directory.
 	 *     $ wp i18n update-po example-plugin.pot
 	 *     Success: Updated 3 files.
 	 *
@@ -37,7 +37,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *     $ wp i18n update-po example-plugin.pot example-plugin-de_DE.po
 	 *     Success: Updated 1 file.
 	 *
-	 *     # Update all PO files from a POT file in the specific directory.
+	 *     # Update all PO files in a given directory from a POT file.
 	 *     $ wp i18n update-po example-plugin.pot languages
 	 *     Success: Updated 2 files.
 	 *

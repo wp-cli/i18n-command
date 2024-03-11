@@ -278,7 +278,7 @@ This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/ma
 
 **EXAMPLES**
 
-    # Update all PO files from a POT file in the same directory.
+    # Update all PO files from a POT file in the current directory.
     $ wp i18n update-po example-plugin.pot
     Success: Updated 3 files.
 
@@ -286,7 +286,7 @@ This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/ma
     $ wp i18n update-po example-plugin.pot example-plugin-de_DE.po
     Success: Updated 1 file.
 
-    # Update all PO files from a POT file in the specific directory.
+    # Update all PO files in a given directory from a POT file.
     $ wp i18n update-po example-plugin.pot languages
     Success: Updated 2 files.
 

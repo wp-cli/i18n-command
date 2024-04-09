@@ -14,6 +14,7 @@ use Gettext\Translations;
 class PhpArrayGenerator extends PhpArray {
 	public static $options = [
 		'includeHeaders' => false,
+		'prettyPrint'    => false,
 	];
 
 	/**
@@ -22,7 +23,10 @@ class PhpArrayGenerator extends PhpArray {
 	public static function toString( Translations $translations, array $options = [] ) {
 		$array = static::generate( $translations, $options );
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
+		$pretty_print   = isset( $options['prettyPrint'] ) ? $options['prettyPrint'] : false;
+		$exported_array = static::var_export( $array, $pretty_print );
+
+		return '<?php' . PHP_EOL . 'return ' . $exported_array . ';';
 	}
 
 	/**
@@ -140,15 +144,17 @@ class PhpArrayGenerator extends PhpArray {
 	/**
 	 * Outputs or returns a parsable string representation of a variable.
 	 *
-	 * Like {@see var_export()} but "minified", using short array syntax
-	 * and no newlines.
+	 * Like {@see var_export()} but can be "minified" or "pretty-printed", using short array syntax.
+	 * By default, it uses no newlines for a compact format ("minified"),
+	 * but can be formatted with newlines and spaces for readability when the 'prettyPrint' option is set.
 	 *
 	 * @since 4.0.0
 	 *
 	 * @param mixed $value The variable you want to export.
+	 * @param bool $pretty_print Whether to pretty-print the output.
 	 * @return string The variable representation.
 	 */
-	private static function var_export( $value ) {
+	private static function var_export( $value, $pretty_print = false ) {
 		if ( ! is_array( $value ) ) {
 			return var_export( $value, true );
 		}
@@ -158,9 +164,13 @@ class PhpArrayGenerator extends PhpArray {
 		$is_list = self::array_is_list( $value );
 
 		foreach ( $value as $key => $val ) {
-			$entries[] = $is_list ? self::var_export( $val ) : var_export( $key, true ) . '=>' . self::var_export( $val );
+			$entries[] = $is_list ? self::var_export( $val, $pretty_print ) : var_export( $key, true ) . '=>' . self::var_export( $val, $pretty_print );
 		}
 
-		return '[' . implode( ',', $entries ) . ']';
+		$glue   = $pretty_print ? ', ' . PHP_EOL : ',';
+		$prefix = $pretty_print ? PHP_EOL : '';
+		$suffix = $pretty_print ? PHP_EOL : '';
+
+		return '[' . $prefix . implode( $glue, $entries ) . $suffix . ']';
 	}
 }

@@ -284,6 +284,16 @@ Feature: Generate PHP files from PO files
       #: foo-plugin.js:15
       msgid "Foo Plugin"
       msgstr "Foo Plugin"
+
+      #: foo-plugin.js:16
+      msgid "Hello"
+      msgstr "Hallo"
+
+      #: foo-plugin.js:17
+      msgid "You have %d new message"
+      msgid_plural "You have %d new messages"
+      msgstr[0] "Du hast %d neue Nachricht"
+      msgstr[1] "Du hast %d neue Nachrichten"
       """
 
     When I run `wp i18n make-php foo-plugin`
@@ -292,7 +302,7 @@ Feature: Generate PHP files from PO files
       Success: Created 1 file.
       """
     And the return code should be 0
-    And the foo-plugin/foo-plugin-de_DE.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       <?php
       return [
@@ -301,6 +311,9 @@ Feature: Generate PHP files from PO files
           'messages' =>
               [
                   'Foo Plugin' => 'Foo Plugin',
+                  'Hello' => 'Hallo',
+                  'You have %d new message' => 'Du hast %d neue Nachricht',
+                  'You have %d new messages' => 'Du hast %d neue Nachrichten',
               ],
       ];
       """

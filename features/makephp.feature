@@ -305,15 +305,17 @@ Feature: Generate PHP files from PO files
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       <?php
-      return [
+        return [
+          'domain' => 'foo-plugin',
+          'plural-forms' => 'nplurals=2; plural=(n != 1);',
+          'language' => 'de_DE',
           'project-id-version' => 'Foo Plugin',
-          'report-msgid-bugs-to' => 'https://wordpress.org/support/plugin/foo-plugin',
-          'messages' =>
-              [
-                  'Foo Plugin' => 'Foo Plugin',
-                  'Hello' => 'Hallo',
-                  'You have %d new message' => 'Du hast %d neue Nachricht',
-                  'You have %d new messages' => 'Du hast %d neue Nachrichten',
-              ],
-      ];
+          'pot-creation-date' => '2018-05-02T22:06:24+00:00',
+          'po-revision-date' => '2018-05-02T22:06:24+00:00',
+          'messages' => [
+              'Foo Plugin' => 'Foo Plugin',
+              'Hello' => 'Hallo',
+              'You have %d new message' => 'Du hast %d neue Nachricht' . "\0" . 'Du hast %d neue Nachrichten',
+          ],
+        ];
       """

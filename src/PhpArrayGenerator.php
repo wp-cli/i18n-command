@@ -23,10 +23,15 @@ class PhpArrayGenerator extends PhpArray {
 	public static function toString( Translations $translations, array $options = [] ) {
 		$array = static::generate( $translations, $options );
 
-		$pretty_print   = isset( $options['prettyPrint'] ) ? $options['prettyPrint'] : false;
-		$exported_array = static::var_export( $array, $pretty_print );
+		$pretty_print = isset( $options['prettyPrint'] ) ? $options['prettyPrint'] : false;
 
-		return '<?php' . PHP_EOL . 'return ' . $exported_array . ';';
+		if ( true === $pretty_print ) {
+			$exported_array = static::pretty_export( $array );
+		} else {
+			$exported_array = static::var_export( $array );
+		}
+
+		return '<?php' . PHP_EOL . '  return ' . $exported_array . ';';
 	}
 
 	/**
@@ -144,17 +149,15 @@ class PhpArrayGenerator extends PhpArray {
 	/**
 	 * Outputs or returns a parsable string representation of a variable.
 	 *
-	 * Like {@see var_export()} but can be "minified" or "pretty-printed", using short array syntax.
-	 * By default, it uses no newlines for a compact format ("minified"),
-	 * but can be formatted with newlines and spaces for readability when the 'prettyPrint' option is set.
+	 * Like {@see var_export()} but "minified", using short array syntax
+	 * and no newlines.
 	 *
 	 * @since 4.0.0
 	 *
 	 * @param mixed $value The variable you want to export.
-	 * @param bool $pretty_print Whether to pretty-print the output.
 	 * @return string The variable representation.
 	 */
-	private static function var_export( $value, $pretty_print = false ) {
+	private static function var_export( $value ) {
 		if ( ! is_array( $value ) ) {
 			return var_export( $value, true );
 		}
@@ -164,13 +167,41 @@ class PhpArrayGenerator extends PhpArray {
 		$is_list = self::array_is_list( $value );
 
 		foreach ( $value as $key => $val ) {
-			$entries[] = $is_list ? self::var_export( $val, $pretty_print ) : var_export( $key, true ) . '=>' . self::var_export( $val, $pretty_print );
+			$entries[] = $is_list ? self::var_export( $val ) : var_export( $key, true ) . '=>' . self::var_export( $val );
 		}
 
-		$glue   = $pretty_print ? ', ' . PHP_EOL : ',';
-		$prefix = $pretty_print ? PHP_EOL : '';
-		$suffix = $pretty_print ? PHP_EOL : '';
+		return '[' . implode( ',', $entries ) . ']';
+	}
 
-		return '[' . $prefix . implode( $glue, $entries ) . $suffix . ']';
+	/**
+	 * Outputs or returns a parsable string representation of a variable.
+	 * @since 4.0.0
+	 *
+	 * @param mixed $value The variable you want to export.
+	 * @param int   $level The current indentation level.
+	 * @param int   $indentation The number of spaces for indentation. Default is 4.
+	 * @return string The variable representation.
+	 */
+	private static function pretty_export( $values, $indentation = 2 ) {
+		$result = '[' . PHP_EOL;
+		$indent = str_repeat( ' ', $indentation );
+
+		foreach ( $values as $key => $value ) {
+			$result .= $indent . str_repeat( ' ', $indentation ) . "'$key' => ";
+
+			if ( is_array( $value ) ) {
+				$result .= self::pretty_export( $value, $indentation + $indentation );
+			} elseif ( strpos( $value, "\0" ) !== false ) {
+				$parts   = explode( "\0", $value );
+				$result .= "'" . implode( "' . \"\\0\" . '", array_map( 'addslashes', $parts ) ) . "'";
+			} else {
+				$result .= "'$value'";
+			}
+
+			$result .= ',' . PHP_EOL;
+		}
+
+		$result .= $indent . ']';
+		return $result;
 	}
 }

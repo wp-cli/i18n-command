@@ -305,7 +305,7 @@ Feature: Generate PHP files from PO files
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       <?php
-        return [
+      return [
           'domain' => 'foo-plugin',
           'plural-forms' => 'nplurals=2; plural=(n != 1);',
           'language' => 'de_DE',
@@ -317,5 +317,5 @@ Feature: Generate PHP files from PO files
               'Hello' => 'Hallo',
               'You have %d new message' => 'Du hast %d neue Nachricht' . "\0" . 'Du hast %d neue Nachrichten',
           ],
-        ];
+      ];
       """

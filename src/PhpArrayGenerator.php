@@ -31,7 +31,7 @@ class PhpArrayGenerator extends PhpArray {
 			$exported_array = static::var_export( $array );
 		}
 
-		return '<?php' . PHP_EOL . '  return ' . $exported_array . ';';
+		return '<?php' . PHP_EOL . 'return ' . $exported_array . ';';
 	}
 
 	/**
@@ -175,14 +175,13 @@ class PhpArrayGenerator extends PhpArray {
 
 	/**
 	 * Outputs or returns a parsable string representation of a variable.
-	 * @since 4.0.0
 	 *
 	 * @param mixed $value The variable you want to export.
 	 * @param int   $level The current indentation level.
-	 * @param int   $indentation The number of spaces for indentation. Default is 4.
+	 * @param int   $indentation The number of spaces for indentation.
 	 * @return string The variable representation.
 	 */
-	private static function pretty_export( $values, $indentation = 2 ) {
+	private static function pretty_export( $values, $indentation = 4, $is_top_level = true ) {
 		$result = '[' . PHP_EOL;
 		$indent = str_repeat( ' ', $indentation );
 
@@ -190,7 +189,7 @@ class PhpArrayGenerator extends PhpArray {
 			$result .= $indent . str_repeat( ' ', $indentation ) . "'$key' => ";
 
 			if ( is_array( $value ) ) {
-				$result .= self::pretty_export( $value, $indentation + $indentation );
+				$result .= self::pretty_export( $value, $indentation + $indentation, false );
 			} elseif ( strpos( $value, "\0" ) !== false ) {
 				$parts   = explode( "\0", $value );
 				$result .= "'" . implode( "' . \"\\0\" . '", array_map( 'addslashes', $parts ) ) . "'";
@@ -201,7 +200,7 @@ class PhpArrayGenerator extends PhpArray {
 			$result .= ',' . PHP_EOL;
 		}
 
-		$result .= $indent . ']';
+		$result .= $is_top_level ? ']' : $indent . ']';
 		return $result;
 	}
 }

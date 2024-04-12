@@ -296,7 +296,7 @@ Feature: Generate PHP files from PO files
       msgstr[1] "Du hast %d neue Nachrichten"
       """
 
-    When I run `wp i18n make-php foo-plugin`
+    When I run `wp i18n make-php foo-plugin --pretty-print`
     Then STDOUT should contain:
       """
       Success: Created 1 file.

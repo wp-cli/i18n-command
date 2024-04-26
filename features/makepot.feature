@@ -3820,6 +3820,37 @@ Feature: Generate a POT file of a WordPress project
       msgid "Other pattern description."
       """
 
+  Scenario: Use the license from the theme header
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name: Foo Theme
+      License: GNU General Public License v2 or later
+      */
+      """
+
+    When I run `wp i18n make-pot foo-theme foo-theme.pot`
+    Then the foo-theme.pot file should contain:
+      """
+      # This file is distributed under the GNU General Public License v2 or later.
+      """
+
+  Scenario: Use the same license as the theme
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name: Foo Theme
+      */
+      """
+
+    When I run `wp i18n make-pot foo-theme foo-theme.pot`
+    Then the foo-theme.pot file should contain:
+      """
+      # This file is distributed under the same license as the Foo Theme theme.
+      """
+
   Scenario: Ignores a standard set of directories as expected
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

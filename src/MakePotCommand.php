@@ -902,7 +902,7 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( isset( $this->main_file_data['Theme Name'] ) ) {
-			if ( isset( $this->main_file_data['License'] ) ) {
+			if ( ! empty( $this->main_file_data['License'] ) ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
 					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
@@ -920,7 +920,7 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( isset( $this->main_file_data['Plugin Name'] ) ) {
-			if ( isset( $this->main_file_data['License'] ) && ! empty( $this->main_file_data['License'] ) ) {
+			if ( ! empty( $this->main_file_data['License'] ) ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
 					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date

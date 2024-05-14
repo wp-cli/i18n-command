@@ -630,7 +630,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( $this->main_file_path && $this->location ) {
 				$translation->addReference(
-					ltrim( str_replace( "$this->source/", '', Utils\normalize_path( $this->main_file_path ) ), '/' )
+					ltrim( str_replace( Utils\normalize_path( "$this->source/" ), '', Utils\normalize_path( $this->main_file_path ) ), '/' )
 				);
 			}
 

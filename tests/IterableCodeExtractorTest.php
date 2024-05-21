@@ -230,7 +230,7 @@ class IterableCodeExtractorTest extends TestCase {
 		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . $rel_input_file ) ), $expected_extension );
 	}
 
-	public function file_extension_extract_provider() {
+	public static function file_extension_extract_provider() {
 		return [
 			[ 'foo/bar/foofoo/included.js', 'js' ],
 			[ 'foo-plugin/foo-plugin.php', 'php' ],
@@ -245,7 +245,7 @@ class IterableCodeExtractorTest extends TestCase {
 		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . $rel_input_file ), $matching_extensions ), $expected_result );
 	}
 
-	public function file_extensions_matches_provider() {
+	public static function file_extensions_matches_provider() {
 		return [
 			[ 'foo/bar/foofoo/included.js', [ 'js' ], true ],
 			[ 'foo/bar/foofoo/included.js', [ 'js', 'php', 'blade.php' ], true ],

@@ -6,9 +6,7 @@ use WP_CLI\I18n\IterableCodeExtractor;
 use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
-class TestIterableCodeExtractor {
-	use IterableCodeExtractor;
-}
+require_once __DIR__ . '/includes/TestIterableCodeExtractor.php';
 
 class IterableCodeExtractorTest extends TestCase {
 

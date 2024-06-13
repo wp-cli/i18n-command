@@ -1842,6 +1842,13 @@ Feature: Generate a POT file of a WordPress project
       wp__WEBPACK_IMPORTED_MODULE_5___default().__("rspack.default-import.__", "foo-plugin");
       wp__WEBPACK_IMPORTED_MODULE_5__.__("rspack.default-star-import.__", "foo-plugin");
 
+      var import_wp = __require("wp");
+      var import_wp2 = __toESM(__require("wp"));
+      var wpStarImport = __toESM(__require("wp"));
+      console.log((0, import_wp.__)("esbuild.__", "foo-plugin"));
+      console.log(import_wp2.default.__("esbuild.default-import.__", "foo-plugin"));
+      console.log(wpStarImport.__("esbuild.default-star-import.__", "foo-plugin"));
+
       Object(u.__)( 'minified.__', 'foo-plugin' );
       Object(j._x)( 'minified._x', 'minified._x_context', 'foo-plugin' );
 
@@ -1933,6 +1940,18 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should contain:
       """
       msgid "rspack.default-star-import.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esbuild.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esbuild.default-import.__"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "esbuild.default-star-import.__"
       """
     And the foo-plugin/foo-plugin.pot file should contain:
       """

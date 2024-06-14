@@ -3692,7 +3692,7 @@ Feature: Generate a POT file of a WordPress project
           "color": {
             "duotone": [
                 { "slug": "dark-grayscale", "name": "Dark grayscale", "colors": [] }
-            ],
+            ]
           }
         },
         "styles": {

@@ -3717,6 +3717,51 @@ Feature: Generate a POT file of a WordPress project
       msgid "My style variation"
       """
 
+  Scenario: Extract strings from the styles.blocks.variations section of theme.json files
+    Given an empty foo-theme directory
+    And a foo-theme/theme.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "color": {
+            "duotone": [
+                { "slug": "dark-grayscale", "name": "Dark grayscale", "colors": [] }
+            ]
+          }
+        },
+        "styles": {
+          "blocks": {
+            "variations": {
+              "variationSlug": {
+                "title": "My variation",
+                "color": {
+                  "background": "grey"
+                }
+              }
+            }
+          }
+        }
+      }
+      """
+
+    When I try `wp i18n make-pot foo-theme`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated.
+      """
+    And the foo-theme/foo-theme.pot file should exist
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Duotone name"
+      msgid "Dark grayscale"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Style variation name"
+      msgid "My variation"
+      """
+
   Scenario: Extract strings from the blocks section of theme.json files
     Given an empty foo-theme directory
     And a foo-theme/theme.json file:
@@ -3765,6 +3810,18 @@ Feature: Generate a POT file of a WordPress project
               }
             }
           }
+        },
+        "styles": {
+          "blocks": {
+            "variations": {
+              "myVariation": {
+                "title": "My variation",
+                "color": {
+                  "background": "grey"
+                }
+              }
+            }
+          }
         }
       }
       """
@@ -3779,6 +3836,18 @@ Feature: Generate a POT file of a WordPress project
                 "palette": [
                   { "slug": "white", "color": "#ffffff", "name": "White" }
                 ]
+              }
+            }
+          }
+        },
+        "styles": {
+          "blocks": {
+            "variations": {
+              "otherVariation": {
+                "title": "My other variation",
+                "color": {
+                  "background": "grey"
+                }
               }
             }
           }
@@ -3797,9 +3866,19 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Color name"
       msgid "Black"
       """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Style variation name"
+      msgid "My variation"
+      """
     And the foo-theme/foo-theme.pot file should not contain:
       """
       msgid "White"
+      """
+    And the foo-theme/foo-theme.pot file should not contain:
+      """
+      msgctxt "Style variation name"
+      msgid "My other variation"
       """
 
   Scenario: Extract strings from the patterns directory

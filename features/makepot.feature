@@ -3658,6 +3658,7 @@ Feature: Generate a POT file of a WordPress project
       {
         "version": "1",
         "title": "My style variation",
+        "description": "My style variation description",
         "settings": {
           "color": {
             "duotone": [
@@ -3715,6 +3716,11 @@ Feature: Generate a POT file of a WordPress project
       """
       msgctxt "Style variation name"
       msgid "My style variation"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Style variation description"
+      msgid "My style variation description"
       """
 
   Scenario: Extract strings from the blocks section of theme.json files

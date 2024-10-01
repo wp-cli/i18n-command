@@ -119,6 +119,7 @@ class PhpArrayGenerator extends PhpArray {
 	 */
 	private static function array_is_list( array $arr ) {
 		if ( function_exists( 'array_is_list' ) ) {
+			// phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.array_is_listFound
 			return array_is_list( $arr );
 		}
 

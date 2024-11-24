@@ -14,7 +14,7 @@
         "eftec/bladeone": "3.52",
         "gettext/gettext": "^4.8",
         "mck89/peast": "^1.13.11",
-        "wp-cli/wp-cli": "^2.5"
+        "wp-cli/wp-cli": "^2.12"
     },
     "require-dev": {
         "wp-cli/scaffold-command": "^1.2 || ^2",

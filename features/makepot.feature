@@ -3785,7 +3785,13 @@ Feature: Generate a POT file of a WordPress project
       """
 
   Scenario: Extract strings from style variations
-    Given an empty foo-theme/styles directory
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name: foo theme
+      */
+      """
     And a foo-theme/styles/my-style.json file:
       """
       {

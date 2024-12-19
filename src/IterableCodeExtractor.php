@@ -23,9 +23,10 @@ trait IterableCodeExtractor {
 	 * @param array        $options      {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
-	 *     @type bool  $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
-	 *     @type bool  $wpExtractPatterns  Extract 'Title' and 'Description' headers in pattern files. Default 'false'.
-	 *     @type array $restrictFileNames  Skip all files which are not included in this array.
+	 *     @type bool  $wpExtractTemplates  Extract 'Template Name' headers in theme files. Default 'false'.
+	 *     @type bool  $wpExtractPatterns   Extract 'Title' and 'Description' headers in pattern files. Default 'false'.
+	 *     @type array $restrictFileNames   Skip all files which are not included in this array.
+	 *     @type array $restrictDirectories Skip all directories which are not included in this array.
 	 * }
 	 * @return null
 	 */
@@ -38,8 +39,18 @@ trait IterableCodeExtractor {
 				}
 			}
 
+			$relative_file_path = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
+
 			// Make sure a relative file path is added as a comment.
-			$options['file'] = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
+			$options['file'] = $relative_file_path;
+
+			if ( ! empty( $options['restrictDirectories'] ) ) {
+				$top_level_dirname = explode( '/', $relative_file_path )[0];
+
+				if ( ! in_array( $top_level_dirname, $options['restrictDirectories'], true ) ) {
+					continue;
+				}
+			}
 
 			$text = file_get_contents( $file );
 

@@ -693,7 +693,7 @@ class MakePotCommand extends WP_CLI_Command {
 					[
 						'schema'            => JsonSchemaExtractor::BLOCK_JSON_SOURCE,
 						'schemaFallback'    => JsonSchemaExtractor::BLOCK_JSON_FALLBACK,
-						// Only look for block.json files, nothing else.
+						// Only look for block.json files in any folder, nothing else.
 						'restrictFileNames' => [ 'block.json' ],
 						'include'           => $this->include,
 						'exclude'           => $this->exclude,
@@ -704,20 +704,38 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( ! $this->skip_theme_json ) {
-				// This will look for the top-level theme.json file, as well as
-				// any JSON file within the top-level styles/ directory.
-				ThemeJsonExtractor::fromDirectory(
+				JsonSchemaExtractor::fromDirectory(
 					$this->source,
 					$translations,
 					[
-						'schema'         => JsonSchemaExtractor::THEME_JSON_SOURCE,
-						'schemaFallback' => JsonSchemaExtractor::THEME_JSON_FALLBACK,
-						'include'        => $this->include,
-						'exclude'        => $this->exclude,
-						'extensions'     => [ 'json' ],
-						'addReferences'  => $this->location,
+						// Only look for theme.json files in any folder, nothing else.
+						'restrictFileNames' => [ 'theme.json' ],
+						'schema'            => JsonSchemaExtractor::THEME_JSON_SOURCE,
+						'schemaFallback'    => JsonSchemaExtractor::THEME_JSON_FALLBACK,
+						'include'           => $this->include,
+						'exclude'           => $this->exclude,
+						'extensions'        => [ 'json' ],
+						'addReferences'     => $this->location,
 					]
 				);
+
+				// Themes can have style variations in the top-level "styles" folder.
+				// They're like theme.json but can have any name.
+				if ( $is_theme ) {
+					JsonSchemaExtractor::fromDirectory(
+						$this->source,
+						$translations,
+						[
+							'restrictDirectories' => [ 'styles' ],
+							'schema'              => JsonSchemaExtractor::THEME_JSON_SOURCE,
+							'schemaFallback'      => JsonSchemaExtractor::THEME_JSON_FALLBACK,
+							'include'             => $this->include,
+							'exclude'             => $this->exclude,
+							'extensions'          => [ 'json' ],
+							'addReferences'       => $this->location,
+						]
+					);
+				}
 			}
 		} catch ( \Exception $e ) {
 			WP_CLI::error( $e->getMessage() );

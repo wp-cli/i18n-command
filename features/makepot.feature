@@ -3651,6 +3651,35 @@ Feature: Generate a POT file of a WordPress project
       msgid "Black"
       """
 
+  Scenario: Skips theme.json file if excluding it
+    Given an empty foo-theme directory
+    And a foo-theme/theme.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "color": {
+            "palette": [
+              { "slug": "black", "color": "#000000", "name": "Black" }
+            ]
+          }
+        }
+      }
+      """
+
+    When I try `wp i18n make-pot foo-theme --exclude=theme.json`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated.
+      """
+    And the foo-theme/foo-theme.pot file should exist
+    But the foo-theme/foo-theme.pot file should not contain:
+      """
+      msgctxt "Color name"
+      msgid "Black"
+      """
+
+
   Scenario: Extract strings from the top-level section of theme.json files
     Given an empty foo-theme directory
     And a foo-theme/theme.json file:
@@ -3971,4 +4000,72 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin.pot file should contain:
       """
       msgid "foo-plugin/longertests/foo-plugin.php"
+      """
+
+  Scenario: Extract strings from theme.json files in any level
+    Given an empty foo-project directory
+    And a foo-project/theme.json file:
+      """
+      {
+        "version": "1",
+        "title": "My style variation",
+        "description": "My style variation description"
+      }
+      """
+
+    And a foo-project/nested/theme.json file:
+      """
+      {
+        "version": "1",
+        "title": "Nested style variation",
+        "description": "Nested style variation description"
+      }
+      """
+
+    And a foo-project/nested/notatheme.json file:
+      """
+      {
+        "version": "1",
+        "title": "Not extracted style variation",
+        "description": "Not extracted style variation description"
+      }
+      """
+
+    When I try `wp i18n make-pot foo-project`
+    Then STDOUT should be:
+      """
+      Success: POT file successfully generated.
+      """
+    And the foo-project/foo-project.pot file should exist
+    And the foo-project/foo-project.pot file should contain:
+      """
+      #: theme.json
+      msgctxt "Style variation name"
+      msgid "My style variation"
+      """
+    And the foo-project/foo-project.pot file should contain:
+      """
+      #: theme.json
+      msgctxt "Style variation description"
+      msgid "My style variation description"
+      """
+    And the foo-project/foo-project.pot file should contain:
+      """
+      #: nested/theme.json
+      msgctxt "Style variation name"
+      msgid "Nested style variation"
+      """
+    And the foo-project/foo-project.pot file should contain:
+      """
+      #: nested/theme.json
+      msgctxt "Style variation description"
+      msgid "Nested style variation description"
+      """
+    And the foo-project/foo-project.pot file should not contain:
+      """
+      msgid "Not extract style variation"
+      """
+    And the foo-project/foo-project.pot file should not contain:
+      """
+      msgid "Not extracted style variation description"
       """

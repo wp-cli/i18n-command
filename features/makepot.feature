@@ -3809,7 +3809,7 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    And a foo-theme/incorrect/styles/my-style.json file:
+    And a foo-theme/styles/deeply/nested/variation.json file:
       """
       {
         "version": "1",
@@ -3819,6 +3819,23 @@ Feature: Generate a POT file of a WordPress project
               "color": {
                 "palette": [
                   { "slug": "white", "color": "#ffffff", "name": "White" }
+                ]
+              }
+            }
+          }
+        }
+      }
+      """
+    And a foo-theme/incorrect/styles/my-style.json file:
+      """
+      {
+        "version": "1",
+        "settings": {
+          "blocks": {
+            "core/paragraph": {
+              "color": {
+                "palette": [
+                  { "slug": "red", "color": "#ff00000", "name": "Red" }
                 ]
               }
             }
@@ -3838,9 +3855,14 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Color name"
       msgid "Black"
       """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Color name"
+      msgid "White"
+      """
     And the foo-theme/foo-theme.pot file should not contain:
       """
-      msgid "White"
+      msgid "Red"
       """
 
   Scenario: Extract strings from the patterns directory

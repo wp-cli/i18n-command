@@ -22,9 +22,9 @@
 		</whitelist>
 	</filter>
 
-	<source>
+	<coverage processUncoveredFiles="false">
 		<include>
 			<directory suffix=".php">src</directory>
 		</include>
-	</source>
+	</coverage>
 </phpunit>

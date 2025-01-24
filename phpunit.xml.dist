@@ -12,15 +12,11 @@
 		 convertDeprecationsToExceptions="true"
 		 colors="true"
 		 verbose="true">
-	<testsuite name="wp-cli/i18n-command tests">
-		<directory suffix="Test.php">tests</directory>
-	</testsuite>
-
-	<filter>
-		<whitelist processUncoveredFilesFromWhitelist="true">
-			<directory suffix=".php">src</directory>
-		</whitelist>
-	</filter>
+	<testsuites>
+		<testsuite name="wp-cli/i18n-command tests">
+			<directory suffix="Test.php">tests</directory>
+		</testsuite>
+	</testsuites>
 
 	<coverage processUncoveredFiles="false">
 		<include>

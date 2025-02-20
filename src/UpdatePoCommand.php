@@ -84,7 +84,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$po_translations = Translations::fromPoFile( $file->getPathname() );
 			$po_translations->mergeWith(
 				$pot_translations,
-				Merge::ADD | Merge::REMOVE | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS
+				Merge::ADD | Merge::REMOVE | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE
 			);
 
 			if ( ! $po_translations->toPoFile( $file->getPathname() ) ) {

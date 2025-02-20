@@ -176,8 +176,16 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 
 				$translation = $translations->insert( $context, $original, $plural );
+
 				if ( $add_reference ) {
 					$translation->addReference( $file, $line );
+				}
+
+				if (
+					1 === preg_match( MakePotCommand::SPRINTF_PLACEHOLDER_REGEX, $original ) ||
+					1 === preg_match( MakePotCommand::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $original )
+				) {
+					$translation->addFlag( 'js-format' );
 				}
 
 				/** @var Node\Comment $comment */

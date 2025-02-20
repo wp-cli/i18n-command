@@ -4097,3 +4097,60 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "Not extracted style variation description"
       """
+
+  Scenario: Add php-format and js-format flags for printf usage
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Plugin URI:  https://example.com
+       * Description:
+       * Version:     0.1.0
+       * Author:
+       * Author URI:
+       * License:     GPL-2.0+
+       * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+       * Text Domain: foo-plugin
+       * Domain Path: /languages
+       */
+
+       /* translators: %s: Name */
+       __( 'Hello %s', 'foo-plugin' );
+       /* translators: 1: Name */
+       __( 'Bonjour %1$s', 'foo-plugin' );
+      """
+    And a foo-plugin/foo.js file:
+      """
+      /* translators: %s: Name */
+      __( 'Hallo %s', 'foo-plugin' );
+      /* translators: 1: Name */
+      __( 'Buongiorno %1$s', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin.pot`
+    Then the foo-plugin.pot file should contain:
+      """
+      #: foo-plugin.php:16
+      #, php-format
+      msgid "Hello %s"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      #: foo-plugin.php:18
+      #, php-format
+      msgid "Bonjour %1$s"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      #: foo.js:2
+      #, js-format
+      msgid "Hallo %s"
+      """
+    And the foo-plugin.pot file should contain:
+      """
+      #: foo.js:4
+      #, js-format
+      msgid "Buongiorno %1$s"
+      """

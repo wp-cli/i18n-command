@@ -2608,6 +2608,7 @@ Feature: Generate a POT file of a WordPress project
       """
       #. translators: %s: test
       #: foo-plugin.js:1
+      #, js-format
       msgid "Hi %s"
       msgstr ""
       """

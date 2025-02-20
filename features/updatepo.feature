@@ -388,3 +388,80 @@ Feature: Update existing PO files from a POT file
       Error: Destination file/folder does not exist.
       """
     And the return code should be 1
+
+  Scenario: Empty target PO file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #. translators: New Comment.
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+
+      #: foo-plugin.php:15
+      msgid "Another new string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #. translators: Old Comment.
+      #: foo-plugin.php:10
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+    And a foo-plugin/foo-plugin-es_ES.po file:
+      """
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/foo-plugin-de_DE.po`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #. translators: New Comment.
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+
+      #: foo-plugin.php:15
+      msgid "Another new string"
+      msgstr ""
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+    """
+    "X-Domain: foo-plugin\n"
+    """

@@ -248,6 +248,9 @@ wp i18n make-php <source> [<destination>]
 	[<destination>]
 		Path to the destination directory for the resulting PHP files. Defaults to the source directory.
 
+	[--pretty-print]
+		Pretty-print resulting PHP files.
+
 **EXAMPLES**
 
     # Create PHP files for all PO files in the current directory.

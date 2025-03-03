@@ -150,7 +150,7 @@ if the source directory is detected as either a plugin or theme.
 Extract JavaScript strings from PO files and add them to individual JSON files.
 
 ~~~
-wp i18n make-json <source> [<destination>] [--purge] [--update-mo-files] [--pretty-print] [--use-map=<paths_or_maps>]
+wp i18n make-json <source> [<destination>] [--domain=<domain>] [--purge] [--update-mo-files] [--pretty-print] [--use-map=<paths_or_maps>]
 ~~~
 
 For JavaScript internationalization purposes, WordPress requires translations to be split up into
@@ -166,6 +166,9 @@ about WordPress JavaScript internationalization.
 
 	[<destination>]
 		Path to the destination directory for the resulting JSON files. Defaults to the source directory.
+
+	[--domain=<domain>]
+		Text domain to use for the JSON file name. Overrides the default one extracted from the PO file.
 
 	[--purge]
 		Whether to purge the strings that were extracted from the original source file. Defaults to true, use `--no-purge` to skip the removal.

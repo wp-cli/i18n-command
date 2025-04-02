@@ -984,4 +984,3 @@ Feature: Split PO files into JSON files.
       """
     And the return code should be 0
     And the foo-theme/my-custom-domain-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
-

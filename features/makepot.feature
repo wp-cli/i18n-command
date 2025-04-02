@@ -32,7 +32,7 @@ Feature: Generate a POT file of a WordPress project
 
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
-    Then STDOUT should be:
+    And STDOUT should be:
       """
       Plugin file detected.
       Success: POT file successfully generated.
@@ -58,8 +58,7 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Does not include empty file headers.
     When I run `wp scaffold plugin hello-world --plugin_description=""`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
       """
@@ -102,13 +101,12 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Adds copyright comments
     When I run `wp scaffold plugin hello-world`
-
-    When I run `date +"%Y"`
+    And I run `date +"%Y"`
     Then STDOUT should not be empty
     And save STDOUT as {YEAR}
 
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
-    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       # Copyright (C) {YEAR} YOUR NAME HERE
       # This file is distributed under the same license as the Hello World plugin.
@@ -144,17 +142,15 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Sets Project-Id-Version
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
-    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Project-Id-Version: Hello World 0.1.0\n"
       """
 
   Scenario: Sets Report-Msgid-Bugs-To
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
@@ -162,9 +158,8 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Sets custom Report-Msgid-Bugs-To
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --headers='{"Report-Msgid-Bugs-To":"https://github.com/hello-world/hello-world/"}'`
-    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --headers='{"Report-Msgid-Bugs-To":"https://github.com/hello-world/hello-world/"}'`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Report-Msgid-Bugs-To: https://github.com/hello-world/hello-world/\n"
       """
@@ -175,17 +170,15 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Sets custom header
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --headers='{"X-Poedit-Basepath":".."}'`
-    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --headers='{"X-Poedit-Basepath":".."}'`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "X-Poedit-Basepath: ..\n"
       """
 
   Scenario: Sets a placeholder PO-Revision-Date header
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -193,8 +186,7 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Sets the last translator and the language team
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
       "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -203,8 +195,7 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Sets the generator header
     When I run `wp scaffold plugin hello-world`
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the contents of the wp-content/plugins/hello-world/languages/hello-world.pot file should match /X-Generator:\s/
 
   Scenario: Ignores any other text domain
@@ -589,7 +580,7 @@ Feature: Generate a POT file of a WordPress project
   Scenario: Extract translator comments
     Given I run `echo "\t"`
     And save STDOUT as {TAB}
-    Given an empty foo-plugin directory
+    And an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
       <?php
@@ -1018,7 +1009,7 @@ Feature: Generate a POT file of a WordPress project
       """
       Extracted 4 strings
       """
-    Then the foo-plugin.pot file should not contain:
+    And the foo-plugin.pot file should not contain:
       """
       I am being ignored
       """
@@ -1057,7 +1048,7 @@ Feature: Generate a POT file of a WordPress project
       <?php
        __( 'I am being ignored', 'foo-plugin' );
       """
-     And a foo-plugin/bar/ignored.js file:
+    And a foo-plugin/bar/ignored.js file:
       """
       __( 'I am being ignored', 'foo-plugin' );
       """
@@ -1554,7 +1545,7 @@ Feature: Generate a POT file of a WordPress project
 
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
-    Then STDOUT should be:
+    And STDOUT should be:
       """
       Plugin file detected.
       Success: POT file successfully generated.
@@ -1625,7 +1616,7 @@ Feature: Generate a POT file of a WordPress project
 
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot,foo-plugin/bar-plugin.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
-    Then STDOUT should be:
+    And STDOUT should be:
       """
       Plugin file detected.
       Success: POT file successfully generated.
@@ -1734,7 +1725,7 @@ Feature: Generate a POT file of a WordPress project
 
     When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot --merge=foo-plugin/foo-plugin.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should exist
-    Then STDOUT should be:
+    And STDOUT should be:
       """
       Plugin file detected.
       Success: POT file successfully generated.
@@ -2324,7 +2315,7 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "bar"
       """
-     And the foo-plugin.pot file should not contain:
+    And the foo-plugin.pot file should not contain:
       """
       msgid "Hello JSX"
       """
@@ -2462,7 +2453,7 @@ Feature: Generate a POT file of a WordPress project
       """
       msgid "Hello World from PHP"
       """
-   And the foo-plugin.pot file should contain:
+    And the foo-plugin.pot file should contain:
       """
       msgid "Hello World from JavaScript"
       """
@@ -3679,7 +3670,6 @@ Feature: Generate a POT file of a WordPress project
       msgctxt "Color name"
       msgid "Black"
       """
-
 
   Scenario: Extract strings from the top-level section of theme.json files
     Given an empty foo-theme directory

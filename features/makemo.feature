@@ -13,8 +13,8 @@ Feature: Generate MO files from PO files
   Scenario: Bail for destination being a file when source is a folder
     Given an empty foo directory
     And a foo/foo.po file:
-    """
-    """
+      """
+      """
     When I try `wp i18n make-mo foo test.mo `
     Then STDERR should contain:
       """
@@ -56,8 +56,8 @@ Feature: Generate MO files from PO files
     And the foo-plugin/foo-plugin-de_DE.mo file should exist
   Scenario: Uses the provided destination file name
     Given a foo.po file:
-    """
-    """
+      """
+      """
     When I run `wp i18n make-mo foo.po bar.mo`
     Then STDOUT should contain:
       """
@@ -67,8 +67,8 @@ Feature: Generate MO files from PO files
     And the bar.mo file should exist
   Scenario: Uses the provided destination file name with no extension
     Given a foo.po file:
-    """
-    """
+      """
+      """
     When I run `wp i18n make-mo foo.po bar`
     Then STDOUT should contain:
       """
@@ -78,8 +78,8 @@ Feature: Generate MO files from PO files
     And the bar file should exist
   Scenario: Preserves the provided source name with no destination
     Given a foo.po file:
-    """
-    """
+      """
+      """
     When I run `wp i18n make-mo foo.po`
     Then STDOUT should contain:
       """

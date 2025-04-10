@@ -462,6 +462,6 @@ Feature: Update existing PO files from a POT file
       msgstr ""
       """
     And the foo-plugin/foo-plugin-de_DE.po file should contain:
-    """
-    "X-Domain: foo-plugin\n"
-    """
+      """
+      "X-Domain: foo-plugin\n"
+      """

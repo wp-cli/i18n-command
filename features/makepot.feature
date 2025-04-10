@@ -3134,7 +3134,7 @@ Feature: Generate a POT file of a WordPress project
       Success: POT file successfully generated.
       """
     And the result.pot file should contain:
-       """
+      """
       # Copyright (C) 2018 John Doe
       # Powered by WP-CLI.
       """

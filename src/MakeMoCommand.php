@@ -28,7 +28,7 @@ class MakeMoCommand extends WP_CLI_Command {
 	 *     $ wp i18n make-mo .
 	 *
 	 *     # Create a MO file from a single PO file in a specific directory.
-	 *     $ wp i18n make-mo example-plugin-de_DE.po languages
+	 *     $ wp i18n make-mo languages/example-plugin-de_DE.po
 	 *
 	 *     # Create a MO file from a single PO file to a specific file destination
 	 *     $ wp i18n make-mo example-plugin-de_DE.po languages/bar.mo

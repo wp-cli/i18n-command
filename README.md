@@ -225,7 +225,7 @@ wp i18n make-mo <source> [<destination>]
     $ wp i18n make-mo .
 
     # Create a MO file from a single PO file in a specific directory.
-    $ wp i18n make-mo example-plugin-de_DE.po languages
+    $ wp i18n make-mo languages/example-plugin-de_DE.po
 
     # Create a MO file from a single PO file to a specific file destination
     $ wp i18n make-mo example-plugin-de_DE.po languages/bar.mo
@@ -255,7 +255,7 @@ wp i18n make-php <source> [<destination>]
     Success: Created 3 files.
 
     # Create a PHP file from a single PO file in a specific directory.
-    $ wp i18n make-php example-plugin-de_DE.po languages
+    $ wp i18n make-php languages/example-plugin-de_DE.po
     Success: Created 1 file.
 
 

@@ -29,7 +29,7 @@ class MakePhpCommand extends WP_CLI_Command {
 	 *     Success: Created 3 files.
 	 *
 	 *     # Create a PHP file from a single PO file in a specific directory.
-	 *     $ wp i18n make-php example-plugin-de_DE.po languages
+	 *     $ wp i18n make-php languages/example-plugin-de_DE.po
 	 *     Success: Created 1 file.
 	 *
 	 * @when before_wp_load

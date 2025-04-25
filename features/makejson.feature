@@ -984,3 +984,137 @@ Feature: Split PO files into JSON files.
       """
     And the return code should be 0
     And the foo-theme/my-custom-domain-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
+
+  Scenario: Should only proces js/min.js extensions by default
+    Given an empty foo-theme directory
+    And a foo-theme/de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Theme
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-theme\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-theme.js:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: bar-minified.min.js:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: foo-theme.ts:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: foo-theme.tag:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+      """
+
+    When I run `wp i18n make-json foo-theme`
+    Then STDOUT should contain:
+      """
+      Success: Created 2 files.
+      """
+    And the return code should be 0
+    And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
+    And the foo-theme/foo-theme-de_DE-da8cc4943ac0f9e5cc173c7de3f7299d.json file should exist
+
+  Scenario: Allows processing custom file extensions
+    Given an empty foo-theme directory
+    And a foo-theme/de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Theme
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-theme\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-theme.js:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: foo-theme.ts:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: foo-theme.tag:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+      """
+
+    When I run `wp i18n make-json foo-theme --extensions=ts,tag`
+    Then STDOUT should contain:
+      """
+      Success: Created 3 files.
+      """
+    And the return code should be 0
+    And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
+    And the foo-theme/foo-theme-de_DE-a4e9f6529ffa4750907c140158b834b9.json file should exist
+    And the foo-theme/foo-theme-de_DE-df975addfaa8d6579df3d3133999691a.json file should exist
+
+  Scenario: Should use extensions, strip spaces and . from notation
+    Given an empty foo-theme directory
+    And a foo-theme/de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Theme
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-theme\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-theme.js:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: foo-theme.ts:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+
+      #: foo-theme.tag:15
+      msgid "Foo Theme"
+      msgstr "Foo Theme"
+      """
+
+    When I run `wp i18n make-json foo-theme --extensions=".ts, .tsx"`
+    Then STDOUT should contain:
+      """
+      Success: Created 2 files.
+      """
+    And the return code should be 0
+    And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
+    And the foo-theme/foo-theme-de_DE-a4e9f6529ffa4750907c140158b834b9.json file should exist

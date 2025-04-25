@@ -985,7 +985,7 @@ Feature: Split PO files into JSON files.
     And the return code should be 0
     And the foo-theme/my-custom-domain-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
 
-  Scenario: Should only proces js/min.js extensions by default
+  Scenario: Should only process js/min.js extensions by default
     Given an empty foo-theme directory
     And a foo-theme/de_DE.po file:
       """
@@ -1010,7 +1010,7 @@ Feature: Split PO files into JSON files.
       msgid "Foo Theme"
       msgstr "Foo Theme"
 
-      #: bar-minified.min.js:15
+      #: bar.min.minified.min.js:15
       msgid "Foo Theme"
       msgstr "Foo Theme"
 
@@ -1030,7 +1030,7 @@ Feature: Split PO files into JSON files.
       """
     And the return code should be 0
     And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
-    And the foo-theme/foo-theme-de_DE-da8cc4943ac0f9e5cc173c7de3f7299d.json file should exist
+    And the foo-theme/foo-theme-de_DE-a9c6627f5fe96185c0a0d0ddd8fa0216.json file should exist
 
   Scenario: Allows processing custom file extensions
     Given an empty foo-theme directory

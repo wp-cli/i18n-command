@@ -263,11 +263,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
 				static function ( $reference ) use ( $extensions ) {
-					$file = $reference[0];
-
+					$file      = $reference[0];
 					$extension = pathinfo( $file, PATHINFO_EXTENSION );
 
-					return in_array( $extension, $extensions, true ) ? str_replace( '.min.', '.', $file ) : null;
+					return in_array( $extension, $extensions, true )
+						? preg_replace( "/.min.{$extension}$/", ".{$extension}", $file )
+						: null;
 				},
 				$this->reference_map( $translation->getReferences(), $map )
 			);

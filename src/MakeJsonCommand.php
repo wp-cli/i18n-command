@@ -41,6 +41,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * [--domain=<domain>]
 	 * : Text domain to use for the JSON file name. Overrides the default one extracted from the PO file.
 	 *
+	 * [--extensions=<extensions>]
+	 * : Additional custom JS extensions, comma separated list. By default searches for .min.js and .js extensions.
+	 *
 	 * [--purge]
 	 * : Whether to purge the strings that were extracted from the original source file. Defaults to true, use `--no-purge` to skip the removal.
 	 *
@@ -82,6 +85,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 		$update_mo_files = Utils\get_flag_value( $assoc_args, 'update-mo-files', true );
 		$map_paths       = Utils\get_flag_value( $assoc_args, 'use-map', false );
 		$domain          = Utils\get_flag_value( $assoc_args, 'domain', '' );
+		$extensions      = array_map(
+			function ( $extension ) {
+				return trim( $extension, ' .' );
+			},
+			explode( ',', Utils\get_flag_value( $assoc_args, 'extensions', '' ) )
+		);
 
 		if ( Utils\get_flag_value( $assoc_args, 'pretty-print', false ) ) {
 			$this->json_options |= JSON_PRETTY_PRINT;
@@ -119,7 +128,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension() ) {
-				$result        = $this->make_json( $file->getRealPath(), $destination, $map, $domain );
+				$result        = $this->make_json( $file->getRealPath(), $destination, $map, $domain, $extensions );
 				$result_count += count( $result );
 
 				if ( $purge ) {
@@ -228,13 +237,15 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * @param string     $destination Path to the destination directory.
 	 * @param array|null $map         Source to build file mapping.
 	 * @param string     $domain      Override text domain to use.
+	 * @param array      $extensions  Additional extensions.
 	 * @return array     List of created JSON files.
 	 */
-	protected function make_json( $source_file, $destination, $map, $domain ) {
+	protected function make_json( $source_file, $destination, $map, $domain, $extensions ) {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
 		$translations = new Translations();
 		$result       = [];
+		$extensions   = array_merge( [ 'js' ], $extensions );
 
 		PoExtractor::fromFile( $source_file, $translations );
 
@@ -251,18 +262,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
-				static function ( $reference ) {
+				static function ( $reference ) use ( $extensions ) {
 					$file = $reference[0];
 
-					if ( substr( $file, - 7 ) === '.min.js' ) {
-						return substr( $file, 0, - 7 ) . '.js';
-					}
+					$extension = pathinfo( $file, PATHINFO_EXTENSION );
 
-					if ( substr( $file, - 3 ) === '.js' ) {
-						return $file;
-					}
-
-					return null;
+					return in_array( $extension, $extensions, true ) ? str_replace( '.min.', '.', $file ) : null;
 				},
 				$this->reference_map( $translation->getReferences(), $map )
 			);

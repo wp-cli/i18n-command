@@ -33,6 +33,32 @@ class MakeJsonTest extends TestCase {
 		self::$make_json->setAccessible( true );
 	}
 
+	public function test_should_pass_array_of_extensions() {
+		$mock = $this->createPartialMock( MakeJsonCommand::class, [ 'make_json' ] );
+
+		$mock
+			->expects( $this->once() )
+			->method( 'make_json' )
+			->with(
+				$this->isType( 'string' ),
+				'foo',
+				null,
+				'',
+				[ 'ts', 'tsx' ]
+			)
+			->willReturn( [] );
+
+		$mock->__invoke(
+			[
+				self::$base . 'empty.po',
+				'foo',
+			],
+			[
+				'extensions' => '.ts, .tsx',
+			]
+		);
+	}
+
 	public function test_no_custom_extensions() {
 		self::$mock
 			->expects( $this->once() )

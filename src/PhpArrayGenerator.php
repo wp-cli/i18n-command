@@ -14,6 +14,7 @@ use Gettext\Translations;
 class PhpArrayGenerator extends PhpArray {
 	public static $options = [
 		'includeHeaders' => false,
+		'prettyPrint'    => false,
 	];
 
 	/**
@@ -22,7 +23,15 @@ class PhpArrayGenerator extends PhpArray {
 	public static function toString( Translations $translations, array $options = [] ) {
 		$array = static::generate( $translations, $options );
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
+		$pretty_print = isset( $options['prettyPrint'] ) ? $options['prettyPrint'] : false;
+
+		if ( true === $pretty_print ) {
+			$exported_array = static::pretty_export( $array );
+		} else {
+			$exported_array = static::var_export( $array );
+		}
+
+		return '<?php' . PHP_EOL . 'return ' . $exported_array . ';';
 	}
 
 	/**
@@ -163,5 +172,36 @@ class PhpArrayGenerator extends PhpArray {
 		}
 
 		return '[' . implode( ',', $entries ) . ']';
+	}
+
+	/**
+	 * Outputs or returns a parsable string representation of a variable.
+	 *
+	 * @param mixed $value The variable you want to export.
+	 * @param int   $level The current indentation level.
+	 * @param int   $indentation The number of spaces for indentation.
+	 * @return string The variable representation.
+	 */
+	private static function pretty_export( $values, $indentation = 4, $is_top_level = true ) {
+		$result = '[' . PHP_EOL;
+		$indent = str_repeat( ' ', $indentation );
+
+		foreach ( $values as $key => $value ) {
+			$result .= $indent . str_repeat( ' ', $indentation ) . "'$key' => ";
+
+			if ( is_array( $value ) ) {
+				$result .= self::pretty_export( $value, $indentation + $indentation, false );
+			} elseif ( strpos( $value, "\0" ) !== false ) {
+				$parts   = explode( "\0", $value );
+				$result .= "'" . implode( "' . \"\\0\" . '", array_map( 'addslashes', $parts ) ) . "'";
+			} else {
+				$result .= "'$value'";
+			}
+
+			$result .= ',' . PHP_EOL;
+		}
+
+		$result .= $is_top_level ? ']' : $indent . ']';
+		return $result;
 	}
 }

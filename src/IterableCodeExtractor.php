@@ -70,10 +70,10 @@ trait IterableCodeExtractor {
 				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers['Template Name'] ) ) {
-					$translation = new Translation( '', $headers['Template Name'] );
-					$translation->addExtractedComment( 'Template Name of the theme' );
+					$translation = Translation::create( '', $headers['Template Name'] );
+					$translation->getComments()->add( 'Template Name of the theme' );
 
-					$translations[] = $translation;
+					$translations->add( $translation );
 				}
 			}
 
@@ -88,17 +88,17 @@ trait IterableCodeExtractor {
 				);
 
 				if ( ! empty( $headers['Title'] ) ) {
-					$translation = new Translation( 'Pattern title', $headers['Title'] );
-					$translation->addReference( $options['file'] );
+					$translation = Translation::create( 'Pattern title', $headers['Title'] );
+					$translation->getReferences()->add( $options['file'] );
 
-					$translations[] = $translation;
+					$translations->add( $translation );
 				}
 
 				if ( ! empty( $headers['Description'] ) ) {
-					$translation = new Translation( 'Pattern description', $headers['Description'] );
-					$translation->addReference( $options['file'] );
+					$translation = Translation::create( 'Pattern description', $headers['Description'] );
+					$translation->getReferences()->add( $options['file'] );
 
-					$translations[] = $translation;
+					$translations->add( $translation );
 				}
 			}
 
@@ -338,5 +338,38 @@ trait IterableCodeExtractor {
 	 */
 	protected static function trim_leading_slash( $path ) {
 		return ltrim( $path, '/' );
+	}
+
+	/**
+	 * Formerly part php-gettext 4.x.
+	 */
+	protected static function getFiles( $file ) {
+		if ( empty( $file ) ) {
+			throw new InvalidArgumentException( 'There is not any file defined' );
+		}
+
+		if ( is_string( $file ) ) {
+			if ( ! is_file( $file ) ) {
+				throw new InvalidArgumentException( "'$file' is not a valid file" );
+			}
+
+			if ( ! is_readable( $file ) ) {
+				throw new InvalidArgumentException( "'$file' is not a readable file" );
+			}
+
+			return [ $file ];
+		}
+
+		if ( is_array( $file ) ) {
+			$files = [];
+
+			foreach ( $file as $f ) {
+				$files = array_merge( $files, self::getFiles( $f ) );
+			}
+
+			return $files;
+		}
+
+		throw new InvalidArgumentException( 'The first argument must be string or array' );
 	}
 }

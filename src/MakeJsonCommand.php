@@ -2,8 +2,9 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Po as PoExtractor;
-use Gettext\Generators\Po as PoGenerator;
+use Gettext\Generator\MoGenerator;
+use Gettext\Loader\PoLoader;
+use Gettext\Generator\PoGenerator;
 use Gettext\Translation;
 use Gettext\Translations;
 use WP_CLI;
@@ -143,8 +144,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 						$file_basename    = basename( $file->getFilename(), '.po' );
 						$destination_file = "{$destination}/{$file_basename}.mo";
 
-						$translations = Translations::fromPoFile( $file->getPathname() );
-						if ( ! $translations->toMoFile( $destination_file ) ) {
+						$translations = ( new PoLoader() )->loadFile( $file->getPathname() );
+						if ( ! ( new MoGenerator() )->generateFile( $translations, $destination_file ) ) {
 							WP_CLI::warning( "Could not create file {$destination_file}" );
 						}
 					}
@@ -241,13 +242,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * @return array     List of created JSON files.
 	 */
 	protected function make_json( $source_file, $destination, $map, $domain, $extensions ) {
-		/** @var Translations[] $mapping */
-		$mapping      = [];
-		$translations = new Translations();
-		$result       = [];
-		$extensions   = array_merge( [ 'js' ], $extensions );
+		/** @var array<string, Translations[]> $mapping */
+		$mapping    = [];
+		$result     = [];
+		$extensions = array_merge( [ 'js' ], $extensions );
 
-		PoExtractor::fromFile( $source_file, $translations );
+		$translations = ( new PoLoader() )->loadFile( $source_file );
 
 		$base_file_name = basename( $source_file, '.po' );
 
@@ -270,31 +270,31 @@ class MakeJsonCommand extends WP_CLI_Command {
 						? preg_replace( "/.min.{$extension}$/", ".{$extension}", $file )
 						: null;
 				},
-				$this->reference_map( $translation->getReferences(), $map )
+				$this->reference_map( $translation->getReferences()->toArray(), $map )
 			);
 
 			$sources = array_unique( array_filter( $sources ) );
 
 			foreach ( $sources as $source ) {
 				if ( ! isset( $mapping[ $source ] ) ) {
-					$mapping[ $source ] = new Translations();
+					$mapping[ $source ] = Translations::create();
 
 					// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- Provide code that is meant to be used once the bug is fixed.
 					// See https://core.trac.wordpress.org/ticket/45441
 					// $mapping[ $source ]->setDomain( $translations->getDomain() );
 
-					$mapping[ $source ]->setHeader( 'Language', $translations->getLanguage() );
-					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
+					$mapping[ $source ]->getHeaders()->set( 'Language', $translations->getLanguage() );
+					$mapping[ $source ]->getHeaders()->set( 'PO-Revision-Date', $translations->getHeaders()->get( 'PO-Revision-Date' ) );
 
-					$plural_forms = $translations->getPluralForms();
+					$plural_forms = $translations->getHeaders()->getPluralForm();
 
 					if ( $plural_forms ) {
 						list( $count, $rule ) = $plural_forms;
-						$mapping[ $source ]->setPluralForms( $count, $rule );
+						$mapping[ $source ]->getHeaders()->setPluralForm( $count, $rule );
 					}
 				}
 
-				$mapping[ $source ][] = $translation;
+				$mapping[ $source ]->add( $translation );
 			}
 		}
 
@@ -306,9 +306,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Takes the references and applies map, if given
 	 *
-	 * @param array      $references translation references
-	 * @param array|null $map file mapping
-	 * @return array     mapped references
+	 * @param array      $references Translation references.
+	 * @param array|null $map        File mapping.
+	 * @return array Mapped references.
 	 */
 	protected function reference_map( $references, $map ) {
 		if ( is_null( $map ) ) {
@@ -365,13 +365,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 			$hash             = md5( $file );
 			$destination_file = "{$destination}/{$base_file_name}-{$hash}.json";
 
-			$success = JedGenerator::toFile(
+			$success = ( new JedGenerator( $this->json_options, $file ) )->generateFile(
 				$translations,
-				$destination_file,
-				[
-					'json'   => $this->json_options,
-					'source' => $file,
-				]
+				$destination_file
 			);
 
 			if ( ! $success ) {
@@ -393,19 +389,18 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * @return bool True on success, false otherwise.
 	 */
 	protected function remove_js_strings_from_po_file( $source_file ) {
-		/** @var Translations[] $mapping */
-		$translations = new Translations();
+		$translations = ( new PoLoader() )->loadFile( $source_file );
 
-		PoExtractor::fromFile( $source_file, $translations );
-
-		foreach ( $translations->getArrayCopy() as $translation ) {
+		foreach ( $translations->getTranslations() as $translation ) {
 			/** @var Translation $translation */
 
-			if ( ! $translation->hasReferences() ) {
+			$references = $translation->getReferences();
+
+			if ( 0 === $references->count() ) {
 				continue;
 			}
 
-			foreach ( $translation->getReferences() as $reference ) {
+			foreach ( $references->toArray() as $reference ) {
 				$file = $reference[0];
 
 				if ( substr( $file, - 3 ) !== '.js' ) {
@@ -416,6 +411,6 @@ class MakeJsonCommand extends WP_CLI_Command {
 			unset( $translations[ $translation->getId() ] );
 		}
 
-		return PoGenerator::toFile( $translations, $source_file );
+		return ( new PoGenerator() )->generateFile( $translations, $source_file );
 	}
 }

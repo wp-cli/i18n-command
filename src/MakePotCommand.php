@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Extractors\Po;
+use Gettext\Generator\PoGenerator;
 use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
@@ -11,6 +12,7 @@ use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
 use DirectoryIterator;
+use Gettext\Headers;
 use IteratorIterator;
 
 class MakePotCommand extends WP_CLI_Command {
@@ -303,7 +305,7 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::debug( sprintf( 'Extracted %d strings', $translations_count ), 'make-pot' );
 		}
 
-		if ( ! PotGenerator::toFile( $translations, $this->destination ) ) {
+		if ( ! ( new PoGenerator() )->generateFile( $translations, $this->destination ) ) {
 			WP_CLI::error( 'Could not generate a POT file.' );
 		}
 
@@ -427,7 +429,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', $file ), 'make-pot' );
 
-				$this->exceptions[ $file ] = new Translations();
+				$this->exceptions[ $file ] = Translations::create();
 				Po::fromFile( $file, $this->exceptions[ $file ] );
 			}
 		}
@@ -587,24 +589,24 @@ class MakePotCommand extends WP_CLI_Command {
 	 * @return Translations A Translation set.
 	 */
 	protected function extract_strings() {
-		$translations = new Translations();
+		$translations = Translations::create();
 
 		// Add existing strings first but don't keep headers.
 		if ( ! empty( $this->merge ) ) {
-			$existing_translations = new Translations();
+			$existing_translations = Translations::create();
 			Po::fromFile( $this->merge, $existing_translations );
-			$translations->mergeWith( $existing_translations, Merge::ADD | Merge::REMOVE );
+			$translations->mergeWith( $existing_translations, Merge::TRANSLATIONS_OURS | Merge::HEADERS_OURS );
 		}
 
-		PotGenerator::setCommentBeforeHeaders( $this->get_file_comment() );
+		$translations->setDescription( $this->get_file_comment() );
 
 		$this->set_default_headers( $translations );
 
 		// POT files have no Language header.
-		$translations->deleteHeader( Translations::HEADER_LANGUAGE );
+		$translations->getHeaders()->delete( Headers::HEADER_LANGUAGE );
 
 		// Only relevant for PO files, not POT files.
-		$translations->setHeader( 'PO-Revision-Date', 'YEAR-MO-DA HO:MI+ZONE' );
+		$translations->getHeaders()->set( 'PO-Revision-Date', 'YEAR-MO-DA HO:MI+ZONE' );
 
 		if ( $this->domain ) {
 			$translations->setDomain( $this->domain );
@@ -620,21 +622,21 @@ class MakePotCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$translation = new Translation( '', $data );
+			$translation = Translation::create( '', $data );
 
 			if ( $is_theme ) {
-				$translation->addExtractedComment( sprintf( '%s of the theme', $header ) );
+				$translation->getComments()->add( sprintf( '%s of the theme', $header ) );
 			} else {
-				$translation->addExtractedComment( sprintf( '%s of the plugin', $header ) );
+				$translation->getComments()->add( sprintf( '%s of the plugin', $header ) );
 			}
 
 			if ( $this->main_file_path && $this->location ) {
-				$translation->addReference(
+				$translation->getReferences()->add(
 					ltrim( str_replace( Utils\normalize_path( "$this->source/" ), '', Utils\normalize_path( $this->main_file_path ) ), '/' )
 				);
 			}
 
-			$translations[] = $translation;
+			$translations->add( $translation );
 		}
 
 		try {
@@ -744,7 +746,7 @@ class MakePotCommand extends WP_CLI_Command {
 		foreach ( $this->exceptions as $file => $exception_translations ) {
 			/** @var Translation $exception_translation */
 			foreach ( $exception_translations as $exception_translation ) {
-				if ( ! $translations->find( $exception_translation ) ) {
+				if ( ! $translations->find( $exception_translation->getContext(), $exception_translation->getOriginal() ) ) {
 					continue;
 				}
 
@@ -757,7 +759,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( $this->subtract_and_merge ) {
-				PotGenerator::toFile( $exception_translations, $file );
+				( new PoGenerator() )->generateFile( $exception_translations, $file );
 			}
 		}
 
@@ -782,11 +784,11 @@ class MakePotCommand extends WP_CLI_Command {
 			$references = $translation->getReferences();
 
 			// File headers don't have any file references.
-			$location = $translation->hasReferences() ? '(' . implode( ':', $references[0] ) . ')' : '';
+			$location = $references->count() > 0 ? '(' . implode( ':', $references[0] ) . ')' : '';
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
-				! $translation->hasExtractedComments() &&
+				$translation->getComments()->count() === 0 &&
 				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $placeholders ) >= 1
 			) {
 				$message = sprintf(
@@ -798,7 +800,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			// Check 2: Flag strings with different translator comments.
-			if ( $translation->hasExtractedComments() ) {
+			if ( $translation->getComments()->count() > 0 ) {
 				$comments = $translation->getExtractedComments();
 
 				// Remove plugin header information from comments.
@@ -985,19 +987,19 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( null !== $name ) {
-			$translations->setHeader( 'Project-Id-Version', $name . ( $version ? ' ' . $version : '' ) );
+			$translations->getHeaders()->set( 'Project-Id-Version', $name . ( $version ? ' ' . $version : '' ) );
 		}
 
 		if ( null !== $bugs_address ) {
-			$translations->setHeader( 'Report-Msgid-Bugs-To', $bugs_address );
+			$translations->getHeaders()->set( 'Report-Msgid-Bugs-To', $bugs_address );
 		}
 
-		$translations->setHeader( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
-		$translations->setHeader( 'Language-Team', 'LANGUAGE <LL@li.org>' );
-		$translations->setHeader( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
+		$translations->getHeaders()->set( 'Last-Translator', 'FULL NAME <EMAIL@ADDRESS>' );
+		$translations->getHeaders()->set( 'Language-Team', 'LANGUAGE <LL@li.org>' );
+		$translations->getHeaders()->set( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
 
 		foreach ( $this->headers as $key => $value ) {
-			$translations->setHeader( $key, $value );
+			$translations->getHeaders()->set( $key, $value );
 		}
 	}
 

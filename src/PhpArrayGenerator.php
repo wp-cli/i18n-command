@@ -2,7 +2,7 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Generators\PhpArray;
+use Gettext\Generator\Generator;
 use Gettext\Translation;
 use Gettext\Translations;
 
@@ -11,16 +11,16 @@ use Gettext\Translations;
  *
  * Returns output in the form WordPress uses.
  */
-class PhpArrayGenerator extends PhpArray {
+class PhpArrayGenerator extends Generator {
 	public static $options = [
 		'includeHeaders' => false,
 	];
 
 	/**
-	 * {@inheritdoc}
+	 * Generates the final string representation of the translations.
 	 */
-	public static function toString( Translations $translations, array $options = [] ) {
-		$array = static::generate( $translations, $options );
+	public function generateString( Translations $translations ): string {
+		$array = static::generate( $translations, static::$options );
 
 		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
 	}
@@ -53,7 +53,7 @@ class PhpArrayGenerator extends PhpArray {
 
 		$result = [
 			'domain'       => $translations->getDomain(),
-			'plural-forms' => $translations->getHeader( 'Plural-Forms' ),
+			'plural-forms' => $translations->getHeaders()->getPluralForm(),
 		];
 
 		$language = $translations->getLanguage();
@@ -78,7 +78,7 @@ class PhpArrayGenerator extends PhpArray {
 		 * @var Translation $translation
 		 */
 		foreach ( $translations as $translation ) {
-			if ( $translation->isDisabled() || ! $translation->hasTranslation() ) {
+			if ( $translation->isDisabled() || null === $translation->getTranslation() ) {
 				continue;
 			}
 
@@ -87,7 +87,7 @@ class PhpArrayGenerator extends PhpArray {
 
 			$key = $context ? $context . "\4" . $original : $original;
 
-			if ( $translation->hasPluralTranslations() ) {
+			if ( count( $translation->getPluralTranslations() ) > 0 ) {
 				$msg_translations = $translation->getPluralTranslations();
 				array_unshift( $msg_translations, $translation->getTranslation() );
 				$messages[ $key ] = implode( "\0", $msg_translations );

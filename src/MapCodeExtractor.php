@@ -2,12 +2,11 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\JsCode;
 use Gettext\Translations;
 use Peast\Syntax\Exception as PeastException;
 use WP_CLI;
 
-final class MapCodeExtractor extends JsCode {
+final class MapCodeExtractor {
 	use IterableCodeExtractor;
 
 	public static $options = [

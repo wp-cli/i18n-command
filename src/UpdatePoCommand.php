@@ -4,6 +4,8 @@ namespace WP_CLI\I18n;
 
 use DirectoryIterator;
 use Gettext\Extractors\Po;
+use Gettext\Generator\PoGenerator;
+use Gettext\Loader\PoLoader;
 use Gettext\Merge;
 use Gettext\Translations;
 use IteratorIterator;
@@ -67,7 +69,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$files = new IteratorIterator( new DirectoryIterator( $destination ) );
 		}
 
-		$pot_translations = Translations::fromPoFile( $source );
+		$pot_translations = ( new PoLoader() )->loadFile( $source );
 
 		$result_count = 0;
 		/** @var DirectoryIterator $file */
@@ -81,13 +83,13 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$po_translations = Translations::fromPoFile( $file->getPathname() );
+			$po_translations = ( new PoLoader() )->loadFile( $file->getPathname() );
 			$po_translations->mergeWith(
 				$pot_translations,
-				Merge::ADD | Merge::REMOVE | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE
+				Merge::TRANSLATIONS_OURS | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::HEADERS_OURS
 			);
 
-			if ( ! $po_translations->toPoFile( $file->getPathname() ) ) {
+			if ( ! ( new PoGenerator() )->generateFile( $po_translations, $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;
 			}

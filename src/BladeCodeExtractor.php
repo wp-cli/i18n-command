@@ -42,8 +42,6 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 		],
 	];
 
-	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
-
 	/**
 	 * {@inheritdoc}
 	 */

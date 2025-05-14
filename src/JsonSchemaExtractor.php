@@ -130,7 +130,7 @@ class JsonSchemaExtractor extends Extractor {
 			$translation = $translations->insert( $i18n_schema, $settings );
 
 			if ( $file ) {
-				$translation->addReference( $file );
+				$translation->getReferences()->add( $file );
 			}
 
 			return;

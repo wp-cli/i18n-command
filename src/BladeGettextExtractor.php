@@ -4,14 +4,10 @@ namespace WP_CLI\I18n;
 
 use eftec\bladeone\BladeOne;
 
-// Modified Gettext Blade extractor that
-// uses the up-to-date BladeOne standalone Blade engine,
-// correctly supports fromStringMultiple.
-
 /**
  * Class to get gettext strings from blade.php files returning arrays.
  */
-class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
+class BladeGettextExtractor {
 
 	/**
 	 * Prepares a Blade compiler/engine and returns it.

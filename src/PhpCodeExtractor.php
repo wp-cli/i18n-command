@@ -7,7 +7,7 @@ use Gettext\Scanner\PhpScanner;
 use Gettext\Translations;
 use WP_CLI;
 
-final class PhpCodeExtractor {
+class PhpCodeExtractor {
 	use IterableCodeExtractor;
 
 	public static $options = [
@@ -47,11 +47,13 @@ final class PhpCodeExtractor {
 	 * {@inheritdoc}
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
+		$options = static::$options + $options;
+
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
 			$scanner = new PhpScanner( $translations );
-			$scanner->setFunctions( self::$options['functions'] );
+			$scanner->setFunctions( array_keys( self::$options['functions'] ) );
 			$scanner->extractCommentsStartingWith( ...$options['extractComments'] );
 			$scanner->scanString( $text, $options['file'] );
 

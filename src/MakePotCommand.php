@@ -2,7 +2,6 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Po;
 use Gettext\Generator\PoGenerator;
 use Gettext\Merge;
 use Gettext\Translation;
@@ -781,10 +780,17 @@ class MakePotCommand extends WP_CLI_Command {
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
-			$references = $translation->getReferences();
+			$references = $translation->getReferences()->toArray();
 
-			// File headers don't have any file references.
-			$location = $references->count() > 0 ? '(' . implode( ':', $references[0] ) . ')' : '';
+			$location = '';
+
+			// There might not be any file references.
+			foreach( $references as $file => $lines ) {
+				if ( count( $lines ) > 0 ) {
+					$location = "$file:$lines[0]";
+				}
+			}
+
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
@@ -801,16 +807,16 @@ class MakePotCommand extends WP_CLI_Command {
 
 			// Check 2: Flag strings with different translator comments.
 			if ( $translation->getComments()->count() > 0 ) {
-				$comments = $translation->getExtractedComments();
+				$comments = $translation->getExtractedComments()->toArray();
 
 				// Remove plugin header information from comments.
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
-						/** @var ParsedComment|string $comment */
+						/** @var string $comment */
 						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
-							if ( 0 === strpos( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
+							if ( 0 === strpos( $comment, $file_header ) ) {
 								return null;
 							}
 						}
@@ -874,7 +880,7 @@ class MakePotCommand extends WP_CLI_Command {
 				WP_CLI::warning( $message );
 			}
 
-			if ( $translation->hasPlural() ) {
+			if ( count( $translation->getPluralTranslations() ) > 0 ) {
 				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
 				$single_placeholders = $single_placeholders[0];
 

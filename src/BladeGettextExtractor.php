@@ -7,7 +7,7 @@ use eftec\bladeone\BladeOne;
 /**
  * Class to get gettext strings from blade.php files returning arrays.
  */
-class BladeGettextExtractor {
+class BladeGettextExtractor extends PhpCodeExtractor {
 
 	/**
 	 * Prepares a Blade compiler/engine and returns it.

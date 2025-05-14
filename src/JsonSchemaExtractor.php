@@ -2,12 +2,12 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Extractor;
+use Gettext\Translation;
 use Gettext\Translations;
 use WP_CLI;
 use WP_CLI\Utils;
 
-class JsonSchemaExtractor extends Extractor {
+class JsonSchemaExtractor {
 	use IterableCodeExtractor;
 
 	/**
@@ -127,11 +127,13 @@ class JsonSchemaExtractor extends Extractor {
 		}
 
 		if ( is_string( $i18n_schema ) && is_string( $settings ) ) {
-			$translation = $translations->insert( $i18n_schema, $settings );
+			$translation = Translation::create( $i18n_schema, $settings );
 
 			if ( $file ) {
 				$translation->getReferences()->add( $file );
 			}
+
+			$translations->add( $translation );
 
 			return;
 		}

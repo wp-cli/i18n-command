@@ -3,11 +3,9 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
-use Gettext\Extractors\Po;
 use Gettext\Generator\PoGenerator;
 use Gettext\Loader\PoLoader;
 use Gettext\Merge;
-use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
 use WP_CLI;

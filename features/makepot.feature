@@ -3092,6 +3092,38 @@ Feature: Generate a POT file of a WordPress project
       msgid "Page not found."
       """
 
+@blade
+  Scenario: Extract strings from custom directives from a Blade-PHP file in a theme
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name:     Foo Theme
+      Theme URI:      https://example.com
+      Description:
+      Author:
+      Author URI:
+      Version:        0.1.0
+      License:        GPL-2.0+
+      Text Domain:    foo-theme
+      */
+      """
+    And a foo-theme/stuff.blade.php file:
+      """
+        @t( 'This is a custom directive', 'foo-theme' )
+      """
+
+    When I try `wp i18n make-pot foo-theme --blade-directives=t result.pot --debug`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated.
+      """
+    And the result.pot file should contain:
+      """
+      msgid "This is a custom directive"
+      """
+
   Scenario: Custom package name
     Given an empty example-project directory
     And a example-project/stuff.php file:

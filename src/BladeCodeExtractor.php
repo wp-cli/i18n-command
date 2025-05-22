@@ -40,6 +40,7 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 			'__ngettext'      => 'single_plural_number_domain',
 			'__ngettext_noop' => 'single_plural_domain',
 		],
+		'directives'      => [],
 	];
 
 	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';

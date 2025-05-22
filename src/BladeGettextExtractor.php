@@ -21,6 +21,16 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	protected static function getBladeCompiler() {
 		$cache_path     = empty( $options['cachePath'] ) ? sys_get_temp_dir() : $options['cachePath'];
 		$blade_compiler = new BladeOne( null, $cache_path );
+		$directives     = empty( static::$options['directives'] ) ? [] : static::$options['directives'];
+
+		foreach ( $directives as $directive ) {
+			$blade_compiler->directive(
+				$directive,
+				function ( $expression ) {
+					return "<?php __($expression); ?>";
+				}
+			);
+		}
 
 		if ( method_exists( $blade_compiler, 'withoutComponentTags' ) ) {
 			$blade_compiler->withoutComponentTags();

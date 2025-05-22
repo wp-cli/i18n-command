@@ -125,6 +125,11 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $project_type = 'generic';
 
 	/**
+	 * @var array
+	 */
+	protected $directives = [];
+
+	/**
 	 * These Regexes copied from http://php.net/manual/en/function.sprintf.php#93552
 	 * and adjusted for better precision and updated specs.
 	 */
@@ -231,6 +236,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 * Defaults to true, use `--no-location` to skip the removal.
 	 * Note that disabling this option makes it harder for technically skilled translators to understand each message’s context.
 	 *
+	 * [--blade-directives=<blade-directives>]
+	 * : Custom Blade directives that should be treated as translation functions. Comma separated list for multiple.
+	 *
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction. Useful when this is done in another build step, e.g. through Babel.
 	 *
@@ -334,6 +342,15 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->file_comment    = Utils\get_flag_value( $assoc_args, 'file-comment' );
 		$this->package_name    = Utils\get_flag_value( $assoc_args, 'package-name' );
 		$this->location        = Utils\get_flag_value( $assoc_args, 'location', true );
+		$this->directives      = array_map(
+			function ( $directive ) {
+				return trim( ltrim( $directive, '@' ) );
+			},
+			explode(
+				',',
+				Utils\get_flag_value( $assoc_args, 'blade-directives', '' )
+			)
+		);
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -659,6 +676,8 @@ class MakePotCommand extends WP_CLI_Command {
 					'extensions'    => [ 'blade.php' ],
 					'addReferences' => $this->location,
 				];
+
+				BladeCodeExtractor::$options['directives'] += $this->directives;
 				BladeCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}
 

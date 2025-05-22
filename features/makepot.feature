@@ -3092,7 +3092,7 @@ Feature: Generate a POT file of a WordPress project
       msgid "Page not found."
       """
 
-@blade
+  @blade
   Scenario: Extract strings from custom directives from a Blade-PHP file in a theme
     Given an empty foo-theme directory
     And a foo-theme/style.css file:

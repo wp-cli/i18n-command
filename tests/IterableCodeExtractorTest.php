@@ -2,7 +2,7 @@
 
 namespace WP_CLI\I18n\Tests;
 
-use WP_CLI\I18n\IterableCodeExtractor;
+use PHPUnit\Framework\Attributes\DataProvider;
 use WP_CLI\Tests\TestCase;
 use WP_CLI\Utils;
 
@@ -228,6 +228,7 @@ class IterableCodeExtractorTest extends TestCase {
 	/**
 	 * @dataProvider file_extension_extract_provider
 	 */
+	#[DataProvider( 'file_extension_extract_provider' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_gets_file_extension_correctly( $rel_input_file, $expected_extension ) {
 		$this->assertEquals( static::file_get_extension_multi_invoke( new \SplFileObject( self::$base . $rel_input_file ) ), $expected_extension );
 	}
@@ -243,6 +244,7 @@ class IterableCodeExtractorTest extends TestCase {
 	/**
 	 * @dataProvider file_extensions_matches_provider
 	 */
+	#[DataProvider( 'file_extensions_matches_provider' )] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes.PHPUnitAttributeFound
 	public function test_matches_file_extensions_correctly( $rel_input_file, $matching_extensions, $expected_result ) {
 		$this->assertEquals( static::file_has_file_extension_invoke( new \SplFileObject( self::$base . $rel_input_file ), $matching_extensions ), $expected_result );
 	}

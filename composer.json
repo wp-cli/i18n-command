@@ -18,7 +18,7 @@
     },
     "require-dev": {
         "wp-cli/scaffold-command": "^1.2 || ^2",
-        "wp-cli/wp-cli-tests": "^4.3.9"
+        "wp-cli/wp-cli-tests": "^5.0.0"
     },
     "suggest": {
         "ext-json": "Used for reading and generating JSON translation files",
@@ -29,7 +29,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
-            "johnpbloch/wordpress-core-installer": true
+            "johnpbloch/wordpress-core-installer": true,
+            "phpstan/extension-installer": true
         },
         "lock": false
     },
@@ -62,6 +63,7 @@
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
         "phpcs": "run-phpcs-tests",
+        "phpstan": "run-phpstan-tests",
         "phpcbf": "run-phpcbf-cleanup",
         "phpunit": "run-php-unit-tests",
         "prepare-tests": "install-package-tests",

@@ -2,7 +2,7 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Generators\Jed;
+use Gettext\Generator\Generator;
 use Gettext\Translation;
 use Gettext\Translations;
 
@@ -11,72 +11,83 @@ use Gettext\Translations;
  *
  * Adds some more meta data to JED translation files than the default generator.
  */
-class JedGenerator extends Jed {
+class JedGenerator extends Generator {
 	/**
-	 * {@parentDoc}.
+	 * Options passed to json_encode().
+	 *
+	 * @var int JSON options.
 	 */
-	public static function toString( Translations $translations, array $options = [] ) {
-		$options += static::$options;
-		$domain   = $translations->getDomain() ?: 'messages';
-		$messages = static::buildMessages( $translations );
+	protected $json_options = 0;
 
-		$configuration = [
-			'' => [
-				'domain'       => $domain,
-				'lang'         => $translations->getLanguage() ?: 'en',
-				'plural-forms' => $translations->getHeader( 'Plural-Forms' ) ?: 'nplurals=2; plural=(n != 1);',
-			],
-		];
+	/**
+	 * Source file.
+	 *
+	 * @var string Source file.
+	 */
+	protected $source = '';
 
-		$data = [
-			'translation-revision-date' => $translations->getHeader( 'PO-Revision-Date' ),
-			'generator'                 => 'WP-CLI/' . WP_CLI_VERSION,
-			'source'                    => $options['source'],
-			'domain'                    => $domain,
-			'locale_data'               => [
-				$domain => $configuration + $messages,
-			],
-		];
-
-		return json_encode( $data, $options['json'] );
+	/**
+	 * Constructor.
+	 *
+	 * @param int    $json_options Options passed to json_encode().
+	 * @param string $source       Source file.
+	 */
+	public function __construct( int $json_options, string $source ) {
+		$this->json_options = $json_options;
+		$this->source       = $source;
 	}
 
-	/**
-	 * Generates an array with all translations.
-	 *
-	 * @param Translations $translations
-	 *
-	 * @return array
-	 */
-	public static function buildMessages( Translations $translations ) {
-		$plural_forms      = $translations->getPluralForms();
-		$number_of_plurals = is_array( $plural_forms ) ? ( $plural_forms[0] - 1 ) : null;
-		$messages          = [];
-		$context_glue      = chr( 4 );
+	public function generateString( Translations $translations ): string {
+		$array = $this->generateArray( $translations );
+
+		return json_encode( $array, $this->json_options );
+	}
+
+	public function generateArray( Translations $translations ): array {
+		$pluralForm = $translations->getHeaders()->getPluralForm();
+		$pluralSize = is_array( $pluralForm ) ? ( $pluralForm[0] - 1 ) : null;
+		$messages   = [];
 
 		foreach ( $translations as $translation ) {
-			/** @var Translation $translation */
-
-			if ( $translation->isDisabled() ) {
+			if ( ! $translation->getTranslation() || $translation->isDisabled() ) {
 				continue;
 			}
 
-			$key = $translation->getOriginal();
+			$context  = $translation->getContext() ?: '';
+			$original = $translation->getOriginal();
 
-			if ( $translation->hasContext() ) {
-				$key = $translation->getContext() . $context_glue . $key;
+			if ( ! isset( $messages[ $context ] ) ) {
+				$messages[ $context ] = [];
 			}
 
-			if ( $translation->hasPluralTranslations( true ) ) {
-				$message = $translation->getPluralTranslations( $number_of_plurals );
-				array_unshift( $message, $translation->getTranslation() );
+			if ( self::hasPluralTranslations( $translation ) ) {
+				$messages[ $context ][ $original ] = $translation->getPluralTranslations( $pluralSize );
+				array_unshift( $messages[ $context ][ $original ], $translation->getTranslation() );
 			} else {
-				$message = [ $translation->getTranslation() ];
+				$messages[ $context ][ $original ] = $translation->getTranslation();
 			}
-
-			$messages[ $key ] = $message;
 		}
 
-		return $messages;
+		$configuration = [
+			'' => [
+				'domain'       => $translations->getDomain(),
+				'lang'         => $translations->getLanguage() ?: 'en',
+				'plural-forms' => $translations->getHeaders()->getPluralForm() ?: 'nplurals=2; plural=(n != 1);',
+			],
+		];
+
+		return [
+			'translation-revision-date' => $translations->getHeaders()->get( 'PO-Revision-Date' ),
+			'generator'                 => 'WP-CLI/' . WP_CLI_VERSION,
+			'source'                    => $this->source,
+			'domain'                    => $translations->getDomain(),
+			'locale_data'               => [
+				$translations->getDomain() => $configuration + $messages,
+			],
+		];
+	}
+
+	private static function hasPluralTranslations( Translation $translation ): bool {
+		return implode( '', $translation->getPluralTranslations() ) !== '';
 	}
 }

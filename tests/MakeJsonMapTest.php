@@ -27,7 +27,9 @@ class MakeJsonMapTest extends TestCase {
 		self::$obj       = new MakeJsonCommand();
 		$reflection      = new \ReflectionClass( get_class( self::$obj ) );
 		self::$build_map = $reflection->getMethod( 'build_map' );
-		self::$build_map->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			self::$build_map->setAccessible( true );
+		}
 	}
 
 	public function test_no_map() {

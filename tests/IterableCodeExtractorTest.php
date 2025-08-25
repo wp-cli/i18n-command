@@ -22,9 +22,13 @@ class IterableCodeExtractorTest extends TestCase {
 		self::$base = Utils\normalize_path( __DIR__ ) . '/data/';
 
 		$property = new \ReflectionProperty( TestIterableCodeExtractor::class, 'dir' );
-		$property->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$property->setAccessible( true );
+		}
 		$property->setValue( null, self::$base );
-		$property->setAccessible( false );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$property->setAccessible( false );
+		}
 	}
 
 	public function tear_down() {
@@ -211,7 +215,9 @@ class IterableCodeExtractorTest extends TestCase {
 	protected static function get_method_as_public( $class_name, $method_name ) {
 		$class  = new \ReflectionClass( $class_name );
 		$method = $class->getMethod( $method_name );
-		$method->setAccessible( true );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$method->setAccessible( true );
+		}
 		return $method;
 	}
 

@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
+use Gettext\Loader\PoLoader;
 use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
@@ -72,8 +73,9 @@ class MakePhpCommand extends WP_CLI_Command {
 			$file_basename    = basename( $file->getFilename(), '.po' );
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
-			$translations = Translations::fromPoFile( $file->getPathname() );
-			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file ) ) {
+			$translations = ( new PoLoader() )->loadFile( $file->getPathname() );
+
+			if ( ! ( new PhpArrayGenerator() )->generateFile( $translations, $destination_file ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;
 			}

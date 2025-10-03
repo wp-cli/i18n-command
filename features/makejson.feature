@@ -1167,23 +1167,23 @@ Feature: Split PO files into JSON files.
       Success: Created 5 files.
       """
     And the return code should be 0
-    And the foo-plugin/languages/foo-plugin-de_DE-9a9569e9d73f33740eada95275da7f30.json file should contain:
+    And the foo-plugin/foo-plugin-de_DE-9a9569e9d73f33740eada95275da7f30.json file should contain:
       """
       "source":"script.js"
       """
-    And the foo-plugin/languages/foo-plugin-de_DE-539c08d0bcc09c88b8ea0aed7e1268a8.json file should contain:
+    And the foo-plugin/foo-plugin-de_DE-539c08d0bcc09c88b8ea0aed7e1268a8.json file should contain:
       """
       "source":"testadmin.js"
       """
-    And the foo-plugin/languages/foo-plugin-de_DE-019463acf45a54a13438ace83bf8f270.json file should contain:
+    And the foo-plugin/foo-plugin-de_DE-019463acf45a54a13438ace83bf8f270.json file should contain:
       """
       "source":"lib.min.js"
       """
-    And the foo-plugin/languages/foo-plugin-de_DE-879219342c5fd7dc4c85ccd6c9e5572f.json file should contain:
+    And the foo-plugin/foo-plugin-de_DE-879219342c5fd7dc4c85ccd6c9e5572f.json file should contain:
       """
       "source":"test.minified.js"
       """
-    And the foo-plugin/languages/foo-plugin-de_DE-5681c99983772839611729e61c726e79.json file should contain:
+    And the foo-plugin/foo-plugin-de_DE-5681c99983772839611729e61c726e79.json file should contain:
       """
       "source":"app.min.admin.js"
       """

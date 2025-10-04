@@ -1118,3 +1118,72 @@ Feature: Split PO files into JSON files.
     And the return code should be 0
     And the foo-theme/foo-theme-de_DE-557240f2080a0894dbd39f5c2f559bf8.json file should exist
     And the foo-theme/foo-theme-de_DE-a4e9f6529ffa4750907c140158b834b9.json file should exist
+
+  Scenario: Should correctly handle .min.js stripping and not corrupt admin files or edge cases
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: script.min.js:5
+      msgid "Script"
+      msgstr "Script"
+
+      #: testadmin.js:15
+      msgid "Test Admin"
+      msgstr "Test Admin"
+
+      #: lib.min.min.js:30
+      msgid "Double Min Lib"
+      msgstr "Double Min Lib"
+
+      #: test.minified.js:40
+      msgid "Minified Test"
+      msgstr "Minified Test"
+
+      #: app.min.admin.js:45
+      msgid "Min Admin App"
+      msgstr "Min Admin App"
+      """
+
+    When I run `wp i18n make-json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 5 files.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE-9a9569e9d73f33740eada95275da7f30.json file should contain:
+      """
+      "source":"script.js"
+      """
+    And the foo-plugin/foo-plugin-de_DE-539c08d0bcc09c88b8ea0aed7e1268a8.json file should contain:
+      """
+      "source":"testadmin.js"
+      """
+    And the foo-plugin/foo-plugin-de_DE-019463acf45a54a13438ace83bf8f270.json file should contain:
+      """
+      "source":"lib.min.js"
+      """
+    And the foo-plugin/foo-plugin-de_DE-879219342c5fd7dc4c85ccd6c9e5572f.json file should contain:
+      """
+      "source":"test.minified.js"
+      """
+    And the foo-plugin/foo-plugin-de_DE-5681c99983772839611729e61c726e79.json file should contain:
+      """
+      "source":"app.min.admin.js"
+      """

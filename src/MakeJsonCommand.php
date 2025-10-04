@@ -267,7 +267,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 					$extension = pathinfo( $file, PATHINFO_EXTENSION );
 
 					return in_array( $extension, $extensions, true )
-						? preg_replace( "/.min.{$extension}$/", ".{$extension}", $file )
+						? preg_replace( "/\.min\.{$extension}$/", ".{$extension}", $file )
 						: null;
 				},
 				$this->reference_map( $translation->getReferences(), $map )

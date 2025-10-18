@@ -3,7 +3,8 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
-use Gettext\Translations;
+use Gettext\Loader\PoLoader;
+use Gettext\Generator\PoGenerator;
 use IteratorIterator;
 use SplFileInfo;
 use WP_CLI;
@@ -87,8 +88,9 @@ class MakeMoCommand extends WP_CLI_Command {
 			}
 			$destination_file = "{$destination}/{$file_name}";
 
-			$translations = Translations::fromPoFile( $file->getPathname() );
-			if ( ! $translations->toMoFile( $destination_file ) ) {
+			$translations = ( new PoLoader() )->loadFile( $file->getPathname() );
+
+			if ( ! ( new PoGenerator() )->generateFile( $translations, $destination_file ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;
 			}

@@ -14,15 +14,17 @@ use Gettext\Translations;
 class PhpArrayGenerator extends PhpArray {
 	public static $options = [
 		'includeHeaders' => false,
+		'prettyPrint'    => false,
 	];
 
 	/**
 	 * {@inheritdoc}
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$array = static::generate( $translations, $options );
+		$options = array_merge( static::$options, $options );
+		$array   = static::generate( $translations, $options );
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array ) . ';';
+		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, $options['prettyPrint'] ) . ';';
 	}
 
 	/**
@@ -146,22 +148,39 @@ class PhpArrayGenerator extends PhpArray {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param mixed $value The variable you want to export.
+	 * @param mixed $value       The variable you want to export.
+	 * @param bool  $pretty_print Whether to pretty-print the output.
+	 * @param int   $indent_level Current indentation level (used for recursion).
 	 * @return string The variable representation.
 	 */
-	private static function var_export( $value ) {
+	private static function var_export( $value, $pretty_print = false, $indent_level = 0 ) {
 		if ( ! is_array( $value ) ) {
 			return var_export( $value, true );
 		}
 
 		$entries = array();
-
 		$is_list = self::array_is_list( $value );
 
-		foreach ( $value as $key => $val ) {
-			$entries[] = $is_list ? self::var_export( $val ) : var_export( $key, true ) . '=>' . self::var_export( $val );
-		}
+		if ( $pretty_print ) {
+			$indent         = str_repeat( "\t", $indent_level + 1 );
+			$closing_indent = str_repeat( "\t", $indent_level );
+			$separator      = ',' . PHP_EOL;
 
-		return '[' . implode( ',', $entries ) . ']';
+			foreach ( $value as $key => $val ) {
+				if ( $is_list ) {
+					$entries[] = $indent . self::var_export( $val, $pretty_print, $indent_level + 1 );
+				} else {
+					$entries[] = $indent . var_export( $key, true ) . ' => ' . self::var_export( $val, $pretty_print, $indent_level + 1 );
+				}
+			}
+
+			return '[' . PHP_EOL . implode( $separator, $entries ) . ',' . PHP_EOL . $closing_indent . ']';
+		} else {
+			foreach ( $value as $key => $val ) {
+				$entries[] = $is_list ? self::var_export( $val, $pretty_print, $indent_level ) : var_export( $key, true ) . '=>' . self::var_export( $val, $pretty_print, $indent_level );
+			}
+
+			return '[' . implode( ',', $entries ) . ']';
+		}
 	}
 }

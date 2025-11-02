@@ -22,6 +22,9 @@ class MakePhpCommand extends WP_CLI_Command {
 	 * [<destination>]
 	 * : Path to the destination directory for the resulting PHP files. Defaults to the source directory.
 	 *
+	 * [--pretty-print]
+	 * : Pretty-print resulting PHP files.
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     # Create PHP files for all PO files in the current directory.
@@ -30,6 +33,10 @@ class MakePhpCommand extends WP_CLI_Command {
 	 *
 	 *     # Create a PHP file from a single PO file in a specific directory.
 	 *     $ wp i18n make-php example-plugin-de_DE.po languages
+	 *     Success: Created 1 file.
+	 *
+	 *     # Create a pretty-printed PHP file.
+	 *     $ wp i18n make-php example-plugin-de_DE.po languages --pretty-print
 	 *     Success: Created 1 file.
 	 *
 	 * @when before_wp_load
@@ -57,6 +64,8 @@ class MakePhpCommand extends WP_CLI_Command {
 			$files = new IteratorIterator( new DirectoryIterator( $source ) );
 		}
 
+		$pretty_print = Utils\get_flag_value( $assoc_args, 'pretty-print', false );
+
 		$result_count = 0;
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
@@ -73,7 +82,8 @@ class MakePhpCommand extends WP_CLI_Command {
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
-			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file ) ) {
+			$options      = [ 'prettyPrint' => $pretty_print ];
+			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file, $options ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;
 			}

@@ -242,7 +242,7 @@ class AuditCommand extends WP_CLI_Command {
 				$this->slug,
 				$this->domain
 			),
-			'make-pot'
+			'audit'
 		);
 
 		$translations = $this->extract_strings();
@@ -273,9 +273,9 @@ class AuditCommand extends WP_CLI_Command {
 		$type = FileDataExtractor::get_file_type( $this->source );
 
 		if ( 'unknown' === $type ) {
-			WP_CLI::debug( 'Could not detect file type.', 'make-pot' );
+			WP_CLI::debug( 'Could not detect file type.', 'audit' );
 		} else {
-			WP_CLI::debug( sprintf( '%s file detected.', ucfirst( $type ) ), 'make-pot' );
+			WP_CLI::debug( sprintf( '%s file detected.', ucfirst( $type ) ), 'audit' );
 		}
 
 		$this->project_type = $type;

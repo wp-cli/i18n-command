@@ -41,6 +41,7 @@
         "bundled": true,
         "commands": [
             "i18n",
+            "i18n audit",
             "i18n make-pot",
             "i18n make-json",
             "i18n make-mo",

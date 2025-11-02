@@ -21,6 +21,16 @@ class AuditCommand extends WP_CLI_Command {
 	protected $include = [];
 
 	/**
+	 * Default exclude patterns for string extraction.
+	 *
+	 * Excludes common directories and files that typically don't contain translatable strings:
+	 * - node_modules: NPM dependencies
+	 * - .*: Hidden files and directories like .git, .svn, .CVS, .hg
+	 * - vendor: Composer dependencies
+	 * - Gruntfile.js, webpack.config.js: Build configuration files
+	 * - *.min.js: Minified JavaScript files
+	 * - test, tests: Test directories
+	 *
 	 * @var array
 	 */
 	protected $exclude = [ 'node_modules', '.*', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js', 'test', 'tests' ];
@@ -158,7 +168,10 @@ class AuditCommand extends WP_CLI_Command {
 	 *
 	 * [--exclude=<paths>]
 	 * : Comma-separated list of files and paths that should be ignored for string extraction.
-	 * Defaults to 'node_modules,.git,.svn,vendor,Gruntfile.js,webpack.config.js,*.min.js,test,tests'.
+	 * For example, `--exclude=.github,myfile.php` would ignore any strings found within `myfile.php` or the `.github`
+	 * folder. Simple glob patterns can be used, i.e. `--exclude=foo-*.php` excludes any PHP file with the `foo-`
+	 * prefix. Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`. The
+	 * following files and folders are always excluded: node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js, test, tests.
 	 *
 	 * [--skip-js]
 	 * : Skips JavaScript string extraction.
@@ -450,6 +463,16 @@ class AuditCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Extracts comment text from a ParsedComment or string.
+	 *
+	 * @param ParsedComment|string $comment Comment object or string.
+	 * @return string Comment text.
+	 */
+	protected function get_comment_text( $comment ) {
+		return $comment instanceof ParsedComment ? $comment->getComment() : $comment;
+	}
+
+	/**
 	 * Audits strings.
 	 *
 	 * Goes through all extracted strings to find possible mistakes.
@@ -501,7 +524,7 @@ class AuditCommand extends WP_CLI_Command {
 						/** @var ParsedComment|string $comment */
 						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
-							if ( 0 === strpos( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
+							if ( 0 === strpos( $this->get_comment_text( $comment ), $file_header ) ) {
 								return null;
 							}
 						}
@@ -517,11 +540,12 @@ class AuditCommand extends WP_CLI_Command {
 					$comments,
 					function ( $comment ) use ( &$unique_comments ) {
 						/** @var ParsedComment|string $comment */
-						if ( in_array( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
+						$comment_text = $this->get_comment_text( $comment );
+						if ( in_array( $comment_text, $unique_comments, true ) ) {
 							return null;
 						}
 
-						$unique_comments[] = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
+						$unique_comments[] = $comment_text;
 
 						return $comment;
 					}

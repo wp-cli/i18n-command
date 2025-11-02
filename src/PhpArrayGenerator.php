@@ -21,8 +21,8 @@ class PhpArrayGenerator extends PhpArray {
 	 * {@inheritdoc}
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$options += static::$options;
-		$array    = static::generate( $translations, $options );
+		$options = array_merge( static::$options, $options );
+		$array   = static::generate( $translations, $options );
 
 		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, $options['prettyPrint'] ) . ';';
 	}

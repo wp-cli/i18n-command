@@ -162,9 +162,9 @@ class PhpArrayGenerator extends PhpArray {
 		$is_list = self::array_is_list( $value );
 
 		if ( $pretty_print ) {
-			$indent        = str_repeat( "\t", $indent_level + 1 );
+			$indent         = str_repeat( "\t", $indent_level + 1 );
 			$closing_indent = str_repeat( "\t", $indent_level );
-			$separator     = ',' . PHP_EOL;
+			$separator      = ',' . PHP_EOL;
 
 			foreach ( $value as $key => $val ) {
 				if ( $is_list ) {

@@ -7,139 +7,18 @@ use Gettext\Translations;
 use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI\Utils;
-use WP_CLI_Command;
 
-class AuditCommand extends WP_CLI_Command {
-	/**
-	 * @var string
-	 */
-	protected $source;
-
-	/**
-	 * @var array
-	 */
-	protected $include = [];
-
-	/**
-	 * Default exclude patterns for string extraction.
-	 *
-	 * Excludes common directories and files that typically don't contain translatable strings:
-	 * - node_modules: NPM dependencies
-	 * - .*: Hidden files and directories like .git, .svn, .CVS, .hg
-	 * - vendor: Composer dependencies
-	 * - Gruntfile.js, webpack.config.js: Build configuration files
-	 * - *.min.js: Minified JavaScript files
-	 * - test, tests: Test directories
-	 *
-	 * @var array
-	 */
-	protected $exclude = [ 'node_modules', '.*', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js', 'test', 'tests' ];
-
-	/**
-	 * @var string
-	 */
-	protected $slug;
-
-	/**
-	 * @var array
-	 */
-	protected $main_file_data = [];
-
-	/**
-	 * @var string
-	 */
-	protected $main_file_path;
-
-	/**
-	 * @var bool
-	 */
-	protected $skip_js = false;
-
-	/**
-	 * @var bool
-	 */
-	protected $skip_php = false;
-
-	/**
-	 * @var bool
-	 */
-	protected $skip_blade = false;
-
-	/**
-	 * @var bool
-	 */
-	protected $skip_block_json = false;
-
-	/**
-	 * @var bool
-	 */
-	protected $skip_theme_json = false;
-
-	/**
-	 * @var bool
-	 */
-	protected $location = true;
-
-	/**
-	 * @var string
-	 */
-	protected $domain;
-
-	/**
-	 * @var string
-	 */
-	protected $project_type = 'generic';
-
+/**
+ * Audit strings in a WordPress project.
+ *
+ * Extends MakePotCommand to reuse string extraction logic while providing
+ * specialized output formats for auditing purposes.
+ */
+class AuditCommand extends MakePotCommand {
 	/**
 	 * @var string
 	 */
 	protected $format = 'plaintext';
-
-	/**
-	 * These Regexes copied from http://php.net/manual/en/function.sprintf.php#93552
-	 * and adjusted for better precision and updated specs.
-	 */
-	const SPRINTF_PLACEHOLDER_REGEX = '/(?:
-		(?<!%)                     # Don\'t match a literal % (%%).
-		(
-			%                          # Start of placeholder.
-			(?:[0-9]+\$)?              # Optional ordering of the placeholders.
-			[+-]?                      # Optional sign specifier.
-			(?:
-				(?:0|\'.)?                 # Optional padding specifier - excluding the space.
-				-?                         # Optional alignment specifier.
-				[0-9]*                     # Optional width specifier.
-				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-				|                      # Only recognize the space as padding in combination with a width specifier.
-				(?:[ ])?                   # Optional space padding specifier.
-				-?                         # Optional alignment specifier.
-				[0-9]+                     # Width specifier.
-				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-			)
-			[bcdeEfFgGosuxX]           # Type specifier.
-		)
-	)/x';
-
-	/**
-	 * "Unordered" means there's no position specifier: '%s', not '%2$s'.
-	 */
-	const UNORDERED_SPRINTF_PLACEHOLDER_REGEX = '/(?:
-		(?<!%)                     # Don\'t match a literal % (%%).
-		%                          # Start of placeholder.
-		[+-]?                      # Optional sign specifier.
-		(?:
-			(?:0|\'.)?                 # Optional padding specifier - excluding the space.
-			-?                         # Optional alignment specifier.
-			[0-9]*                     # Optional width specifier.
-			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-			|                      # Only recognize the space as padding in combination with a width specifier.
-			(?:[ ])?                   # Optional space padding specifier.
-			-?                         # Optional alignment specifier.
-			[0-9]+                     # Width specifier.
-			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-		)
-		[bcdeEfFgGosuxX]           # Type specifier.
-	)/x';
 
 	/**
 	 * Audit strings in a project.
@@ -239,7 +118,7 @@ class AuditCommand extends WP_CLI_Command {
 			$this->exclude = array_map( 'trim', explode( ',', $exclude ) );
 		}
 
-		$this->get_main_file_data();
+		$this->main_file_data = $this->get_main_file_data();
 
 		if ( null === $this->domain ) {
 			if ( ! empty( $this->main_file_data['Text Domain'] ) && ! $ignore_domain ) {
@@ -258,9 +137,9 @@ class AuditCommand extends WP_CLI_Command {
 			'audit'
 		);
 
-		$translations = $this->extract_strings();
+		$translations = $this->extract_strings_for_audit();
 
-		$issues = $this->audit_strings( $translations );
+		$issues = $this->collect_audit_issues( $translations );
 
 		$this->output_results( $issues );
 
@@ -274,79 +153,13 @@ class AuditCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Returns the file data of the main plugin or theme file.
+	 * Extracts strings for auditing.
 	 *
-	 * @return array
-	 */
-	protected function get_main_file_data() {
-		if ( ! empty( $this->main_file_data ) ) {
-			return $this->main_file_data;
-		}
-
-		$type = FileDataExtractor::get_file_type( $this->source );
-
-		if ( 'unknown' === $type ) {
-			WP_CLI::debug( 'Could not detect file type.', 'audit' );
-		} else {
-			WP_CLI::debug( sprintf( '%s file detected.', ucfirst( $type ) ), 'audit' );
-		}
-
-		$this->project_type = $type;
-
-		$location = FileDataExtractor::find_main_file( $this->source, $type );
-
-		if ( ! $location ) {
-			return [];
-		}
-
-		$this->main_file_path = $location;
-
-		return $this->main_file_data = FileDataExtractor::get_file_data( $location, $type );
-	}
-
-	/**
-	 * Returns the file headers for a given project type.
-	 *
-	 * @param string $type Project type.
-	 * @return array
-	 */
-	protected function get_file_headers( $type ) {
-		switch ( $type ) {
-			case 'plugin':
-				return [
-					'Plugin Name',
-					'Plugin URI',
-					'Description',
-					'Author',
-					'Author URI',
-					'Version',
-					'License',
-					'Domain Path',
-					'Text Domain',
-				];
-			case 'theme':
-				return [
-					'Theme Name',
-					'Theme URI',
-					'Description',
-					'Author',
-					'Author URI',
-					'Version',
-					'License',
-					'Domain Path',
-					'Text Domain',
-				];
-			default:
-				return [];
-		}
-	}
-
-	/**
-	 * Extracts strings from source code.
+	 * Similar to extract_strings() in parent class but simplified for audit purposes.
 	 *
 	 * @return Translations A Translation set.
 	 */
-	protected function extract_strings() {
+	protected function extract_strings_for_audit() {
 		$translations = new Translations();
 
 		if ( $this->domain ) {
@@ -473,14 +286,14 @@ class AuditCommand extends WP_CLI_Command {
 	}
 
 	/**
-	 * Audits strings.
+	 * Collects audit issues from translations.
 	 *
 	 * Goes through all extracted strings to find possible mistakes.
 	 *
 	 * @param Translations $translations Translations object.
 	 * @return array Array of issues found.
 	 */
-	protected function audit_strings( $translations ) {
+	protected function collect_audit_issues( $translations ) {
 		$issues = [];
 
 		foreach ( $translations as $translation ) {
@@ -493,9 +306,8 @@ class AuditCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$file     = $references[0][0];
-			$line     = $references[0][1] ?? null;
-			$location = $line ? "$file:$line" : $file;
+			$file = $references[0][0];
+			$line = $references[0][1] ?? null;
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
@@ -659,9 +471,9 @@ class AuditCommand extends WP_CLI_Command {
 			case 'plaintext':
 			default:
 				foreach ( $issues as $issue ) {
-					$file    = $issue['file'];
-					$line    = $issue['line'] ?? null;
-					$message = $issue['message'];
+					$file     = $issue['file'];
+					$line     = $issue['line'] ?? null;
+					$message  = $issue['message'];
 					$location = $line ? "$file:$line" : $file;
 
 					WP_CLI::warning( sprintf( '%s: %s', $location, $message ) );

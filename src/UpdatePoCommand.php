@@ -45,33 +45,6 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *
 	 * @throws WP_CLI\ExitException
 	 */
-	/**
-	 * Reorder translations to match the POT file order.
-	 *
-	 * @param Translations $po_translations  The merged PO translations.
-	 * @param Translations $pot_translations The POT translations (source of truth for order).
-	 *
-	 * @return Translations Translations object with entries in POT file order.
-	 */
-	private function reorder_translations( Translations $po_translations, Translations $pot_translations ) {
-		$ordered = new Translations();
-
-		// Copy headers from the merged PO translations.
-		foreach ( $po_translations->getHeaders() as $name => $value ) {
-			$ordered->setHeader( $name, $value );
-		}
-
-		// Add translations in POT file order.
-		foreach ( $pot_translations as $pot_entry ) {
-			$po_entry = $po_translations->find( $pot_entry );
-			if ( $po_entry ) {
-				$ordered[] = $po_entry->getClone();
-			}
-		}
-
-		return $ordered;
-	}
-
 	public function __invoke( $args, $assoc_args ) {
 		$source = realpath( $args[0] );
 		if ( ! $source || ! is_file( $source ) ) {
@@ -126,5 +99,32 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( sprintf( 'Updated %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );
+	}
+
+	/**
+	 * Reorder translations to match the POT file order.
+	 *
+	 * @param Translations $po_translations  The merged PO translations.
+	 * @param Translations $pot_translations The POT translations (source of truth for order).
+	 *
+	 * @return Translations Translations object with entries in POT file order.
+	 */
+	private function reorder_translations( Translations $po_translations, Translations $pot_translations ) {
+		$ordered = new Translations();
+
+		// Copy headers from the merged PO translations.
+		foreach ( $po_translations->getHeaders() as $name => $value ) {
+			$ordered->setHeader( $name, $value );
+		}
+
+		// Add translations in POT file order.
+		foreach ( $pot_translations as $pot_entry ) {
+			$po_entry = $po_translations->find( $pot_entry );
+			if ( $po_entry ) {
+				$ordered[] = $po_entry->getClone();
+			}
+		}
+
+		return $ordered;
 	}
 }

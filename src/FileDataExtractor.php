@@ -17,10 +17,12 @@ class FileDataExtractor {
 	 *
 	 * @param string $file Path to the file.
 	 * @param array $headers List of headers, in the format array('HeaderKey' => 'Header Name').
+	 * @param bool $with_line_nums Whether to include line numbers in the returned data. Default false.
 	 *
-	 * @return array Array of file headers in `HeaderKey => Header Value` format.
+	 * @return array Array of file headers in `HeaderKey => Header Value` format, or
+	 *               `HeaderKey => ['value' => Header Value, 'line' => Line Number]` when $with_line_nums is true.
 	 */
-	public static function get_file_data( $file, $headers ) {
+	public static function get_file_data( $file, $headers, $with_line_nums = false ) {
 		// We don't need to write to the file, so just open for reading.
 		$fp = fopen( $file, 'rb' );
 
@@ -33,7 +35,7 @@ class FileDataExtractor {
 		// Make sure we catch CR-only line endings.
 		$file_data = str_replace( "\r", "\n", $file_data );
 
-		return static::get_file_data_from_string( $file_data, $headers );
+		return static::get_file_data_from_string( $file_data, $headers, $with_line_nums );
 	}
 
 	/**
@@ -41,15 +43,28 @@ class FileDataExtractor {
 	 *
 	 * @param string $text String to look for metadata in.
 	 * @param array $headers List of headers.
+	 * @param bool $with_line_nums Whether to include line numbers in the returned data. Default false.
 	 *
-	 * @return array Array of file headers in `HeaderKey => Header Value` format.
+	 * @return array Array of file headers in `HeaderKey => Header Value` format, or
+	 *               `HeaderKey => ['value' => Header Value, 'line' => Line Number]` when $with_line_nums is true.
 	 */
-	public static function get_file_data_from_string( $text, $headers ) {
+	public static function get_file_data_from_string( $text, $headers, $with_line_nums = false ) {
 		foreach ( $headers as $field => $regex ) {
-			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $text, $match ) && $match[1] ) {
-				$headers[ $field ] = static::_cleanup_header_comment( $match[1] );
+			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $text, $match, PREG_OFFSET_CAPTURE ) && $match[1][0] ) {
+				$value = static::_cleanup_header_comment( $match[1][0] );
+				
+				if ( $with_line_nums ) {
+					// Calculate line number from the offset
+					$line_num = substr_count( $text, "\n", 0, $match[0][1] ) + 1;
+					$headers[ $field ] = [
+						'value' => $value,
+						'line'  => $line_num,
+					];
+				} else {
+					$headers[ $field ] = $value;
+				}
 			} else {
-				$headers[ $field ] = '';
+				$headers[ $field ] = $with_line_nums ? [ 'value' => '', 'line' => 0 ] : '';
 			}
 		}
 

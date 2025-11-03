@@ -92,7 +92,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin.pot file should contain:
       """
-      #: foo-plugin.php
+      #: foo-plugin.php:5
       """
     And the foo-plugin.pot file should contain:
       """

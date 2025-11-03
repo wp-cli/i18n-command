@@ -519,6 +519,10 @@ Feature: Update existing PO files from a POT file
       Success: Updated 1 file.
       """
     And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      "PO-Revision-Date:
+      """
     And the foo-plugin/foo-plugin-de_DE.po file should not contain:
       """
       "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"

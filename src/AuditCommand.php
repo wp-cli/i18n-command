@@ -120,22 +120,28 @@ class AuditCommand extends MakePotCommand {
 
 		$this->main_file_data = $this->get_main_file_data();
 
-		if ( null === $this->domain ) {
-			if ( ! empty( $this->main_file_data['Text Domain'] ) && ! $ignore_domain ) {
-				$this->domain = $this->main_file_data['Text Domain'];
-			} else {
-				$this->domain = $this->slug;
-			}
+		if ( $ignore_domain ) {
+			WP_CLI::debug( 'Extracting all strings regardless of text domain', 'audit' );
 		}
 
-		WP_CLI::debug(
-			sprintf(
-				'Auditing strings for %s, using "%s" as text domain.',
-				$this->slug,
-				$this->domain
-			),
-			'audit'
-		);
+		if ( ! $ignore_domain ) {
+			if ( null === $this->domain ) {
+				$this->domain = $this->slug;
+
+				if ( ! empty( $this->main_file_data['Text Domain'] ) ) {
+					$this->domain = $this->main_file_data['Text Domain'];
+				}
+			}
+
+			WP_CLI::debug(
+				sprintf(
+					'Auditing strings for %s, using "%s" as text domain.',
+					$this->slug,
+					$this->domain
+				),
+				'audit'
+			);
+		}
 
 		$translations = $this->extract_strings_for_audit();
 

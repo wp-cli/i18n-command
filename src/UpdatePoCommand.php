@@ -86,8 +86,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$po_translations        = Translations::fromPoFile( $file->getPathname() );
-			$original_translations  = clone $po_translations;
+			$po_translations       = Translations::fromPoFile( $file->getPathname() );
+			$original_translations = clone $po_translations;
 
 			$po_translations->mergeWith(
 				$pot_translations,
@@ -110,7 +110,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		// Build the success message.
-		$message_parts = array();
+		$message_parts   = array();
 		$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
 		if ( $unchanged_count > 0 ) {
 			$message_parts[] = sprintf( '%d %s unchanged', $unchanged_count, Utils\pluralize( 'file', $unchanged_count ) );
@@ -134,7 +134,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Compare each translation entry.
 		foreach ( $original as $translation ) {
-			$context = $translation->getContext();
+			$context      = $translation->getContext();
 			$original_str = $translation->getOriginal();
 
 			// Find the corresponding translation in the updated set.
@@ -181,7 +181,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Check if updated has any translations not in original.
 		foreach ( $updated as $translation ) {
-			$context = $translation->getContext();
+			$context      = $translation->getContext();
 			$original_str = $translation->getOriginal();
 
 			$original_translation = $original->find( $context, $original_str );

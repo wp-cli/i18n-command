@@ -52,10 +52,10 @@ class FileDataExtractor {
 		foreach ( $headers as $field => $regex ) {
 			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $text, $match, PREG_OFFSET_CAPTURE ) && $match[1][0] ) {
 				$value = static::_cleanup_header_comment( $match[1][0] );
-				
+
 				if ( $with_line_nums ) {
 					// Calculate line number from the offset
-					$line_num = substr_count( $text, "\n", 0, $match[0][1] ) + 1;
+					$line_num          = substr_count( $text, "\n", 0, $match[0][1] ) + 1;
 					$headers[ $field ] = [
 						'value' => $value,
 						'line'  => $line_num,
@@ -64,7 +64,10 @@ class FileDataExtractor {
 					$headers[ $field ] = $value;
 				}
 			} else {
-				$headers[ $field ] = $with_line_nums ? [ 'value' => '', 'line' => 0 ] : '';
+				$headers[ $field ] = $with_line_nums ? [
+					'value' => '',
+					'line'  => 0,
+				] : '';
 			}
 		}
 

@@ -128,7 +128,7 @@ TEXT;
 
 		$this->assertEquals( 'John Doe', $headers['Author']['value'] );
 		$this->assertEquals( 4, $headers['Author']['line'] );
-		
+
 		$this->assertEquals( '2.0.0', $headers['Version']['value'] );
 		$this->assertEquals( 5, $headers['Version']['line'] );
 	}

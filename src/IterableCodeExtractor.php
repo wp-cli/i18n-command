@@ -72,7 +72,7 @@ trait IterableCodeExtractor {
 				if ( ! empty( $headers['Template Name']['value'] ) ) {
 					$translation = new Translation( '', $headers['Template Name']['value'] );
 					$translation->addExtractedComment( 'Template Name of the theme' );
-					
+
 					// Add file reference with line number if available
 					if ( ! empty( $headers['Template Name']['line'] ) ) {
 						$translation->addReference( $options['file'], $headers['Template Name']['line'] );
@@ -95,7 +95,7 @@ trait IterableCodeExtractor {
 
 				if ( ! empty( $headers['Title']['value'] ) ) {
 					$translation = new Translation( 'Pattern title', $headers['Title']['value'] );
-					
+
 					// Add file reference with line number if available
 					if ( ! empty( $headers['Title']['line'] ) ) {
 						$translation->addReference( $options['file'], $headers['Title']['line'] );
@@ -108,7 +108,7 @@ trait IterableCodeExtractor {
 
 				if ( ! empty( $headers['Description']['value'] ) ) {
 					$translation = new Translation( 'Pattern description', $headers['Description']['value'] );
-					
+
 					// Add file reference with line number if available
 					if ( ! empty( $headers['Description']['line'] ) ) {
 						$translation->addReference( $options['file'], $headers['Description']['line'] );

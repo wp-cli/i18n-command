@@ -3890,12 +3890,12 @@ Feature: Generate a POT file of a WordPress project
     And the foo-theme/foo-theme.pot file should exist
     And the foo-theme/foo-theme.pot file should contain:
       """
-      #: patterns/my-pattern.php
+      #: patterns/my-pattern.php:3
       msgctxt "Pattern title"
       msgid "My pattern title."
       msgstr ""
 
-      #: patterns/my-pattern.php
+      #: patterns/my-pattern.php:4
       msgctxt "Pattern description"
       msgid "My pattern description."
       msgstr ""

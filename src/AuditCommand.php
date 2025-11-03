@@ -436,7 +436,7 @@ class AuditCommand extends MakePotCommand {
 						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
 							if ( 0 === strpos( $this->get_comment_text( $comment ), $file_header ) ) {
-								return null;
+								return false;
 							}
 						}
 

@@ -174,7 +174,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 				return true;
 			}
 
-			if ( $translation->getTranslatorComments() !== $updated_translation->getTranslatorComments() ) {
+			if ( $translation->getComments() !== $updated_translation->getComments() ) {
 				return true;
 			}
 		}

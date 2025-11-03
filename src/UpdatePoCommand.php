@@ -113,11 +113,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Build the success message.
 		$message_parts = array();
-		if ( $updated_count > 0 ) {
-			$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
-		} else {
-			$message_parts[] = sprintf( 'Updated %d files', $updated_count );
-		}
+		$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
 		if ( $unchanged_count > 0 ) {
 			$message_parts[] = sprintf( '%d %s unchanged', $unchanged_count, Utils\pluralize( 'file', $unchanged_count ) );
 		}

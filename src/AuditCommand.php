@@ -453,7 +453,7 @@ class AuditCommand extends MakePotCommand {
 						/** @var ParsedComment|string $comment */
 						$comment_text = $this->get_comment_text( $comment );
 						if ( in_array( $comment_text, $unique_comments, true ) ) {
-							return null;
+							return false;
 						}
 
 						$unique_comments[] = $comment_text;

@@ -41,6 +41,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *     $ wp i18n update-po example-plugin.pot languages
 	 *     Success: Updated 2 files.
 	 *
+	 *     # Shows message when some files don't need updating.
+	 *     $ wp i18n update-po example-plugin.pot languages
+	 *     Success: Updated 2 files. 1 file unchanged.
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
@@ -69,7 +73,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		$pot_translations = Translations::fromPoFile( $source );
 
-		$result_count = 0;
+		$updated_count   = 0;
+		$unchanged_count = 0;
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( 'po' !== $file->getExtension() ) {
@@ -80,6 +85,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 				WP_CLI::warning( sprintf( 'Could not read file %s', $file->getFilename() ) );
 				continue;
 			}
+
+			// Read the original file content before merging.
+			$original_content = file_get_contents( $file->getPathname() );
 
 			$po_translations = Translations::fromPoFile( $file->getPathname() );
 			$po_translations->mergeWith(
@@ -92,9 +100,28 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			++$result_count;
+			// Read the new file content after merging.
+			$new_content = file_get_contents( $file->getPathname() );
+
+			// Check if the file actually changed.
+			if ( $original_content !== $new_content ) {
+				++$updated_count;
+			} else {
+				++$unchanged_count;
+			}
 		}
 
-		WP_CLI::success( sprintf( 'Updated %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );
+		// Build the success message.
+		$message_parts = array();
+		if ( $updated_count > 0 ) {
+			$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
+		} else {
+			$message_parts[] = sprintf( 'Updated %d files', $updated_count );
+		}
+		if ( $unchanged_count > 0 ) {
+			$message_parts[] = sprintf( '%d %s unchanged', $unchanged_count, Utils\pluralize( 'file', $unchanged_count ) );
+		}
+
+		WP_CLI::success( implode( '. ', $message_parts ) . '.' );
 	}
 }

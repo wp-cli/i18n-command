@@ -494,7 +494,6 @@ class AuditCommand extends MakePotCommand {
 
 			// Check 4: Flag strings with multiple unordered placeholders (%s %s %s vs. %1$s %2$s %3$s).
 			$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
-			$unordered_matches       = $unordered_matches[0];
 
 			if ( $unordered_matches_count >= 2 ) {
 				$issues[] = [

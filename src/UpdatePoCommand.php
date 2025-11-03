@@ -80,9 +80,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Build merge flags based on options
 		$merge_flags = Merge::ADD | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE;
-		
+
 		$skip_purge = Utils\get_flag_value( $assoc_args, 'skip-purge', false );
-		
+
 		if ( ! $skip_purge ) {
 			// By default, remove obsolete entries and replace translator comments
 			$merge_flags |= Merge::REMOVE | Merge::COMMENTS_THEIRS;
@@ -148,7 +148,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		foreach ( $lines as $line ) {
 			$trimmed = trim( $line );
-			
+
 			// Stop when we hit the first msgid
 			if ( preg_match( '/^msgid\s/', $trimmed ) ) {
 				$found_msgid = true;
@@ -180,6 +180,19 @@ class UpdatePoCommand extends WP_CLI_Command {
 		// Prepend the comments to the file content
 		$updated_content = $comments . $content;
 
-		return false !== file_put_contents( $file_path, $updated_content );
+		// Use atomic file operation with temporary file
+		$temp_file = $file_path . '.tmp';
+		if ( false === file_put_contents( $temp_file, $updated_content ) ) {
+			return false;
+		}
+
+		// Rename is atomic on most filesystems
+		if ( ! rename( $temp_file, $file_path ) ) {
+			// Clean up temp file on failure
+			@unlink( $temp_file );
+			return false;
+		}
+
+		return true;
 	}
 }

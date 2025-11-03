@@ -142,9 +142,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 			return '';
 		}
 
-		$lines           = explode( "\n", $content );
-		$file_comments   = [];
-		$found_msgid     = false;
+		$lines         = explode( "\n", $content );
+		$file_comments = [];
+		$found_msgid   = false;
 
 		foreach ( $lines as $line ) {
 			$trimmed = trim( $line );

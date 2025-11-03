@@ -86,25 +86,23 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			// Read the original file content before merging.
-			$original_content = file_get_contents( $file->getPathname() );
+			$po_translations        = Translations::fromPoFile( $file->getPathname() );
+			$original_translations  = clone $po_translations;
 
-			$po_translations = Translations::fromPoFile( $file->getPathname() );
 			$po_translations->mergeWith(
 				$pot_translations,
 				Merge::ADD | Merge::REMOVE | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE
 			);
+
+			// Check if the translations actually changed by comparing the objects.
+			$has_changes = $this->translations_differ( $original_translations, $po_translations );
 
 			if ( ! $po_translations->toPoFile( $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;
 			}
 
-			// Read the new file content after merging.
-			$new_content = file_get_contents( $file->getPathname() );
-
-			// Check if the file actually changed.
-			if ( $original_content !== $new_content ) {
+			if ( $has_changes ) {
 				++$updated_count;
 			} else {
 				++$unchanged_count;
@@ -119,5 +117,80 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( implode( '. ', $message_parts ) . '.' );
+	}
+
+	/**
+	 * Check if two Translations objects differ.
+	 *
+	 * @param Translations $original Original translations.
+	 * @param Translations $updated  Updated translations.
+	 * @return bool True if translations differ, false otherwise.
+	 */
+	private function translations_differ( Translations $original, Translations $updated ) {
+		// Quick check: if counts differ, they're different.
+		if ( count( $original ) !== count( $updated ) ) {
+			return true;
+		}
+
+		// Compare each translation entry.
+		foreach ( $original as $translation ) {
+			$context = $translation->getContext();
+			$original_str = $translation->getOriginal();
+
+			// Find the corresponding translation in the updated set.
+			$updated_translation = $updated->find( $context, $original_str );
+
+			// If translation doesn't exist in updated set, they differ.
+			if ( ! $updated_translation ) {
+				return true;
+			}
+
+			// Compare translation strings.
+			if ( $translation->getTranslation() !== $updated_translation->getTranslation() ) {
+				return true;
+			}
+
+			// Compare plural translations if they exist.
+			$original_plurals = $translation->getPluralTranslations();
+			$updated_plurals  = $updated_translation->getPluralTranslations();
+
+			if ( $original_plurals !== $updated_plurals ) {
+				return true;
+			}
+
+			// Compare references (source code locations).
+			$original_refs = $translation->getReferences();
+			$updated_refs  = $updated_translation->getReferences();
+
+			sort( $original_refs );
+			sort( $updated_refs );
+
+			if ( $original_refs !== $updated_refs ) {
+				return true;
+			}
+
+			// Compare comments.
+			if ( $translation->getExtractedComments() !== $updated_translation->getExtractedComments() ) {
+				return true;
+			}
+
+			if ( $translation->getTranslatorComments() !== $updated_translation->getTranslatorComments() ) {
+				return true;
+			}
+		}
+
+		// Check if updated has any translations not in original.
+		foreach ( $updated as $translation ) {
+			$context = $translation->getContext();
+			$original_str = $translation->getOriginal();
+
+			$original_translation = $original->find( $context, $original_str );
+
+			if ( ! $original_translation ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

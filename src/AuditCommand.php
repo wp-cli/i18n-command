@@ -98,15 +98,15 @@ class AuditCommand extends MakePotCommand {
 			WP_CLI::error( 'Not a valid source directory.' );
 		}
 
-		$this->slug              = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->domain            = Utils\get_flag_value( $assoc_args, 'domain', null );
-		$this->skip_js           = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->skip_php          = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
-		$this->skip_blade        = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
-		$this->skip_block_json   = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
-		$this->skip_theme_json   = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
-		$this->format            = Utils\get_flag_value( $assoc_args, 'format', $this->format );
-		$ignore_domain           = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->domain          = Utils\get_flag_value( $assoc_args, 'domain', null );
+		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
+		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
+		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
+		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
+		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
+		$this->format          = Utils\get_flag_value( $assoc_args, 'format', $this->format );
+		$ignore_domain         = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
 		$include = Utils\get_flag_value( $assoc_args, 'include', [] );
 		if ( ! empty( $include ) ) {

@@ -143,13 +143,106 @@ class AuditCommand extends MakePotCommand {
 
 		$this->output_results( $issues );
 
-		$issue_count = count( $issues );
+		// Only output summary messages in plaintext format.
+		if ( 'plaintext' === $this->format ) {
+			$issue_count = count( $issues );
 
-		if ( $issue_count > 0 ) {
-			WP_CLI::warning( sprintf( 'Found %d %s.', $issue_count, Utils\pluralize( 'issue', $issue_count ) ) );
-		} else {
-			WP_CLI::success( 'No issues found.' );
+			if ( $issue_count > 0 ) {
+				WP_CLI::warning( sprintf( 'Found %d %s.', $issue_count, Utils\pluralize( 'issue', $issue_count ) ) );
+			} else {
+				WP_CLI::success( 'No issues found.' );
+			}
 		}
+	}
+
+	/**
+	 * Returns the file data of the main plugin or theme file.
+	 *
+	 * Overrides parent method to suppress log messages when using non-plaintext formats.
+	 *
+	 * @return array
+	 */
+	protected function get_main_file_data() {
+		$files = new \IteratorIterator( new \DirectoryIterator( $this->source ) );
+
+		/** @var \DirectoryIterator $file */
+		foreach ( $files as $file ) {
+			// wp-content/themes/my-theme/style.css
+			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
+				$theme_data = FileDataExtractor::get_file_data(
+					$file->getRealPath(),
+					array_combine(
+						$this->get_file_headers( 'theme' ),
+						$this->get_file_headers( 'theme' )
+					)
+				);
+
+				// Stop when it contains a valid Theme Name header.
+				if ( ! empty( $theme_data['Theme Name'] ) ) {
+					if ( 'plaintext' === $this->format ) {
+						WP_CLI::log( 'Theme stylesheet detected.' );
+					}
+					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() ), 'audit' );
+
+					$this->project_type   = 'theme';
+					$this->main_file_path = $file->getRealPath();
+
+					return $theme_data;
+				}
+			}
+
+			// wp-content/themes/my-themes/theme-a/style.css
+			if ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+				$theme_data = FileDataExtractor::get_file_data(
+					$file->getRealPath() . '/style.css',
+					array_combine(
+						$this->get_file_headers( 'theme' ),
+						$this->get_file_headers( 'theme' )
+					)
+				);
+
+				// Stop when it contains a valid Theme Name header.
+				if ( ! empty( $theme_data['Theme Name'] ) ) {
+					if ( 'plaintext' === $this->format ) {
+						WP_CLI::log( 'Theme stylesheet detected.' );
+					}
+					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() . '/style.css' ), 'audit' );
+
+					$this->project_type   = 'theme';
+					$this->main_file_path = $file->getRealPath();
+
+					return $theme_data;
+				}
+			}
+
+			// wp-content/plugins/my-plugin/my-plugin.php
+			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
+				$plugin_data = FileDataExtractor::get_file_data(
+					$file->getRealPath(),
+					array_combine(
+						$this->get_file_headers( 'plugin' ),
+						$this->get_file_headers( 'plugin' )
+					)
+				);
+
+				// Stop when we find a file with a valid Plugin Name header.
+				if ( ! empty( $plugin_data['Plugin Name'] ) ) {
+					if ( 'plaintext' === $this->format ) {
+						WP_CLI::log( 'Plugin file detected.' );
+					}
+					WP_CLI::debug( sprintf( 'Plugin file: %s', $file->getRealPath() ), 'audit' );
+
+					$this->project_type   = 'plugin';
+					$this->main_file_path = $file->getRealPath();
+
+					return $plugin_data;
+				}
+			}
+		}
+
+		WP_CLI::debug( 'No valid theme stylesheet or plugin file found, treating as a regular project.', 'audit' );
+
+		return [];
 	}
 
 	/**

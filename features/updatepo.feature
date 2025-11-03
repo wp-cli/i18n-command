@@ -465,3 +465,145 @@ Feature: Update existing PO files from a POT file
       """
       "X-Domain: foo-plugin\n"
       """
+
+  Scenario: Preserves obsolete translations and file-level comments with --skip-purge
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+
+      #~ msgid "Obsolete string"
+      #~ msgstr "Veralteter String"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/foo-plugin-de_DE.po --skip-purge`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #~ msgid "Obsolete string"
+      #~ msgstr "Veralteter String"
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+
+  Scenario: Removes obsolete translations and comments without --skip-purge
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+
+      #~ msgid "Obsolete string"
+      #~ msgstr "Veralteter String"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/foo-plugin-de_DE.po`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should not contain:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should not contain:
+      """
+      #~ msgid "Obsolete string"
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """

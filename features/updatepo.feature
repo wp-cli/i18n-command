@@ -516,4 +516,4 @@ Feature: Update existing PO files from a POT file
       Success: Updated 1 file.
       """
     And STDERR should be empty
-    And the foo-plugin/foo-plugin-de_DE.po file should match /First string.*Second string.*Third string/s
+    And the contents of the foo-plugin/foo-plugin-de_DE.po file should match /First string.*Second string.*Third string/s

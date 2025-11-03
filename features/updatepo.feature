@@ -466,7 +466,7 @@ Feature: Update existing PO files from a POT file
       "X-Domain: foo-plugin\n"
       """
 
-  Scenario: Preserves obsolete translations and file-level comments with --skip-purge
+  Scenario: Preserves obsolete translations and file-level comments with --no-purge
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:
       """
@@ -516,7 +516,7 @@ Feature: Update existing PO files from a POT file
       #~ msgstr "Veralteter String"
       """
 
-    When I run `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/foo-plugin-de_DE.po --skip-purge`
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/foo-plugin-de_DE.po --no-purge`
     Then STDOUT should be:
       """
       Success: Updated 1 file.
@@ -539,7 +539,7 @@ Feature: Update existing PO files from a POT file
       msgstr "Some translated string"
       """
 
-  Scenario: Removes obsolete translations and comments without --skip-purge
+  Scenario: Removes obsolete translations and comments by default
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:
       """

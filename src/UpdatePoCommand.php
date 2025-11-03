@@ -27,10 +27,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 * : PO file to update or a directory containing multiple PO files.
 	 *   Defaults to all PO files in the source directory.
 	 *
-	 * [--skip-purge]
-	 * : Prevent removal of obsolete strings and preserve translator comments.
+	 * [--purge]
+	 * : Remove obsolete strings and replace translator comments. Defaults to true.
 	 *   By default, strings not found in the POT file are removed, and translator comments are replaced with those from the POT file.
-	 *   This flag keeps obsolete translations (marked with #~) and preserves existing translator comments like copyright notices.
+	 *   Use `--no-purge` to preserve obsolete translations (marked with #~) and existing translator comments like copyright notices.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -47,7 +47,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *     Success: Updated 2 files.
 	 *
 	 *     # Update PO files while keeping obsolete strings and translator comments.
-	 *     $ wp i18n update-po example-plugin.pot --skip-purge
+	 *     $ wp i18n update-po example-plugin.pot --no-purge
 	 *     Success: Updated 3 files.
 	 *
 	 * @when before_wp_load
@@ -81,9 +81,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 		// Build merge flags based on options
 		$merge_flags = Merge::ADD | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE;
 
-		$skip_purge = Utils\get_flag_value( $assoc_args, 'skip-purge', false );
+		$purge = Utils\get_flag_value( $assoc_args, 'purge', true );
 
-		if ( ! $skip_purge ) {
+		if ( $purge ) {
 			// By default, remove obsolete entries and replace translator comments
 			$merge_flags |= Merge::REMOVE | Merge::COMMENTS_THEIRS;
 		}
@@ -100,9 +100,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			// Preserve file-level comments when --skip-purge is set
+			// Preserve file-level comments when --no-purge is set
 			$file_comments = '';
-			if ( $skip_purge ) {
+			if ( ! $purge ) {
 				$file_comments = $this->extract_file_comments( $file->getPathname() );
 			}
 
@@ -117,8 +117,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			// Restore file-level comments when --skip-purge is set
-			if ( $skip_purge && ! empty( $file_comments ) ) {
+			// Restore file-level comments when --no-purge is set
+			if ( ! $purge && ! empty( $file_comments ) ) {
 				$this->restore_file_comments( $file->getPathname(), $file_comments );
 			}
 

@@ -2,8 +2,8 @@
 
 namespace WP_CLI\I18n;
 
+use Gettext\Translation;
 use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
-use Gettext\Utils\ParsedComment;
 use Peast\Peast;
 use Peast\Syntax\Node;
 use Peast\Traverser;
@@ -175,7 +175,11 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					$line = $node->getLocation()->getStart()->getLine();
 				}
 
-				$translation = $translations->insert( $context, $original, $plural );
+				$translation = $translations->addOrMerge( Translation::create( $context, $original ) );
+
+				if ( $plural ) {
+					$translation->setPlural( $plural );
+				}
 
 				if ( $add_reference ) {
 					$translation->getReferences()->add( $file, $line );
@@ -199,11 +203,24 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						continue;
 					}
 
-					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
-					$prefixes       = array_filter( (array) $this->extract_comments );
+					$comment_text = $comment->getRawText();
+					$comment_text = preg_replace( '/^\/\*+|\*+\/$/', '', $comment_text );
+					$comment_text = preg_replace( '/^\s*\*\s?/m', '', $comment_text );
+					$comment_text = trim( $comment_text );
 
-					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-						$translation->getComments()->add( $parsed_comment->getComment() );
+					$prefixes = array_filter( (array) $this->extract_comments );
+
+					// Check if comment starts with any of the prefixes.
+					$has_prefix = false;
+					foreach ( $prefixes as $prefix ) {
+						if ( 0 === stripos( $comment_text, $prefix ) ) {
+							$has_prefix = true;
+							break;
+						}
+					}
+
+					if ( $has_prefix || empty( $prefixes ) ) {
+						$translation->getComments()->add( $comment_text );
 
 						$this->comments_cache[] = $comment;
 					}

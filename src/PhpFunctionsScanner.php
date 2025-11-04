@@ -2,6 +2,7 @@
 
 namespace WP_CLI\I18n;
 
+use Gettext\Translation;
 use Gettext\Utils\PhpFunctionsScanner as GettextPhpFunctionsScanner;
 
 class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
@@ -71,10 +72,14 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				continue;
 			}
 
-			$translation = $translations->insert( $context, $original, $plural );
+			$translation = $translations->addOrMerge( Translation::create( $context, $original ) );
+
+			if ( $plural ) {
+				$translation->setPlural( $plural );
+			}
 
 			if ( $add_reference ) {
-				$translation = $translation->getReferences()->add( $file, $line );
+				$translation->getReferences()->add( $file, $line );
 			}
 
 			if (
@@ -86,7 +91,7 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 
 			if ( isset( $function[3] ) ) {
 				foreach ( $function[3] as $extracted_comment ) {
-					$translation = $translation->getComments()->add( $extracted_comment );
+					$translation->getComments()->add( $extracted_comment );
 				}
 			}
 		}

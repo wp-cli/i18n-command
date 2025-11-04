@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use eftec\bladeone\BladeOne;
+use Gettext\Translations;
 
 /**
  * Class to get gettext strings from blade.php files returning arrays.
@@ -37,11 +38,9 @@ class BladeGettextExtractor extends PhpCodeExtractor {
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * Note: In the parent PhpCode class fromString() uses fromStringMultiple() (overriden here)
 	 */
-	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Using gettext scanner API.
 		$php_string = static::compileBladeToPhp( $text );
-		return parent::fromStringMultiple( $php_string, $translations, $options );
+		return parent::fromString( $php_string, $translations, $options );
 	}
 }

@@ -3,10 +3,10 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Generator\PoGenerator;
+use Gettext\Loader\PoLoader;
 use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
-use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -428,8 +428,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', $file ), 'make-pot' );
 
-				$this->exceptions[ $file ] = Translations::create();
-				Po::fromFile( $file, $this->exceptions[ $file ] );
+				$loader                    = new PoLoader();
+				$this->exceptions[ $file ] = $loader->loadFile( $file );
 			}
 		}
 
@@ -592,9 +592,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Add existing strings first but don't keep headers.
 		if ( ! empty( $this->merge ) ) {
-			$existing_translations = Translations::create();
-			Po::fromFile( $this->merge, $existing_translations );
-			$translations->mergeWith( $existing_translations, Merge::TRANSLATIONS_OURS | Merge::HEADERS_OURS );
+			$loader = new PoLoader();
+			foreach ( (array) $this->merge as $file ) {
+				$existing_translations = $loader->loadFile( $file );
+				$translations->mergeWith( $existing_translations, Merge::TRANSLATIONS_OURS | Merge::HEADERS_OURS );
+			}
 		}
 
 		$translations->setDescription( $this->get_file_comment() );
@@ -785,12 +787,11 @@ class MakePotCommand extends WP_CLI_Command {
 			$location = '';
 
 			// There might not be any file references.
-			foreach( $references as $file => $lines ) {
+			foreach ( $references as $file => $lines ) {
 				if ( count( $lines ) > 0 ) {
 					$location = "$file:$lines[0]";
 				}
 			}
-
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
@@ -831,12 +832,12 @@ class MakePotCommand extends WP_CLI_Command {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) use ( &$unique_comments ) {
-						/** @var ParsedComment|string $comment */
-						if ( in_array( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
+						/** @var string $comment */
+						if ( in_array( $comment, $unique_comments, true ) ) {
 							return null;
 						}
 
-						$unique_comments[] = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
+						$unique_comments[] = $comment;
 
 						return $comment;
 					}

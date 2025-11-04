@@ -45,11 +45,11 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 	/**
 	 * {@inheritdoc}
 	 */
-	public static function fromString( $text, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Using gettext scanner API.
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
 
 		try {
-			self::fromStringMultiple( $text, [ $translations ], $options );
+			parent::fromString( $text, $translations, $options );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(

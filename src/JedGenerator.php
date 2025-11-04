@@ -44,9 +44,9 @@ class JedGenerator extends Generator {
 	}
 
 	public function generateArray( Translations $translations ): array {
-		$pluralForm = $translations->getHeaders()->getPluralForm();
-		$pluralSize = is_array( $pluralForm ) ? ( $pluralForm[0] - 1 ) : null;
-		$messages   = [];
+		$plural_form = $translations->getHeaders()->getPluralForm();
+		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : null;
+		$messages    = [];
 
 		foreach ( $translations as $translation ) {
 			if ( ! $translation->getTranslation() || $translation->isDisabled() ) {
@@ -61,7 +61,7 @@ class JedGenerator extends Generator {
 			}
 
 			if ( self::hasPluralTranslations( $translation ) ) {
-				$messages[ $context ][ $original ] = $translation->getPluralTranslations( $pluralSize );
+				$messages[ $context ][ $original ] = $translation->getPluralTranslations( $plural_size );
 				array_unshift( $messages[ $context ][ $original ], $translation->getTranslation() );
 			} else {
 				$messages[ $context ][ $original ] = $translation->getTranslation();

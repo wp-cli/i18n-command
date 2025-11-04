@@ -46,7 +46,7 @@ class PhpCodeExtractor {
 	/**
 	 * {@inheritdoc}
 	 */
-	public static function fromString( $text, Translations $translations, array $options = [] ) {
+	public static function fromString( $text, Translations $translations, array $options = [] ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Using gettext scanner API.
 		$options = static::$options + $options;
 
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );

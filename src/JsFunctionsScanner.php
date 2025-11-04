@@ -2,13 +2,19 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
-use Gettext\Utils\ParsedComment;
+use Gettext\Translation;
 use Peast\Peast;
 use Peast\Syntax\Node;
 use Peast\Traverser;
 
-final class JsFunctionsScanner extends GettextJsFunctionsScanner {
+final class JsFunctionsScanner {
+
+	/**
+	 * The JavaScript code to parse.
+	 *
+	 * @var string
+	 */
+	protected $code;
 
 	/**
 	 * If not false, comments will be extracted.
@@ -16,6 +22,15 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * @var string|false|array
 	 */
 	private $extract_comments = false;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param string $code JavaScript code to parse.
+	 */
+	public function __construct( $code ) {
+		$this->code = $code;
+	}
 
 	/**
 	 * Holds a list of source code comments already added to a string.
@@ -31,21 +46,21 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @param mixed $tag
 	 */
-	public function enableCommentsExtraction( $tag = '' ) {
+	public function enableCommentsExtraction( $tag = '' ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
 		$this->extract_comments = $tag;
 	}
 
 	/**
 	 * Disable comments extraction.
 	 */
-	public function disableCommentsExtraction() {
+	public function disableCommentsExtraction() { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
 		$this->extract_comments = false;
 	}
 
 	/**
 	 * {@inheritdoc}
 	 */
-	public function saveGettextFunctions( $translations, array $options ) {
+	public function saveGettextFunctions( $translations, array $options ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
 		// Ignore multiple translations for now.
 		// @todo Add proper support for multiple translations.
 		if ( is_array( $translations ) ) {
@@ -175,7 +190,11 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					$line = $node->getLocation()->getStart()->getLine();
 				}
 
-				$translation = $translations->insert( $context, $original, $plural );
+				$translation = $translations->addOrMerge( Translation::create( $context, $original ) );
+
+				if ( $plural ) {
+					$translation->setPlural( $plural );
+				}
 
 				if ( $add_reference ) {
 					$translation->getReferences()->add( $file, $line );
@@ -199,11 +218,24 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						continue;
 					}
 
-					$parsed_comment = ParsedComment::create( $comment->getRawText(), $comment->getLocation()->getStart()->getLine() );
-					$prefixes       = array_filter( (array) $this->extract_comments );
+					$comment_text = $comment->getRawText();
+					$comment_text = preg_replace( '/^\/\*+|\*+\/$/', '', $comment_text );
+					$comment_text = preg_replace( '/^\s*\*\s?/m', '', $comment_text );
+					$comment_text = trim( $comment_text );
 
-					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-						$translation->getComments()->add( $parsed_comment->getComment() );
+					$prefixes = array_filter( (array) $this->extract_comments );
+
+					// Check if comment starts with any of the prefixes.
+					$has_prefix = false;
+					foreach ( $prefixes as $prefix ) {
+						if ( 0 === stripos( $comment_text, $prefix ) ) {
+							$has_prefix = true;
+							break;
+						}
+					}
+
+					if ( $has_prefix || empty( $prefixes ) ) {
+						$translation->getComments()->add( $comment_text );
 
 						$this->comments_cache[] = $comment;
 					}
@@ -266,7 +298,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @return array|bool Array containing the name and comments of the identifier if resolved. False if not.
 	 */
-	private function resolveExpressionCallee( Node\CallExpression $node ) {
+	private function resolveExpressionCallee( Node\CallExpression $node ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
 		$callee = $node->getCallee();
 
 		// If the callee is a simple identifier it can simply be returned.
@@ -376,7 +408,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @return bool Whether or not the comment precedes the node.
 	 */
-	private function commentPrecedesNode( Node\Comment $comment, Node\Node $node ) {
+	private function commentPrecedesNode( Node\Comment $comment, Node\Node $node ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
 		// Comments should be on the same or an earlier line than the translation.
 		if ( $node->getLocation()->getStart()->getLine() - $comment->getLocation()->getEnd()->getLine() > 1 ) {
 			return false;

@@ -35,7 +35,7 @@ final class JsCodeExtractor {
 
 			$scanner = new JsScanner( $translations );
 			$scanner->setFunctions( self::$options['functions'] );
-			$scanner->extractCommentsStartingWith( $options['extractComments'] );
+			$scanner->extractCommentsStartingWith( ...$options['extractComments'] );
 			$scanner->scanString( $text, $options['file'] );
 		} catch ( PeastException $exception ) {
 			WP_CLI::debug(

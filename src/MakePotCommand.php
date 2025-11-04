@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Generator\PoGenerator;
+use Gettext\Loader\PoLoader;
 use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
@@ -427,8 +428,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', $file ), 'make-pot' );
 
-				$this->exceptions[ $file ] = Translations::create();
-				Po::fromFile( $file, $this->exceptions[ $file ] );
+				$loader                    = new PoLoader();
+				$this->exceptions[ $file ] = $loader->loadFile( $file );
 			}
 		}
 
@@ -591,8 +592,8 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Add existing strings first but don't keep headers.
 		if ( ! empty( $this->merge ) ) {
-			$existing_translations = Translations::create();
-			Po::fromFile( $this->merge, $existing_translations );
+			$loader                = new PoLoader();
+			$existing_translations = $loader->loadFile( $this->merge );
 			$translations->mergeWith( $existing_translations, Merge::TRANSLATIONS_OURS | Merge::HEADERS_OURS );
 		}
 

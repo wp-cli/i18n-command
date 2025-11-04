@@ -6,7 +6,6 @@ use Gettext\Generator\PoGenerator;
 use Gettext\Merge;
 use Gettext\Translation;
 use Gettext\Translations;
-use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -830,12 +829,12 @@ class MakePotCommand extends WP_CLI_Command {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) use ( &$unique_comments ) {
-						/** @var ParsedComment|string $comment */
-						if ( in_array( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
+						/** @var string $comment */
+						if ( in_array( $comment, $unique_comments, true ) ) {
 							return null;
 						}
 
-						$unique_comments[] = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
+						$unique_comments[] = $comment;
 
 						return $comment;
 					}

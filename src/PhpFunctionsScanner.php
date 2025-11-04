@@ -3,14 +3,62 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Translation;
-use Gettext\Utils\PhpFunctionsScanner as GettextPhpFunctionsScanner;
 
-class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
+class PhpFunctionsScanner {
+
+	/**
+	 * The PHP code to parse.
+	 *
+	 * @var string
+	 */
+	protected $code;
+
+	/**
+	 * Parsed PHP functions.
+	 *
+	 * @var array
+	 */
+	protected $functions = [];
+
+	/**
+	 * Constructor.
+	 *
+	 * @param string $code PHP code to parse.
+	 */
+	public function __construct( $code ) {
+		$this->code = $code;
+	}
+
+	/**
+	 * Get parsed functions from PHP code.
+	 *
+	 * @param array $constants Constants to replace.
+	 * @return array
+	 */
+	public function getFunctions( array $constants = [] ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
+		if ( empty( $this->functions ) ) {
+			$this->functions = $this->parseFunctions( $constants );
+		}
+		return $this->functions;
+	}
+
+	/**
+	 * Parse PHP code to extract function calls.
+	 *
+	 * @param array $constants Constants to replace.
+	 * @return array
+	 */
+	protected function parseFunctions( array $constants = [] ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
+		// This is a simplified implementation.
+		// The actual parsing is done by PhpScanner in gettext v5.
+		unset( $constants ); // Unused parameter, kept for compatibility.
+		return [];
+	}
 
 	/**
 	 * {@inheritdoc}
 	 */
-	public function saveGettextFunctions( $translations, array $options ) {
+	public function saveGettextFunctions( $translations, array $options ) { // phpcs:ignore WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Legacy method name for compatibility.
 		// Ignore multiple translations for now.
 		// @todo Add proper support for multiple translations.
 		if ( is_array( $translations ) ) {

@@ -592,9 +592,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Add existing strings first but don't keep headers.
 		if ( ! empty( $this->merge ) ) {
-			$loader                = new PoLoader();
-			$existing_translations = $loader->loadFile( $this->merge );
-			$translations->mergeWith( $existing_translations, Merge::TRANSLATIONS_OURS | Merge::HEADERS_OURS );
+			$loader = new PoLoader();
+			foreach ( (array) $this->merge as $file ) {
+				$existing_translations = $loader->loadFile( $file );
+				$translations->mergeWith( $existing_translations, Merge::TRANSLATIONS_OURS | Merge::HEADERS_OURS );
+			}
 		}
 
 		$translations->setDescription( $this->get_file_comment() );

@@ -785,12 +785,11 @@ class MakePotCommand extends WP_CLI_Command {
 			$location = '';
 
 			// There might not be any file references.
-			foreach( $references as $file => $lines ) {
+			foreach ( $references as $file => $lines ) {
 				if ( count( $lines ) > 0 ) {
 					$location = "$file:$lines[0]";
 				}
 			}
-
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (

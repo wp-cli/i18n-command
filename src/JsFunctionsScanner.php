@@ -178,7 +178,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$translation = $translations->insert( $context, $original, $plural );
 
 				if ( $add_reference ) {
-					$translation->addReference( $file, $line );
+					$translation->getReferences()->add( $file, $line );
 				}
 
 				if (
@@ -203,7 +203,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					$prefixes       = array_filter( (array) $this->extract_comments );
 
 					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-						$translation->addExtractedComment( $parsed_comment->getComment() );
+						$translation->getComments()->add( $parsed_comment->getComment() );
 
 						$this->comments_cache[] = $comment;
 					}

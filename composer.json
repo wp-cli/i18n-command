@@ -11,8 +11,11 @@
         }
     ],
     "require": {
-        "eftec/bladeone": "3.52",
-        "gettext/gettext": "^4.8",
+        "eftec/bladeone": "^4.11",
+        "gettext/gettext": "^5.7",
+        "gettext/js-scanner": "^1.1",
+        "gettext/php-scanner": "^v1.3.1",
+        "gettext/translator": "^1.2",
         "mck89/peast": "^1.13.11",
         "wp-cli/wp-cli": "^2.12"
     },

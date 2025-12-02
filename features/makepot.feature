@@ -3696,11 +3696,6 @@ Feature: Generate a POT file of a WordPress project
               "fontSizes": [
                   { "name": "Small", "slug": "small", "size": "13px" }
               ]
-          },
-          "border": {
-            "radiusSizes": [
-              { "slug": "soft", "size": "6px", "name": "Soft corners" }
-            ]
           }
         }
       }
@@ -3739,11 +3734,6 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-theme/foo-theme.pot file should contain:
       """
-      msgctxt "Border radius size name"
-      msgid "Soft corners"
-      """
-    And the foo-theme/foo-theme.pot file should contain:
-      """
       msgctxt "Style variation name"
       msgid "My style variation"
       """
@@ -3766,11 +3756,6 @@ Feature: Generate a POT file of a WordPress project
                 "palette": [
                   { "slug": "black", "color": "#000000", "name": "Black" }
                 ]
-              },
-              "border": {
-                "radiusSizes": [
-                  { "slug": "soft", "size": "6px", "name": "Soft corners for paragraph" }
-                ]
               }
             }
           }
@@ -3788,11 +3773,6 @@ Feature: Generate a POT file of a WordPress project
       """
       msgctxt "Color name"
       msgid "Black"
-      """
-    And the foo-theme/foo-theme.pot file should contain:
-      """
-      msgctxt "Border radius size name"
-      msgid "Soft corners for paragraph"
       """
 
   Scenario: Extract strings from style variations

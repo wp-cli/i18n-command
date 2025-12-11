@@ -240,7 +240,7 @@ wp i18n make-mo <source> [<destination>]
 Create PHP files from PO files.
 
 ~~~
-wp i18n make-php <source> [<destination>]
+wp i18n make-php <source> [<destination>] [--pretty-print]
 ~~~
 
 **OPTIONS**
@@ -251,6 +251,9 @@ wp i18n make-php <source> [<destination>]
 	[<destination>]
 		Path to the destination directory for the resulting PHP files. Defaults to the source directory.
 
+	[--pretty-print]
+		Pretty-print resulting PHP files.
+
 **EXAMPLES**
 
     # Create PHP files for all PO files in the current directory.
@@ -259,6 +262,10 @@ wp i18n make-php <source> [<destination>]
 
     # Create a PHP file from a single PO file in a specific directory.
     $ wp i18n make-php example-plugin-de_DE.po languages
+    Success: Created 1 file.
+
+    # Create a pretty-printed PHP file.
+    $ wp i18n make-php example-plugin-de_DE.po languages --pretty-print
     Success: Created 1 file.
 
 

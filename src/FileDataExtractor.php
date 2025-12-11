@@ -18,7 +18,7 @@ class FileDataExtractor {
 	 * @param string $file Path to the file.
 	 * @param array $headers List of headers, in the format array('HeaderKey' => 'Header Name').
 	 *
-	 * @return array Array of file headers in `HeaderKey => Header Value` format.
+	 * @return array Array of file headers in `HeaderKey => ['value' => Header Value, 'line' => Line Number]` format.
 	 */
 	public static function get_file_data( $file, $headers ) {
 		// We don't need to write to the file, so just open for reading.
@@ -42,14 +42,24 @@ class FileDataExtractor {
 	 * @param string $text String to look for metadata in.
 	 * @param array $headers List of headers.
 	 *
-	 * @return array Array of file headers in `HeaderKey => Header Value` format.
+	 * @return array Array of file headers in `HeaderKey => ['value' => Header Value, 'line' => Line Number]` format.
 	 */
 	public static function get_file_data_from_string( $text, $headers ) {
 		foreach ( $headers as $field => $regex ) {
-			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $text, $match ) && $match[1] ) {
-				$headers[ $field ] = static::_cleanup_header_comment( $match[1] );
+			if ( preg_match( '/^[ \t\/*#@]*' . preg_quote( $regex, '/' ) . ':(.*)$/mi', $text, $match, PREG_OFFSET_CAPTURE ) && $match[1][0] ) {
+				$value = static::_cleanup_header_comment( $match[1][0] );
+
+				// Calculate line number from the offset
+				$line_num          = substr_count( $text, "\n", 0, $match[0][1] ) + 1;
+				$headers[ $field ] = [
+					'value' => $value,
+					'line'  => $line_num,
+				];
 			} else {
-				$headers[ $field ] = '';
+				$headers[ $field ] = [
+					'value' => '',
+					'line'  => 0,
+				];
 			}
 		}
 

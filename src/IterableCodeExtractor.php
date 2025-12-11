@@ -67,7 +67,7 @@ trait IterableCodeExtractor {
 			}
 
 			if ( ! empty( $options['wpExtractTemplates'] ) ) {
-				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ], true );
+				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers['Template Name']['value'] ) ) {
 					$translation = new Translation( '', $headers['Template Name']['value'] );
@@ -89,8 +89,7 @@ trait IterableCodeExtractor {
 					[
 						'Title'       => 'Title',
 						'Description' => 'Description',
-					],
-					true
+					]
 				);
 
 				if ( ! empty( $headers['Title']['value'] ) ) {

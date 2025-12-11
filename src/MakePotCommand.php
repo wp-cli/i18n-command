@@ -476,8 +476,7 @@ class MakePotCommand extends WP_CLI_Command {
 					array_combine(
 						$this->get_file_headers( 'theme' ),
 						$this->get_file_headers( 'theme' )
-					),
-					true
+					)
 				);
 
 				// Stop when it contains a valid Theme Name header.
@@ -499,8 +498,7 @@ class MakePotCommand extends WP_CLI_Command {
 					array_combine(
 						$this->get_file_headers( 'theme' ),
 						$this->get_file_headers( 'theme' )
-					),
-					true
+					)
 				);
 
 				// Stop when it contains a valid Theme Name header.
@@ -522,8 +520,7 @@ class MakePotCommand extends WP_CLI_Command {
 					array_combine(
 						$this->get_file_headers( 'plugin' ),
 						$this->get_file_headers( 'plugin' )
-					),
-					true
+					)
 				);
 
 				// Stop when we find a file with a valid Plugin Name header.

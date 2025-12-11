@@ -6,30 +6,6 @@ use WP_CLI\I18n\FileDataExtractor;
 use WP_CLI\Tests\TestCase;
 
 class FileDataExtractorTest extends TestCase {
-	public function test_extracts_headers_without_line_numbers() {
-		$text = <<<'TEXT'
-<?php
-/**
- * Plugin Name: My Plugin
- * Description: A test plugin
- * Version: 1.0.0
- */
-TEXT;
-
-		$headers = FileDataExtractor::get_file_data_from_string(
-			$text,
-			[
-				'Plugin Name' => 'Plugin Name',
-				'Description' => 'Description',
-				'Version'     => 'Version',
-			]
-		);
-
-		$this->assertEquals( 'My Plugin', $headers['Plugin Name'] );
-		$this->assertEquals( 'A test plugin', $headers['Description'] );
-		$this->assertEquals( '1.0.0', $headers['Version'] );
-	}
-
 	public function test_extracts_headers_with_line_numbers() {
 		$text = <<<'TEXT'
 <?php
@@ -46,8 +22,7 @@ TEXT;
 				'Plugin Name' => 'Plugin Name',
 				'Description' => 'Description',
 				'Version'     => 'Version',
-			],
-			true
+			]
 		);
 
 		$this->assertIsArray( $headers['Plugin Name'] );
@@ -72,8 +47,7 @@ TEXT;
 			[
 				'Plugin Name' => 'Plugin Name',
 				'Description' => 'Description',
-			],
-			true
+			]
 		);
 
 		$this->assertEquals( 'Test Plugin', $headers['Plugin Name']['value'] );
@@ -90,8 +64,7 @@ TEXT;
 			$text,
 			[
 				'Plugin Name' => 'Plugin Name',
-			],
-			true
+			]
 		);
 
 		$this->assertIsArray( $headers['Plugin Name'] );
@@ -116,8 +89,7 @@ TEXT;
 				'Description' => 'Description',
 				'Author'      => 'Author',
 				'Version'     => 'Version',
-			],
-			true
+			]
 		);
 
 		$this->assertEquals( 'My Theme', $headers['Theme Name']['value'] );
@@ -145,8 +117,7 @@ TEXT;
 			$text,
 			[
 				'Plugin Name' => 'Plugin Name',
-			],
-			true
+			]
 		);
 
 		$this->assertEquals( 'My Plugin', $headers['Plugin Name']['value'] );

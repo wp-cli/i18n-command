@@ -97,6 +97,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 			// Check if the translations actually changed by comparing the objects.
 			$has_changes = $this->translations_differ( $original_translations, $po_translations );
 
+			// Update PO-Revision-Date to current date and time in UTC.
+			// Uses gmdate() for consistency across different server timezones.
+			$po_translations->setHeader( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
+
 			if ( ! $po_translations->toPoFile( $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;

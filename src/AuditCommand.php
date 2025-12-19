@@ -128,8 +128,8 @@ class AuditCommand extends MakePotCommand {
 			if ( null === $this->domain ) {
 				$this->domain = $this->slug;
 
-				if ( ! empty( $this->main_file_data['Text Domain'] ) ) {
-					$this->domain = $this->main_file_data['Text Domain'];
+				if ( ! empty( $this->main_file_data['Text Domain']['value'] ) ) {
+					$this->domain = $this->main_file_data['Text Domain']['value'];
 				}
 			}
 

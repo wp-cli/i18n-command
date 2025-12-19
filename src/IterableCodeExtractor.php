@@ -69,9 +69,14 @@ trait IterableCodeExtractor {
 			if ( ! empty( $options['wpExtractTemplates'] ) ) {
 				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ] );
 
-				if ( ! empty( $headers['Template Name'] ) ) {
-					$translation = new Translation( '', $headers['Template Name'] );
+				if ( ! empty( $headers['Template Name']['value'] ) ) {
+					$translation = new Translation( '', $headers['Template Name']['value'] );
 					$translation->addExtractedComment( 'Template Name of the theme' );
+
+					// Add file reference with line number if available
+					if ( ! empty( $headers['Template Name']['line'] ) ) {
+						$translation->addReference( $options['file'], $headers['Template Name']['line'] );
+					}
 
 					$translations[] = $translation;
 				}
@@ -87,16 +92,28 @@ trait IterableCodeExtractor {
 					]
 				);
 
-				if ( ! empty( $headers['Title'] ) ) {
-					$translation = new Translation( 'Pattern title', $headers['Title'] );
-					$translation->addReference( $options['file'] );
+				if ( ! empty( $headers['Title']['value'] ) ) {
+					$translation = new Translation( 'Pattern title', $headers['Title']['value'] );
+
+					// Add file reference with line number if available
+					if ( ! empty( $headers['Title']['line'] ) ) {
+						$translation->addReference( $options['file'], $headers['Title']['line'] );
+					} else {
+						$translation->addReference( $options['file'] );
+					}
 
 					$translations[] = $translation;
 				}
 
-				if ( ! empty( $headers['Description'] ) ) {
-					$translation = new Translation( 'Pattern description', $headers['Description'] );
-					$translation->addReference( $options['file'] );
+				if ( ! empty( $headers['Description']['value'] ) ) {
+					$translation = new Translation( 'Pattern description', $headers['Description']['value'] );
+
+					// Add file reference with line number if available
+					if ( ! empty( $headers['Description']['line'] ) ) {
+						$translation->addReference( $options['file'], $headers['Description']['line'] );
+					} else {
+						$translation->addReference( $options['file'] );
+					}
 
 					$translations[] = $translation;
 				}

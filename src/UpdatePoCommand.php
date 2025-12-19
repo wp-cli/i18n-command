@@ -87,6 +87,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 				Merge::ADD | Merge::REMOVE | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE
 			);
 
+			// Update PO-Revision-Date to current date and time in UTC.
+			// Uses gmdate() for consistency across different server timezones.
+			$po_translations->setHeader( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
+
 			if ( ! $po_translations->toPoFile( $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;

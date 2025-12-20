@@ -87,12 +87,12 @@ class UpdatePoCommand extends WP_CLI_Command {
 				Merge::ADD | Merge::REMOVE | Merge::COMMENTS_THEIRS | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE
 			);
 
-			// Reorder translations to match POT file order.
-			$ordered_translations = $this->reorder_translations( $po_translations, $pot_translations );
-
 			// Update PO-Revision-Date to current date and time in UTC.
 			// Uses gmdate() for consistency across different server timezones.
 			$po_translations->setHeader( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
+
+			// Reorder translations to match POT file order.
+			$ordered_translations = $this->reorder_translations( $po_translations, $pot_translations );
 
 			if ( ! $ordered_translations->toPoFile( $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );

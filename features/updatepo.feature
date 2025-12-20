@@ -488,6 +488,10 @@ Feature: Update existing PO files from a POT file
       #: foo-plugin.php:1
       msgid "Some string"
       msgstr ""
+
+      #: foo-plugin.php:2
+      msgid "Some other string"
+      msgstr ""
       """
     And a foo-plugin/foo-plugin-de_DE.po file:
       """

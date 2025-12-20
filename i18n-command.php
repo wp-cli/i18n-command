@@ -33,3 +33,15 @@ WP_CLI::add_command( 'i18n make-mo', '\WP_CLI\I18n\MakeMoCommand' );
 WP_CLI::add_command( 'i18n make-php', '\WP_CLI\I18n\MakePhpCommand' );
 
 WP_CLI::add_command( 'i18n update-po', '\WP_CLI\I18n\UpdatePoCommand' );
+
+WP_CLI::add_command(
+	'i18n audit',
+	'\WP_CLI\I18n\AuditCommand',
+	array(
+		'before_invoke' => static function () {
+			if ( ! function_exists( 'mb_ereg' ) ) {
+				WP_CLI::error( 'The mbstring extension is required for string extraction to work reliably.' );
+			}
+		},
+	)
+);

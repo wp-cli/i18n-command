@@ -196,7 +196,7 @@ class AuditCommand extends MakePotCommand {
 				);
 
 				// Stop when it contains a valid Theme Name header.
-				if ( ! empty( $theme_data['Theme Name'] ) ) {
+				if ( ! empty( $theme_data['Theme Name']['value'] ) ) {
 					if ( 'plaintext' === $this->format ) {
 						WP_CLI::log( 'Theme stylesheet detected.' );
 					}

@@ -479,8 +479,7 @@ class AuditCommand extends MakePotCommand {
 				}
 			}
 
-			$non_placeholder_content = trim( preg_replace( '`^([\'"])(.*)\1$`Ds', '$2', $translation->getOriginal() ) );
-			$non_placeholder_content = preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $non_placeholder_content );
+			$non_placeholder_content = trim( preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $translation->getOriginal() ) );
 
 			// Check 3: Flag empty strings without any translatable content.
 			if ( '' === $non_placeholder_content ) {

@@ -411,7 +411,7 @@ class AuditCommand extends MakePotCommand {
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
 				! $translation->hasExtractedComments() &&
-				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $placeholders ) >= 1
+				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal() ) >= 1
 			) {
 				$issues[] = [
 					'file'    => $file,

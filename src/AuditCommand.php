@@ -173,34 +173,22 @@ class AuditCommand extends MakePotCommand {
 
 		/** @var \DirectoryIterator $file */
 		foreach ( $files as $file ) {
+			$stylesheet_path = null;
+			$project_path    = null;
+
 			// wp-content/themes/my-theme/style.css
 			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
-				$theme_data = FileDataExtractor::get_file_data(
-					$file->getRealPath(),
-					array_combine(
-						$this->get_file_headers( 'theme' ),
-						$this->get_file_headers( 'theme' )
-					)
-				);
-
-				// Stop when it contains a valid Theme Name header.
-				if ( ! empty( $theme_data['Theme Name'] ) ) {
-					if ( 'plaintext' === $this->format ) {
-						WP_CLI::log( 'Theme stylesheet detected.' );
-					}
-					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() ), 'audit' );
-
-					$this->project_type   = 'theme';
-					$this->main_file_path = $file->getRealPath();
-
-					return $theme_data;
-				}
+				$stylesheet_path = $file->getRealPath();
+				$project_path    = $file->getRealPath();
+			} elseif ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+				// wp-content/themes/my-themes/theme-a/style.css
+				$stylesheet_path = $file->getRealPath() . '/style.css';
+				$project_path    = $file->getRealPath();
 			}
 
-			// wp-content/themes/my-themes/theme-a/style.css
-			if ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+			if ( $stylesheet_path ) {
 				$theme_data = FileDataExtractor::get_file_data(
-					$file->getRealPath() . '/style.css',
+					$stylesheet_path,
 					array_combine(
 						$this->get_file_headers( 'theme' ),
 						$this->get_file_headers( 'theme' )
@@ -212,10 +200,10 @@ class AuditCommand extends MakePotCommand {
 					if ( 'plaintext' === $this->format ) {
 						WP_CLI::log( 'Theme stylesheet detected.' );
 					}
-					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() . '/style.css' ), 'audit' );
+					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet_path ), 'audit' );
 
 					$this->project_type   = 'theme';
-					$this->main_file_path = $file->getRealPath();
+					$this->main_file_path = $project_path;
 
 					return $theme_data;
 				}
@@ -444,25 +432,11 @@ class AuditCommand extends MakePotCommand {
 					}
 				);
 
-				$unique_comments = array();
-
-				// Remove duplicate comments.
-				$comments = array_filter(
-					$comments,
-					function ( $comment ) use ( &$unique_comments ) {
-						/** @var ParsedComment|string $comment */
-						$comment_text = $this->get_comment_text( $comment );
-						if ( in_array( $comment_text, $unique_comments, true ) ) {
-							return false;
-						}
-
-						$unique_comments[] = $comment_text;
-
-						return $comment;
-					}
+				$unique_comment_texts = array_unique(
+					array_map( [ $this, 'get_comment_text' ], $comments )
 				);
 
-				$comments_count = count( $comments );
+				$comments_count = count( $unique_comment_texts );
 
 				if ( $comments_count > 1 ) {
 					$issues[] = [
@@ -472,7 +446,7 @@ class AuditCommand extends MakePotCommand {
 							"The string \"%s\" has %d different translator comments.\n%s",
 							$translation->getOriginal(),
 							$comments_count,
-							implode( "\n", $unique_comments )
+							implode( "\n", array_values( $unique_comment_texts ) )
 						),
 						'code'    => 'multiple-translator-comments',
 					];

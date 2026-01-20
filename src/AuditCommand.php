@@ -220,7 +220,7 @@ class AuditCommand extends MakePotCommand {
 				);
 
 				// Stop when we find a file with a valid Plugin Name header.
-				if ( ! empty( $plugin_data['Plugin Name'] ) ) {
+				if ( ! empty( $plugin_data['Plugin Name']['value'] ) ) {
 					if ( 'plaintext' === $this->format ) {
 						WP_CLI::log( 'Plugin file detected.' );
 					}

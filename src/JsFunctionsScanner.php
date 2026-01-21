@@ -368,7 +368,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	}
 
 	/**
-	 * Returns wether or not a comment precedes a node.
+	 * Returns whether or not a comment precedes a node.
 	 * The comment must be before the node and on the same line or the one before.
 	 *
 	 * @param Node\Comment $comment The comment.

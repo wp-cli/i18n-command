@@ -166,10 +166,13 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$original_refs = $translation->getReferences();
 			$updated_refs  = $updated_translation->getReferences();
 
-			sort( $original_refs );
-			sort( $updated_refs );
+			$original_refs_sorted = $original_refs;
+			$updated_refs_sorted  = $updated_refs;
 
-			if ( $original_refs !== $updated_refs ) {
+			sort( $original_refs_sorted );
+			sort( $updated_refs_sorted );
+
+			if ( $original_refs_sorted !== $updated_refs_sorted ) {
 				return true;
 			}
 

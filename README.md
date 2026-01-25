@@ -303,6 +303,10 @@ This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/ma
     $ wp i18n update-po example-plugin.pot languages
     Success: Updated 2 files.
 
+    # Shows message when some files don't need updating.
+    $ wp i18n update-po example-plugin.pot languages
+    Success: Updated 2 files. 1 file unchanged.
+
 ## Installing
 
 This package is included with WP-CLI itself, no additional installation necessary.

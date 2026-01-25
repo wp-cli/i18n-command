@@ -583,3 +583,142 @@ Feature: Update existing PO files from a POT file
       """
     And STDERR should be empty
     And the contents of the foo-plugin/foo-plugin-de_DE.po file should match /First string.*Second string.*Third string/s
+
+  Scenario: Reports unchanged files when POT hasn't changed
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Success: Updated 0 files. 1 file unchanged.
+      """
+    And STDERR should be empty
+
+  Scenario: Reports both updated and unchanged files
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+
+      #: foo-plugin.php:15
+      msgid "Another new string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.php:10
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+    And a foo-plugin/foo-plugin-es_ES.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/foo-plugin\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Language: es_ES\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
+      "X-Domain: foo-plugin\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+
+      #: foo-plugin.php:15
+      msgid "Another new string"
+      msgstr "Otra nueva cadena"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file. 1 file unchanged.
+      """
+    And STDERR should be empty

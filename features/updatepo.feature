@@ -520,7 +520,7 @@ Feature: Update existing PO files from a POT file
     When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
     Then STDOUT should be:
       """
-      Success: Updated 0 files. 1 file unchanged.
+      Success: Updated 1 file.
       """
     And STDERR should be empty
     And the foo-plugin/foo-plugin-de_DE.po file should contain:

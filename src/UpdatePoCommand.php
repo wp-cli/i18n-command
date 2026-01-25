@@ -189,18 +189,6 @@ class UpdatePoCommand extends WP_CLI_Command {
 			}
 		}
 
-		// Check if updated has any translations not in original.
-		foreach ( $updated as $translation ) {
-			$context      = $translation->getContext();
-			$original_str = $translation->getOriginal();
-
-			$original_translation = $original->find( $context, $original_str );
-
-			if ( ! $original_translation ) {
-				return true;
-			}
-		}
-
 		return false;
 	}
 

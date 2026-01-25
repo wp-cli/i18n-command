@@ -488,6 +488,10 @@ Feature: Update existing PO files from a POT file
       #: foo-plugin.php:1
       msgid "Some string"
       msgstr ""
+
+      #: foo-plugin.php:2
+      msgid "Some other string"
+      msgstr ""
       """
     And a foo-plugin/foo-plugin-de_DE.po file:
       """
@@ -527,6 +531,58 @@ Feature: Update existing PO files from a POT file
       """
       "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
       """
+
+  Scenario: Keeps POT file order of translations
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "First string"
+      msgstr ""
+
+      #: foo-plugin.php:10
+      msgid "Second string"
+      msgstr ""
+
+      #: foo-plugin.php:20
+      msgid "Third string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      # This file is distributed under the same license as the Foo Plugin package.
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:20
+      msgid "Third string"
+      msgstr "Dritte Zeichenfolge"
+
+      #: foo-plugin.php:1
+      msgid "First string"
+      msgstr "Erste Zeichenfolge"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot foo-plugin/foo-plugin-de_DE.po`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the contents of the foo-plugin/foo-plugin-de_DE.po file should match /First string.*Second string.*Third string/s
 
   Scenario: Reports unchanged files when POT hasn't changed
     Given an empty foo-plugin directory

@@ -137,22 +137,23 @@ class UpdatePoCommand extends WP_CLI_Command {
 			// Restore file-level comments when --no-purge is set
 			if ( ! $purge && ! empty( $file_comments ) ) {
 				$this->restore_file_comments( $file->getPathname(), $file_comments );
-				if ( $has_changes ) {
-					++$updated_count;
-				} else {
-					++$unchanged_count;
-				}
 			}
 
-			// Build the success message.
-			$message_parts   = array();
-			$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
-			if ( $unchanged_count > 0 ) {
-				$message_parts[] = sprintf( '%d %s unchanged', $unchanged_count, Utils\pluralize( 'file', $unchanged_count ) );
+			if ( $has_changes ) {
+				++$updated_count;
+			} else {
+				++$unchanged_count;
 			}
-
-			WP_CLI::success( implode( '. ', $message_parts ) . '.' );
 		}
+
+		// Build the success message.
+		$message_parts   = array();
+		$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
+		if ( $unchanged_count > 0 ) {
+			$message_parts[] = sprintf( '%d %s unchanged', $unchanged_count, Utils\pluralize( 'file', $unchanged_count ) );
+		}
+
+		WP_CLI::success( implode( '. ', $message_parts ) . '.' );
 	}
 
 	/**

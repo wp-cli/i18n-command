@@ -350,8 +350,8 @@ class MakePotCommand extends WP_CLI_Command {
 		if ( ! $ignore_domain ) {
 			$this->domain = $this->slug;
 
-			if ( ! empty( $this->main_file_data['Text Domain'] ) ) {
-				$this->domain = $this->main_file_data['Text Domain'];
+			if ( ! empty( $this->main_file_data['Text Domain']['value'] ) ) {
+				$this->domain = $this->main_file_data['Text Domain']['value'];
 			}
 
 			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->domain );
@@ -362,12 +362,12 @@ class MakePotCommand extends WP_CLI_Command {
 		// Determine destination.
 		$this->destination = "{$this->source}/{$this->slug}.pot";
 
-		if ( ! empty( $this->main_file_data['Domain Path'] ) ) {
+		if ( ! empty( $this->main_file_data['Domain Path']['value'] ) ) {
 			// Domain Path inside source folder.
 			$this->destination = sprintf(
 				'%s/%s/%s.pot',
 				$this->source,
-				$this->unslashit( $this->main_file_data['Domain Path'] ),
+				$this->unslashit( $this->main_file_data['Domain Path']['value'] ),
 				$this->slug
 			);
 		}
@@ -480,7 +480,7 @@ class MakePotCommand extends WP_CLI_Command {
 				);
 
 				// Stop when it contains a valid Theme Name header.
-				if ( ! empty( $theme_data['Theme Name'] ) ) {
+				if ( ! empty( $theme_data['Theme Name']['value'] ) ) {
 					WP_CLI::log( 'Theme stylesheet detected.' );
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() ), 'make-pot' );
 
@@ -502,7 +502,7 @@ class MakePotCommand extends WP_CLI_Command {
 				);
 
 				// Stop when it contains a valid Theme Name header.
-				if ( ! empty( $theme_data['Theme Name'] ) ) {
+				if ( ! empty( $theme_data['Theme Name']['value'] ) ) {
 					WP_CLI::log( 'Theme stylesheet detected.' );
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $file->getRealPath() . '/style.css' ), 'make-pot' );
 
@@ -524,7 +524,7 @@ class MakePotCommand extends WP_CLI_Command {
 				);
 
 				// Stop when we find a file with a valid Plugin Name header.
-				if ( ! empty( $plugin_data['Plugin Name'] ) ) {
+				if ( ! empty( $plugin_data['Plugin Name']['value'] ) ) {
 					WP_CLI::log( 'Plugin file detected.' );
 					WP_CLI::debug( sprintf( 'Plugin file: %s', $file->getRealPath() ), 'make-pot' );
 
@@ -616,11 +616,11 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Set entries from main file data.
 		foreach ( $this->main_file_data as $header => $data ) {
-			if ( empty( $data ) ) {
+			if ( empty( $data['value'] ) ) {
 				continue;
 			}
 
-			$translation = new Translation( '', $data );
+			$translation = new Translation( '', $data['value'] );
 
 			if ( $is_theme ) {
 				$translation->addExtractedComment( sprintf( '%s of the theme', $header ) );
@@ -629,9 +629,13 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( $this->main_file_path && $this->location ) {
-				$translation->addReference(
-					ltrim( str_replace( Utils\normalize_path( "$this->source/" ), '', Utils\normalize_path( $this->main_file_path ) ), '/' )
-				);
+				$file_reference = ltrim( str_replace( Utils\normalize_path( "$this->source/" ), '', Utils\normalize_path( $this->main_file_path ) ), '/' );
+				// Add line number if available
+				if ( ! empty( $data['line'] ) ) {
+					$translation->addReference( $file_reference, $data['line'] );
+				} else {
+					$translation->addReference( $file_reference );
+				}
 			}
 
 			$translations[] = $translation;
@@ -920,38 +924,38 @@ class MakePotCommand extends WP_CLI_Command {
 		}
 
 		if ( isset( $this->main_file_data['Theme Name'] ) ) {
-			if ( ! empty( $this->main_file_data['License'] ) ) {
+			if ( ! empty( $this->main_file_data['License']['value'] ) ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
 					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-					$this->main_file_data['Author'],
-					$this->main_file_data['License']
+					$this->main_file_data['Author']['value'],
+					$this->main_file_data['License']['value']
 				);
 			}
 
 			return sprintf(
 				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s theme.",
 				date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-				$this->main_file_data['Author'],
-				$this->main_file_data['Theme Name']
+				$this->main_file_data['Author']['value'],
+				$this->main_file_data['Theme Name']['value']
 			);
 		}
 
 		if ( isset( $this->main_file_data['Plugin Name'] ) ) {
-			if ( ! empty( $this->main_file_data['License'] ) ) {
+			if ( ! empty( $this->main_file_data['License']['value'] ) ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
 					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-					$this->main_file_data['Author'],
-					$this->main_file_data['License']
+					$this->main_file_data['Author']['value'],
+					$this->main_file_data['License']['value']
 				);
 			}
 
 			return sprintf(
 				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s plugin.",
 				date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-				$this->main_file_data['Author'],
-				$this->main_file_data['Plugin Name']
+				$this->main_file_data['Author']['value'],
+				$this->main_file_data['Plugin Name']['value']
 			);
 		}
 
@@ -969,14 +973,14 @@ class MakePotCommand extends WP_CLI_Command {
 		$bugs_address = null;
 
 		if ( ! $version && isset( $this->main_file_data['Version'] ) ) {
-			$version = $this->main_file_data['Version'];
+			$version = $this->main_file_data['Version']['value'];
 		}
 
 		if ( isset( $this->main_file_data['Theme Name'] ) ) {
-			$name         = $this->main_file_data['Theme Name'];
+			$name         = $this->main_file_data['Theme Name']['value'];
 			$bugs_address = sprintf( 'https://wordpress.org/support/theme/%s', $this->slug );
 		} elseif ( isset( $this->main_file_data['Plugin Name'] ) ) {
-			$name         = $this->main_file_data['Plugin Name'];
+			$name         = $this->main_file_data['Plugin Name']['value'];
 			$bugs_address = sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug );
 		}
 

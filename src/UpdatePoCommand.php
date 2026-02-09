@@ -50,6 +50,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *     $ wp i18n update-po example-plugin.pot --no-purge
 	 *     Success: Updated 3 files.
 	 *
+	 *     # Shows message when some files don't need updating.
+	 *     $ wp i18n update-po example-plugin.pot languages
+	 *     Success: Updated 2 files. 1 file unchanged.
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
@@ -88,7 +92,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$merge_flags |= Merge::REMOVE | Merge::COMMENTS_THEIRS;
 		}
 
-		$result_count = 0;
+		$result_count    = 0;
+		$updated_count   = 0;
+		$unchanged_count = 0;
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( 'po' !== $file->getExtension() ) {
@@ -105,14 +111,25 @@ class UpdatePoCommand extends WP_CLI_Command {
 			if ( ! $purge ) {
 				$file_comments = $this->extract_file_comments( $file->getPathname() );
 			}
+			$po_translations       = Translations::fromPoFile( $file->getPathname() );
+			$original_translations = clone $po_translations;
 
-			$po_translations = Translations::fromPoFile( $file->getPathname() );
 			$po_translations->mergeWith(
 				$pot_translations,
 				$merge_flags
 			);
 
-			if ( ! $po_translations->toPoFile( $file->getPathname() ) ) {
+			// Check if the translations actually changed by comparing the objects.
+			$has_changes = $this->translations_differ( $original_translations, $po_translations );
+
+			// Update PO-Revision-Date to current date and time in UTC.
+			// Uses gmdate() for consistency across different server timezones.
+			$po_translations->setHeader( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
+
+			// Reorder translations to match POT file order.
+			$ordered_translations = $this->reorder_translations( $po_translations, $pot_translations );
+
+			if ( ! $ordered_translations->toPoFile( $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;
 			}
@@ -120,12 +137,22 @@ class UpdatePoCommand extends WP_CLI_Command {
 			// Restore file-level comments when --no-purge is set
 			if ( ! $purge && ! empty( $file_comments ) ) {
 				$this->restore_file_comments( $file->getPathname(), $file_comments );
+				if ( $has_changes ) {
+					++$updated_count;
+				} else {
+					++$unchanged_count;
+				}
 			}
 
-			++$result_count;
-		}
+			// Build the success message.
+			$message_parts   = array();
+			$message_parts[] = sprintf( 'Updated %d %s', $updated_count, Utils\pluralize( 'file', $updated_count ) );
+			if ( $unchanged_count > 0 ) {
+				$message_parts[] = sprintf( '%d %s unchanged', $unchanged_count, Utils\pluralize( 'file', $unchanged_count ) );
+			}
 
-		WP_CLI::success( sprintf( 'Updated %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );
+			WP_CLI::success( implode( '. ', $message_parts ) . '.' );
+		}
 	}
 
 	/**
@@ -194,5 +221,98 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		return true;
+	}
+
+	/**
+	* Check if two Translations objects differ .
+	*
+	* @param Translations $original Original translations.
+	* @param Translations $updated  Updated translations.
+	* @return bool true if translations differ, false otherwise.
+	*/
+	private function translations_differ( Translations $original, Translations $updated ) {
+		// Quick check: if counts differ, they're different.
+		if ( count( $original ) !== count( $updated ) ) {
+			return true;
+		}
+
+		// Compare each translation entry.
+		foreach ( $original as $translation ) {
+			$context      = $translation->getContext();
+			$original_str = $translation->getOriginal();
+
+			// Find the corresponding translation in the updated set.
+			$updated_translation = $updated->find( $context, $original_str );
+
+			// If translation doesn't exist in updated set, they differ.
+			if ( ! $updated_translation ) {
+				return true;
+			}
+
+			// Compare translation strings.
+			if ( $translation->getTranslation() !== $updated_translation->getTranslation() ) {
+				return true;
+			}
+
+			// Compare plural translations if they exist.
+			$original_plurals = $translation->getPluralTranslations();
+			$updated_plurals  = $updated_translation->getPluralTranslations();
+
+			if ( $original_plurals !== $updated_plurals ) {
+				return true;
+			}
+
+			// Compare references (source code locations).
+			$original_refs = $translation->getReferences();
+			$updated_refs  = $updated_translation->getReferences();
+
+			$original_refs_sorted = $original_refs;
+			$updated_refs_sorted  = $updated_refs;
+
+			sort( $original_refs_sorted );
+			sort( $updated_refs_sorted );
+
+			if ( $original_refs_sorted !== $updated_refs_sorted ) {
+				return true;
+			}
+
+			// Compare comments.
+			if ( $translation->getExtractedComments() !== $updated_translation->getExtractedComments() ) {
+				return true;
+			}
+
+			if ( $translation->getComments() !== $updated_translation->getComments() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Reorder translations to match the POT file order.
+	 *
+	 * @param Translations $po_translations  The merged PO translations.
+	 * @param Translations $pot_translations The POT translations (source of truth for order).
+	 *
+	 * @return Translations Translations object with entries in POT file order.
+	 */
+	private function reorder_translations( Translations $po_translations, Translations $pot_translations ) {
+		$ordered = new Translations();
+
+		// Copy headers from the merged PO translations.
+		foreach ( $po_translations->getHeaders() as $name => $value ) {
+			$ordered->setHeader( $name, $value );
+		}
+
+		// Add translations in POT file order.
+		foreach ( $pot_translations as $pot_entry ) {
+			$po_entry = $po_translations->find( $pot_entry );
+			if ( $po_entry ) {
+				$ordered[] = $po_entry->getClone();
+			}
+		}
+
+		return $ordered;
 	}
 }

@@ -92,7 +92,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-plugin.pot file should contain:
       """
-      #: foo-plugin.php
+      #: foo-plugin.php:5
       """
     And the foo-plugin.pot file should contain:
       """
@@ -3696,6 +3696,11 @@ Feature: Generate a POT file of a WordPress project
               "fontSizes": [
                   { "name": "Small", "slug": "small", "size": "13px" }
               ]
+          },
+          "border": {
+            "radiusSizes": [
+              { "slug": "soft", "size": "6px", "name": "Soft corners" }
+            ]
           }
         }
       }
@@ -3734,6 +3739,11 @@ Feature: Generate a POT file of a WordPress project
       """
     And the foo-theme/foo-theme.pot file should contain:
       """
+      msgctxt "Border radius size name"
+      msgid "Soft corners"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
       msgctxt "Style variation name"
       msgid "My style variation"
       """
@@ -3756,6 +3766,11 @@ Feature: Generate a POT file of a WordPress project
                 "palette": [
                   { "slug": "black", "color": "#000000", "name": "Black" }
                 ]
+              },
+              "border": {
+                "radiusSizes": [
+                  { "slug": "soft", "size": "6px", "name": "Soft corners for paragraph" }
+                ]
               }
             }
           }
@@ -3773,6 +3788,11 @@ Feature: Generate a POT file of a WordPress project
       """
       msgctxt "Color name"
       msgid "Black"
+      """
+    And the foo-theme/foo-theme.pot file should contain:
+      """
+      msgctxt "Border radius size name"
+      msgid "Soft corners for paragraph"
       """
 
   Scenario: Extract strings from style variations
@@ -3890,12 +3910,12 @@ Feature: Generate a POT file of a WordPress project
     And the foo-theme/foo-theme.pot file should exist
     And the foo-theme/foo-theme.pot file should contain:
       """
-      #: patterns/my-pattern.php
+      #: patterns/my-pattern.php:3
       msgctxt "Pattern title"
       msgid "My pattern title."
       msgstr ""
 
-      #: patterns/my-pattern.php
+      #: patterns/my-pattern.php:4
       msgctxt "Pattern description"
       msgid "My pattern description."
       msgstr ""

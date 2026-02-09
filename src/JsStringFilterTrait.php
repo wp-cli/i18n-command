@@ -29,7 +29,7 @@ trait JsStringFilterTrait {
 			$has_non_js_reference = false;
 			foreach ( $translation->getReferences() as $reference ) {
 				$file      = $reference[0];
-				$extension = '.' . pathinfo( $file, PATHINFO_EXTENSION );
+				$extension = '.' . strtolower( pathinfo( $file, PATHINFO_EXTENSION ) );
 
 				if ( ! in_array( $extension, self::$js_extensions, true ) ) {
 					$has_non_js_reference = true;

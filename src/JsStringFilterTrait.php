@@ -31,7 +31,7 @@ trait JsStringFilterTrait {
 				$file      = $reference[0];
 				$extension = '.' . strtolower( pathinfo( $file, PATHINFO_EXTENSION ) );
 
-				if ( ! in_array( $extension, self::$js_extensions, true ) ) {
+				if ( ! in_array( $extension, static::$js_extensions, true ) ) {
 					$has_non_js_reference = true;
 					break;
 				}

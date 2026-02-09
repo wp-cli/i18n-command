@@ -202,7 +202,15 @@ Feature: Generate PHP files from PO files
     And the return code should be 0
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      return ['domain'=>'foo-plugin','plural-forms'=>'nplurals=2; plural=(n != 1);','language'=>'de_DE','project-id-version'=>'Foo Plugin','pot-creation-date'=>'2018-05-02T22:06:24+00:00','po-revision-date'=>'2018-05-02T22:06:24+00:00','messages'=>['Plugin NameFoo Plugin (EN)'=>'Foo Plugin (DE)','Foo Plugin'=>'Bar Plugin','You have %d new message'=>'Sie haben %d neue Nachricht' . "\0" . 'Sie haben %d neue Nachrichten']];
+      You have %d new message
+      """
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should not contain:
+      """
+      Foo Plugin (DE)
+      """
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should not contain:
+      """
+      Bar Plugin
       """
 
   Scenario: Excludes strings without translations

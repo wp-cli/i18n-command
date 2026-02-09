@@ -183,7 +183,7 @@ Feature: Generate MO files from PO files
       "X-Domain: foo-plugin\n"
       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-      #: foo-plugin.js:15
+      #: foo-plugin.php:15
       msgid "Foo Plugin"
       msgstr "Bar Plugin"
       """

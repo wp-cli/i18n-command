@@ -18,7 +18,7 @@ trait JsStringFilterTrait {
 	 *
 	 * @param Translations $translations The translations instance to filter.
 	 */
-	protected function remove_js_only_strings( $translations ) {
+	protected function remove_js_only_strings( Translations $translations ): void {
 		foreach ( $translations->getArrayCopy() as $translation ) {
 			/** @var Translation $translation */
 

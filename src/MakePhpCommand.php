@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
+use Gettext\Translation;
 use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
@@ -82,7 +83,11 @@ class MakePhpCommand extends WP_CLI_Command {
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
-			$options      = [ 'prettyPrint' => $pretty_print ];
+
+			// Remove JS-only strings from PHP files to keep them small.
+			$this->remove_js_only_strings( $translations );
+
+			$options = [ 'prettyPrint' => $pretty_print ];
 			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file, $options ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;
@@ -92,5 +97,35 @@ class MakePhpCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );
+	}
+
+	/**
+	 * Removes strings from translations that only occur in JavaScript files.
+	 *
+	 * @param Translations $translations The translations instance to filter.
+	 */
+	protected function remove_js_only_strings( $translations ) {
+		foreach ( $translations->getArrayCopy() as $translation ) {
+			/** @var Translation $translation */
+
+			if ( ! $translation->hasReferences() ) {
+				continue;
+			}
+
+			$has_non_js_reference = false;
+			foreach ( $translation->getReferences() as $reference ) {
+				$file = $reference[0];
+
+				if ( substr( $file, -3 ) !== '.js' ) {
+					$has_non_js_reference = true;
+					break;
+				}
+			}
+
+			// If all references are JS files, remove this translation.
+			if ( ! $has_non_js_reference ) {
+				unset( $translations[ $translation->getId() ] );
+			}
+		}
 	}
 }

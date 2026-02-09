@@ -12,6 +12,8 @@ use WP_CLI\Utils;
 use WP_CLI_Command;
 
 class MakePhpCommand extends WP_CLI_Command {
+	use JsStringFilterTrait;
+
 	/**
 	 * Create PHP files from PO files.
 	 *
@@ -97,35 +99,5 @@ class MakePhpCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( sprintf( 'Created %d %s.', $result_count, Utils\pluralize( 'file', $result_count ) ) );
-	}
-
-	/**
-	 * Removes strings from translations that only occur in JavaScript files.
-	 *
-	 * @param Translations $translations The translations instance to filter.
-	 */
-	protected function remove_js_only_strings( $translations ) {
-		foreach ( $translations->getArrayCopy() as $translation ) {
-			/** @var Translation $translation */
-
-			if ( ! $translation->hasReferences() ) {
-				continue;
-			}
-
-			$has_non_js_reference = false;
-			foreach ( $translation->getReferences() as $reference ) {
-				$file = $reference[0];
-
-				if ( substr( $file, -3 ) !== '.js' ) {
-					$has_non_js_reference = true;
-					break;
-				}
-			}
-
-			// If all references are JS files, remove this translation.
-			if ( ! $has_non_js_reference ) {
-				unset( $translations[ $translation->getId() ] );
-			}
-		}
 	}
 }

@@ -3,7 +3,6 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Extractors\Po as PoExtractor;
-use Gettext\Generators\Po as PoGenerator;
 use Gettext\Translation;
 use Gettext\Translations;
 use WP_CLI;
@@ -44,13 +43,6 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * [--extensions=<extensions>]
 	 * : Additional custom JS extensions, comma separated list. By default searches for .min.js and .js extensions.
 	 *
-	 * [--purge]
-	 * : Whether to purge the strings that were extracted from the original source file. Defaults to true, use `--no-purge` to skip the removal.
-	 *
-	 * [--update-mo-files]
-	 * : Whether MO files should be updated as well after updating PO files.
-	 * Only has an effect when used in combination with `--purge`.
-	 *
 	 * [--pretty-print]
 	 * : Pretty-print resulting JSON files.
 	 *
@@ -63,8 +55,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *     # Create JSON files for all PO files in the languages directory
 	 *     $ wp i18n make-json languages
 	 *
-	 *     # Create JSON files for my-plugin-de_DE.po and leave the PO file untouched.
-	 *     $ wp i18n make-json my-plugin-de_DE.po /tmp --no-purge
+	 *     # Create JSON files for my-plugin-de_DE.po
+	 *     $ wp i18n make-json my-plugin-de_DE.po /tmp
 	 *
 	 *     # Create JSON files with mapping
 	 *     $ wp i18n make-json languages --use-map=build/map.json
@@ -80,12 +72,10 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, array( 'use-map' ) );
-		$purge           = Utils\get_flag_value( $assoc_args, 'purge', true );
-		$update_mo_files = Utils\get_flag_value( $assoc_args, 'update-mo-files', true );
-		$map_paths       = Utils\get_flag_value( $assoc_args, 'use-map', false );
-		$domain          = Utils\get_flag_value( $assoc_args, 'domain', '' );
-		$extensions      = array_map(
+		$assoc_args = Utils\parse_shell_arrays( $assoc_args, array( 'use-map' ) );
+		$map_paths  = Utils\get_flag_value( $assoc_args, 'use-map', false );
+		$domain     = Utils\get_flag_value( $assoc_args, 'domain', '' );
+		$extensions = array_map(
 			function ( $extension ) {
 				return trim( $extension, ' .' );
 			},
@@ -130,25 +120,6 @@ class MakeJsonCommand extends WP_CLI_Command {
 			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension() ) {
 				$result        = $this->make_json( $file->getRealPath(), $destination, $map, $domain, $extensions );
 				$result_count += count( $result );
-
-				if ( $purge ) {
-					$removed = $this->remove_js_strings_from_po_file( $file->getRealPath() );
-
-					if ( ! $removed ) {
-						WP_CLI::warning( sprintf( 'Could not update file %s', basename( $source ) ) );
-						continue;
-					}
-
-					if ( $update_mo_files ) {
-						$file_basename    = basename( $file->getFilename(), '.po' );
-						$destination_file = "{$destination}/{$file_basename}.mo";
-
-						$translations = Translations::fromPoFile( $file->getPathname() );
-						if ( ! $translations->toMoFile( $destination_file ) ) {
-							WP_CLI::warning( "Could not create file {$destination_file}" );
-						}
-					}
-				}
 			}
 		}
 
@@ -384,38 +355,5 @@ class MakeJsonCommand extends WP_CLI_Command {
 		}
 
 		return $result;
-	}
-
-	/**
-	 * Removes strings from PO file that only occur in JavaScript file.
-	 *
-	 * @param string $source_file Path to the PO file.
-	 * @return bool True on success, false otherwise.
-	 */
-	protected function remove_js_strings_from_po_file( $source_file ) {
-		/** @var Translations[] $mapping */
-		$translations = new Translations();
-
-		PoExtractor::fromFile( $source_file, $translations );
-
-		foreach ( $translations->getArrayCopy() as $translation ) {
-			/** @var Translation $translation */
-
-			if ( ! $translation->hasReferences() ) {
-				continue;
-			}
-
-			foreach ( $translation->getReferences() as $reference ) {
-				$file = $reference[0];
-
-				if ( substr( $file, - 3 ) !== '.js' ) {
-					continue 2;
-				}
-			}
-
-			unset( $translations[ $translation->getId() ] );
-		}
-
-		return PoGenerator::toFile( $translations, $source_file );
 	}
 }

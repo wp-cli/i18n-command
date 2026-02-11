@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
+use Gettext\Translation;
 use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
@@ -11,6 +12,8 @@ use WP_CLI\Utils;
 use WP_CLI_Command;
 
 class MakePhpCommand extends WP_CLI_Command {
+	use JsStringFilterTrait;
+
 	/**
 	 * Create PHP files from PO files.
 	 *
@@ -82,7 +85,11 @@ class MakePhpCommand extends WP_CLI_Command {
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
-			$options      = [ 'prettyPrint' => $pretty_print ];
+
+			// Remove JS-only strings from PHP files to keep them small.
+			$this->remove_js_only_strings( $translations );
+
+			$options = [ 'prettyPrint' => $pretty_print ];
 			if ( ! PhpArrayGenerator::toFile( $translations, $destination_file, $options ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;

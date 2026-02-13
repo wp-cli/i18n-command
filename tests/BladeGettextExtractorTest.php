@@ -115,6 +115,14 @@ BLADE;
 		$this->assertNotFalse( $translations->find( null, 'Enter username' ) );
 	}
 
+	public function test_extracts_single_quoted_bound_props() {
+		$translations = $this->extract(
+			"<x-alert :message='__(\"Single quoted\", \"foo-theme\")' />"
+		);
+
+		$this->assertNotFalse( $translations->find( null, 'Single quoted' ) );
+	}
+
 	public function test_existing_blade_extraction_still_works() {
 		$blade = <<<'BLADE'
 @php

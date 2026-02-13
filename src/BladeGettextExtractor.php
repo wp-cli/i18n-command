@@ -62,9 +62,9 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 		}
 
 		foreach ( $tag_matches[1] as $attributes ) {
-			// Find :prop="expression" bound attributes.
-			if ( preg_match_all( '/(?<!\w):[\w.-]+="([^"]*)"/', $attributes, $attr_matches ) ) {
-				foreach ( $attr_matches[1] as $expression ) {
+			// Find :prop="expression" or :prop='expression' bound attributes.
+			if ( preg_match_all( '/(?<!\w):[\w.-]+=(["\'])(.*?)\1/s', $attributes, $attr_matches ) ) {
+				foreach ( $attr_matches[2] as $expression ) {
 					$php .= '<?php ' . $expression . '; ?>';
 				}
 			}

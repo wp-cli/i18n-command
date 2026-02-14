@@ -13,6 +13,7 @@ use WP_CLI_Command;
 
 class MakePhpCommand extends WP_CLI_Command {
 	use JsStringFilterTrait;
+	use StringAuditTrait;
 
 	/**
 	 * Create PHP files from PO files.
@@ -85,6 +86,9 @@ class MakePhpCommand extends WP_CLI_Command {
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
+
+			// Audit strings for potential issues.
+			$this->perform_string_audit( $translations );
 
 			// Remove JS-only strings from PHP files to keep them small.
 			$this->remove_js_only_strings( $translations );

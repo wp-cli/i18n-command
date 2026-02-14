@@ -13,6 +13,7 @@ use WP_CLI_Command;
 
 class MakeMoCommand extends WP_CLI_Command {
 	use JsStringFilterTrait;
+	use StringAuditTrait;
 
 	/**
 	 * Create MO files from PO files.
@@ -91,6 +92,9 @@ class MakeMoCommand extends WP_CLI_Command {
 			$destination_file = "{$destination}/{$file_name}";
 
 			$translations = Translations::fromPoFile( $file->getPathname() );
+
+			// Audit strings for potential issues.
+			$this->perform_string_audit( $translations );
 
 			// Remove JS-only strings from MO files to keep them small.
 			$this->remove_js_only_strings( $translations );

@@ -13,6 +13,7 @@ use IteratorIterator;
 use SplFileInfo;
 
 class MakeJsonCommand extends WP_CLI_Command {
+	use StringAuditTrait;
 	/**
 	 * Options passed to json_encode().
 	 *
@@ -219,6 +220,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 		$extensions   = array_merge( [ 'js' ], $extensions );
 
 		PoExtractor::fromFile( $source_file, $translations );
+
+		// Audit strings for potential issues.
+		$this->perform_string_audit( $translations );
 
 		$base_file_name = basename( $source_file, '.po' );
 

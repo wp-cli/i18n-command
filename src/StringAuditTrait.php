@@ -95,7 +95,7 @@ trait StringAuditTrait {
 						/** @var string $file_header */
 						foreach ( $file_headers as $file_header ) {
 							if ( 0 === strpos( ( $comment instanceof \Gettext\Comments\ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
-								return null;
+								return false;
 							}
 						}
 
@@ -111,7 +111,7 @@ trait StringAuditTrait {
 					function ( $comment ) use ( &$unique_comments ) {
 						/** @var \Gettext\Comments\ParsedComment|string $comment */
 						if ( in_array( ( $comment instanceof \Gettext\Comments\ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
-							return null;
+							return false;
 						}
 
 						$unique_comments[] = ( $comment instanceof \Gettext\Comments\ParsedComment ? $comment->getComment() : $comment );

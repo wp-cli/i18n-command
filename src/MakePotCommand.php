@@ -15,6 +15,7 @@ use IteratorIterator;
 
 class MakePotCommand extends WP_CLI_Command {
 	use StringAuditTrait;
+
 	/**
 	 * @var string
 	 */

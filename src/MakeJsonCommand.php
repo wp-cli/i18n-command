@@ -14,6 +14,7 @@ use SplFileInfo;
 
 class MakeJsonCommand extends WP_CLI_Command {
 	use StringAuditTrait;
+
 	/**
 	 * Options passed to json_encode().
 	 *

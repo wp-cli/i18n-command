@@ -7,55 +7,6 @@ use WP_CLI;
 
 trait StringAuditTrait {
 	/**
-	 * Regular expression to match sprintf placeholders.
-	 *
-	 * @see MakePotCommand::SPRINTF_PLACEHOLDER_REGEX
-	 */
-	const SPRINTF_PLACEHOLDER_REGEX = '/(?:
-		(?<!%)                     # Don\'t match a literal % (%%).
-		(
-			%                          # Start of placeholder.
-			(?:[0-9]+\$)?              # Optional ordering of the placeholders.
-			[+-]?                      # Optional sign specifier.
-			(?:
-				(?:0|\'.)?                 # Optional padding specifier - excluding the space.
-				-?                         # Optional alignment specifier.
-				[0-9]*                     # Optional width specifier.
-				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-				|                      # Only recognize the space as padding in combination with a width specifier.
-				(?:[ ])?                   # Optional space padding specifier.
-				-?                         # Optional alignment specifier.
-				[0-9]+                     # Width specifier.
-				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-			)
-			[bcdeEfFgGosuxX]           # Type specifier.
-		)
-	)/x';
-
-	/**
-	 * "Unordered" means there's no position specifier: '%s', not '%2$s'.
-	 *
-	 * @see MakePotCommand::UNORDERED_SPRINTF_PLACEHOLDER_REGEX
-	 */
-	const UNORDERED_SPRINTF_PLACEHOLDER_REGEX = '/(?:
-		(?<!%)                     # Don\'t match a literal % (%%).
-		%                          # Start of placeholder.
-		[+-]?                      # Optional sign specifier.
-		(?:
-			(?:0|\'.)?                 # Optional padding specifier - excluding the space.
-			-?                         # Optional alignment specifier.
-			[0-9]*                     # Optional width specifier.
-			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-			|                      # Only recognize the space as padding in combination with a width specifier.
-			(?:[ ])?                   # Optional space padding specifier.
-			-?                         # Optional alignment specifier.
-			[0-9]+                     # Width specifier.
-			(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
-		)
-		[bcdeEfFgGosuxX]           # Type specifier.
-	)/x';
-
-	/**
 	 * Audits translation strings for potential issues with placeholders.
 	 *
 	 * Performs validation checks on strings including:
@@ -70,6 +21,47 @@ trait StringAuditTrait {
 	 * @param array        $file_headers Optional. File headers to filter out from comments. Default empty array.
 	 */
 	protected function perform_string_audit( Translations $translations, array $file_headers = [] ) {
+		// Regular expression to match sprintf placeholders.
+		$sprintf_placeholder_regex = '/(?:
+			(?<!%)                     # Don\'t match a literal % (%%).
+			(
+				%                          # Start of placeholder.
+				(?:[0-9]+\$)?              # Optional ordering of the placeholders.
+				[+-]?                      # Optional sign specifier.
+				(?:
+					(?:0|\'.)?                 # Optional padding specifier - excluding the space.
+					-?                         # Optional alignment specifier.
+					[0-9]*                     # Optional width specifier.
+					(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+					|                      # Only recognize the space as padding in combination with a width specifier.
+					(?:[ ])?                   # Optional space padding specifier.
+					-?                         # Optional alignment specifier.
+					[0-9]+                     # Width specifier.
+					(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+				)
+				[bcdeEfFgGosuxX]           # Type specifier.
+			)
+		)/x';
+
+		// "Unordered" means there's no position specifier: '%s', not '%2$s'.
+		$unordered_sprintf_placeholder_regex = '/(?:
+			(?<!%)                     # Don\'t match a literal % (%%).
+			%                          # Start of placeholder.
+			[+-]?                      # Optional sign specifier.
+			(?:
+				(?:0|\'.)?                 # Optional padding specifier - excluding the space.
+				-?                         # Optional alignment specifier.
+				[0-9]*                     # Optional width specifier.
+				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+				|                      # Only recognize the space as padding in combination with a width specifier.
+				(?:[ ])?                   # Optional space padding specifier.
+				-?                         # Optional alignment specifier.
+				[0-9]+                     # Width specifier.
+				(?:\.(?:[ 0]|\'.)?[0-9]+)? # Optional precision specifier with optional padding character.
+			)
+			[bcdeEfFgGosuxX]           # Type specifier.
+		)/x';
+
 		foreach ( $translations as $translation ) {
 			/** @var \Gettext\Translation $translation */
 
@@ -81,7 +73,7 @@ trait StringAuditTrait {
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
 				! $translation->hasExtractedComments() &&
-				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $placeholders ) >= 1
+				preg_match( $sprintf_placeholder_regex, $translation->getOriginal(), $placeholders ) >= 1
 			) {
 				$message = sprintf(
 					'The string "%1$s" contains placeholders but has no "translators:" comment to clarify their meaning. %2$s',
@@ -143,7 +135,7 @@ trait StringAuditTrait {
 			}
 
 			$non_placeholder_content = trim( preg_replace( '`^([\'"])(.*)\1$`Ds', '$2', $translation->getOriginal() ) );
-			$non_placeholder_content = preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $non_placeholder_content );
+			$non_placeholder_content = preg_replace( $sprintf_placeholder_regex, '', $non_placeholder_content );
 
 			// Check 3: Flag empty strings without any translatable content.
 			if ( '' === $non_placeholder_content ) {
@@ -155,7 +147,7 @@ trait StringAuditTrait {
 			}
 
 			// Check 4: Flag strings with multiple unordered placeholders (%s %s %s vs. %1$s %2$s %3$s).
-			$unordered_matches_count = preg_match_all( self::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $unordered_matches );
+			$unordered_matches_count = preg_match_all( $unordered_sprintf_placeholder_regex, $translation->getOriginal(), $unordered_matches );
 			$unordered_matches       = $unordered_matches[0];
 
 			if ( $unordered_matches_count >= 2 ) {
@@ -167,10 +159,10 @@ trait StringAuditTrait {
 			}
 
 			if ( $translation->hasPlural() ) {
-				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
+				preg_match_all( $sprintf_placeholder_regex, $translation->getOriginal(), $single_placeholders );
 				$single_placeholders = $single_placeholders[0];
 
-				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getPlural(), $plural_placeholders );
+				preg_match_all( $sprintf_placeholder_regex, $translation->getPlural(), $plural_placeholders );
 				$plural_placeholders = $plural_placeholders[0];
 
 				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals

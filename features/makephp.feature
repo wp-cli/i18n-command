@@ -144,7 +144,7 @@ Feature: Generate PHP files from PO files
       msgstr "[%s] Export personenbezogener Daten"
       """
 
-    When I run `wp i18n make-php foo-plugin`
+    When I try `wp i18n make-php foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -197,7 +197,7 @@ Feature: Generate PHP files from PO files
       msgstr[1] "Sie haben %d neue Nachrichten"
       """
 
-    When I run `wp i18n make-php foo-plugin`
+    When I try `wp i18n make-php foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.
@@ -252,7 +252,7 @@ Feature: Generate PHP files from PO files
       msgstr[1] ""
       """
 
-    When I run `wp i18n make-php foo-plugin`
+    When I try `wp i18n make-php foo-plugin`
     Then STDOUT should contain:
       """
       Success: Created 1 file.

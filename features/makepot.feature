@@ -3092,6 +3092,69 @@ Feature: Generate a POT file of a WordPress project
       msgid "Page not found."
       """
 
+  @blade
+  Scenario: Extract strings from Blade component prop bindings
+    Given an empty foo-theme directory
+    And a foo-theme/style.css file:
+      """
+      /*
+      Theme Name:     Foo Theme
+      Theme URI:      https://example.com
+      Description:
+      Author:
+      Author URI:
+      Version:        0.1.0
+      License:        GPL-2.0+
+      Text Domain:    foo-theme
+      */
+      """
+    And a foo-theme/components.blade.php file:
+      """
+      @extends('layouts.app')
+
+      @section('content')
+        <x-alert :message="__('Bound prop string', 'foo-theme')" />
+
+        <x-no-results
+          :title="__('No results found', 'foo-theme')"
+          :subtitle="esc_html__('Please try a new search', 'foo-theme')"
+        />
+
+        <x-card type="warning">
+          {!! __('Card content', 'foo-theme') !!}
+        </x-card>
+
+        {{ __('Regular echo', 'foo-theme') }}
+      @endsection
+      """
+
+    When I try `wp i18n make-pot foo-theme result.pot --debug`
+    Then STDOUT should be:
+      """
+      Theme stylesheet detected.
+      Success: POT file successfully generated.
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Bound prop string"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "No results found"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Please try a new search"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Card content"
+      """
+    And the result.pot file should contain:
+      """
+      msgid "Regular echo"
+      """
+
   Scenario: Custom package name
     Given an empty example-project directory
     And a example-project/stuff.php file:

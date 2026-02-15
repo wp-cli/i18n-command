@@ -2,7 +2,9 @@
 
 namespace WP_CLI\I18n;
 
+use Gettext\Translation;
 use Gettext\Translations;
+use Gettext\Utils\ParsedComment;
 use WP_CLI;
 
 trait StringAuditTrait {
@@ -63,7 +65,7 @@ trait StringAuditTrait {
 		)/x';
 
 		foreach ( $translations as $translation ) {
-			/** @var \Gettext\Translation $translation */
+			/** @var Translation $translation */
 
 			$references = $translation->getReferences();
 
@@ -91,10 +93,10 @@ trait StringAuditTrait {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) use ( $file_headers ) {
-						/** @var \Gettext\Comments\ParsedComment|string $comment */
+						/** @var ParsedComment|string $comment */
 						/** @var string $file_header */
 						foreach ( $file_headers as $file_header ) {
-							if ( 0 === strpos( ( $comment instanceof \Gettext\Comments\ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
+							if ( 0 === strpos( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
 								return false;
 							}
 						}
@@ -109,12 +111,12 @@ trait StringAuditTrait {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) use ( &$unique_comments ) {
-						/** @var \Gettext\Comments\ParsedComment|string $comment */
-						if ( in_array( ( $comment instanceof \Gettext\Comments\ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
+						/** @var ParsedComment|string $comment */
+						if ( in_array( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
 							return false;
 						}
 
-						$unique_comments[] = ( $comment instanceof \Gettext\Comments\ParsedComment ? $comment->getComment() : $comment );
+						$unique_comments[] = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
 
 						return $comment;
 					}

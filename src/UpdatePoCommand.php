@@ -122,6 +122,11 @@ class UpdatePoCommand extends WP_CLI_Command {
 			// Check if the translations actually changed by comparing the objects.
 			$has_changes = $this->translations_differ( $original_translations, $po_translations );
 
+			// When using --no-purge, file-level comments being restored counts as a change.
+			if ( ! $purge && ! empty( $file_comments ) ) {
+				$has_changes = true;
+			}
+
 			// Update PO-Revision-Date to current date and time in UTC.
 			// Uses gmdate() for consistency across different server timezones.
 			$po_translations->setHeader( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
@@ -310,6 +315,14 @@ class UpdatePoCommand extends WP_CLI_Command {
 		foreach ( $pot_translations as $pot_entry ) {
 			$po_entry = $po_translations->find( $pot_entry );
 			if ( $po_entry ) {
+				$ordered[] = $po_entry->getClone();
+			}
+		}
+
+		// Add any remaining translations from PO that aren't in POT (e.g., obsolete/disabled translations).
+		foreach ( $po_translations as $po_entry ) {
+			// Check if this entry is already in the ordered set.
+			if ( ! $ordered->find( $po_entry ) ) {
 				$ordered[] = $po_entry->getClone();
 			}
 		}

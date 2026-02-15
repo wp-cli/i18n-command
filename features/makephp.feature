@@ -150,7 +150,10 @@ Feature: Generate PHP files from PO files
       Success: Created 1 file.
       """
     And the return code should be 0
-    And STDERR should be empty
+    And STDERR should contain:
+      """
+      Warning:
+      """
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
       <?php

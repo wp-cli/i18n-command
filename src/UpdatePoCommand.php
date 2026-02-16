@@ -230,12 +230,12 @@ class UpdatePoCommand extends WP_CLI_Command {
 	}
 
 	/**
-	* Check if two Translations objects differ .
-	*
-	* @param Translations $original Original translations.
-	* @param Translations $updated  Updated translations.
-	* @return bool true if translations differ, false otherwise.
-	*/
+	 * Check if two Translations objects differ .
+	 *
+	 * @param Translations $original Original translations.
+	 * @param Translations $updated  Updated translations.
+	 * @return bool true if translations differ, false otherwise.
+	 */
 	private function translations_differ( Translations $original, Translations $updated ) {
 		// Quick check: if counts differ, they're different.
 		if ( count( $original ) !== count( $updated ) ) {

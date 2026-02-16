@@ -92,7 +92,6 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$merge_flags |= Merge::REMOVE | Merge::COMMENTS_THEIRS;
 		}
 
-		$result_count    = 0;
 		$updated_count   = 0;
 		$unchanged_count = 0;
 		/** @var DirectoryIterator $file */

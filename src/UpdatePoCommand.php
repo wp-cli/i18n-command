@@ -140,7 +140,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 			// Restore file-level comments when --no-purge is set
 			if ( ! $purge && ! empty( $file_comments ) ) {
-				$this->restore_file_comments( $file->getPathname(), $file_comments );
+				if ( ! $this->restore_file_comments( $file->getPathname(), $file_comments ) ) {
+					WP_CLI::warning( sprintf( 'Could not restore file-level comments for %s', $file->getPathname() ) );
+				}
 			}
 
 			if ( $has_changes ) {

@@ -40,12 +40,47 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	}
 
 	/**
+	 * Extracts PHP expressions from Blade component prop bindings.
+	 *
+	 * BladeOne does not compile <x-component> tags, so bound prop
+	 * expressions like :prop="__('text', 'domain')" are left as-is
+	 * and invisible to the PHP scanner. This method extracts those
+	 * expressions and returns them as PHP code so that any gettext
+	 * function calls within them can be detected.
+	 *
+	 * @param string $text Blade template string.
+	 * @return string PHP code containing the extracted expressions.
+	 */
+	protected static function extractComponentPropExpressions( $text ) {
+		$php = '';
+
+		// Match opening (and self-closing) Blade component tags: <x-name ...> or <x-name ... />
+		// The attribute region handles quoted strings so that a '>' inside an
+		// attribute value does not end the match prematurely.
+		if ( ! preg_match_all( '/<x[-:\w]+\s+((?:[^>"\']*(?:"[^"]*"|\'[^\']*\'))*[^>"]*)\/?>/', $text, $tag_matches ) ) {
+			return $php;
+		}
+
+		foreach ( $tag_matches[1] as $attributes ) {
+			// Find :prop="expression" or :prop='expression' bound attributes.
+			if ( preg_match_all( '/(?<!\w):[\w.-]+=(["\'])(.*?)\1/s', $attributes, $attr_matches ) ) {
+				foreach ( $attr_matches[2] as $expression ) {
+					$php .= '<?php ' . $expression . '; ?>';
+				}
+			}
+		}
+
+		return $php;
+	}
+
+	/**
 	 * {@inheritdoc}
 	 *
 	 * Note: In the parent PhpCode class fromString() uses fromStringMultiple() (overridden here)
 	 */
 	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
-		$php_string = static::compileBladeToPhp( $text );
+		$php_string  = static::compileBladeToPhp( $text );
+		$php_string .= static::extractComponentPropExpressions( $text );
 		return parent::fromStringMultiple( $php_string, $translations, $options );
 	}
 }

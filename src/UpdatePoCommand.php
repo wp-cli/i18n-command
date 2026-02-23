@@ -223,7 +223,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 		// Rename is atomic on most filesystems
 		if ( ! rename( $temp_file, $file_path ) ) {
 			// Clean up temp file on failure
-			@unlink( $temp_file );
+			unlink( $temp_file );
 			return false;
 		}
 

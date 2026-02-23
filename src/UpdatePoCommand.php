@@ -195,7 +195,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 			}
 		}
 
-		return $found_msgid && ! empty( $file_comments ) ? implode( "\n", $file_comments ) . "\n" : '';
+		return ! empty( $file_comments ) ? implode( "\n", $file_comments ) . "\n" : '';
 	}
 
 	/**

@@ -26,6 +26,81 @@ wp i18n
 
 
 
+### wp i18n audit
+
+Audit strings in a project.
+
+~~~
+wp i18n audit <source> [--slug=<slug>] [--domain=<domain>] [--ignore-domain] [--include=<paths>] [--exclude=<paths>] [--skip-js] [--skip-php] [--skip-blade] [--skip-block-json] [--skip-theme-json] [--format=<format>]
+~~~
+
+Scans PHP, Blade-PHP and JavaScript files for translatable strings to find possible mistakes.
+
+**OPTIONS**
+
+	<source>
+		Directory to scan for string extraction.
+
+	[--slug=<slug>]
+		Plugin or theme slug. Defaults to the source directory's basename.
+
+	[--domain=<domain>]
+		Text domain to look for in the source code, unless the `--ignore-domain` option is used.
+		By default, the "Text Domain" header of the plugin or theme is used.
+		If none is provided, it falls back to the project slug.
+
+	[--ignore-domain]
+		Ignore the text domain completely and extract strings with any text domain.
+
+	[--include=<paths>]
+		Comma-separated list of files and paths that should be used for string extraction.
+		If provided, only these files and folders will be taken into account.
+
+	[--exclude=<paths>]
+		Comma-separated list of files and paths that should be ignored for string extraction.
+		For example, `--exclude=.github,myfile.php` would ignore any strings found within `myfile.php` or the `.github`
+		folder. Simple glob patterns can be used, i.e. `--exclude=foo-*.php` excludes any PHP file with the `foo-`
+		prefix. Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`. The
+		following files and folders are always excluded: node_modules, .git, .svn, .CVS, .hg, vendor, *.min.js, test, tests.
+
+	[--skip-js]
+		Skips JavaScript string extraction.
+
+	[--skip-php]
+		Skips PHP string extraction.
+
+	[--skip-blade]
+		Skips Blade-PHP string extraction.
+
+	[--skip-block-json]
+		Skips string extraction from block.json files.
+
+	[--skip-theme-json]
+		Skips string extraction from theme.json files.
+
+	[--format=<format>]
+		Output format for the audit results.
+		---
+		default: plaintext
+		options:
+		  - plaintext
+		  - json
+		  - github-actions
+		---
+
+**EXAMPLES**
+
+    # Audit a plugin for possible translation issues.
+    $ wp i18n audit wp-content/plugins/hello-world
+
+    # Audit a plugin and output results as JSON.
+    $ wp i18n audit wp-content/plugins/hello-world --format=json
+
+    # Audit a plugin with GitHub Actions annotations format.
+    $ wp i18n audit wp-content/plugins/hello-world --format=github-actions
+
+
+
 ### wp i18n make-pot
 
 Create a POT file for a WordPress project.

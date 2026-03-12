@@ -343,7 +343,7 @@ wp i18n make-php <source> [<destination>] [--pretty-print]
 Update PO files from a POT file.
 
 ~~~
-wp i18n update-po <source> [<destination>]
+wp i18n update-po <source> [<destination>] [--purge]
 ~~~
 
 This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/manual/html_node/msgmerge-Invocation.html) command.
@@ -356,6 +356,11 @@ This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/ma
 	[<destination>]
 		PO file to update or a directory containing multiple PO files.
 		  Defaults to all PO files in the source directory.
+
+	[--purge]
+		Remove obsolete strings and replace translator comments. Defaults to true.
+		  By default, strings not found in the POT file are removed, and translator comments are replaced with those from the POT file.
+		  Use `--no-purge` to preserve obsolete translations (marked with #~) and existing translator comments like copyright notices.
 
 **EXAMPLES**
 
@@ -370,6 +375,10 @@ This behaves similarly to the [msgmerge](https://www.gnu.org/software/gettext/ma
     # Update all PO files in a given directory from a POT file.
     $ wp i18n update-po example-plugin.pot languages
     Success: Updated 2 files.
+
+    # Update PO files while keeping obsolete strings and translator comments.
+    $ wp i18n update-po example-plugin.pot --no-purge
+    Success: Updated 3 files.
 
     # Shows message when some files don't need updating.
     $ wp i18n update-po example-plugin.pot languages

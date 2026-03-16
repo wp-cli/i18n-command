@@ -3,7 +3,6 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
-use Gettext\Translation;
 use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;

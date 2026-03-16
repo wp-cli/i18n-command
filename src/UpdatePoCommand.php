@@ -3,7 +3,6 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
-use Gettext\Extractors\Po;
 use Gettext\Merge;
 use Gettext\Translations;
 use IteratorIterator;

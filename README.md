@@ -3,7 +3,7 @@ wp-cli/i18n-command
 
 Provides internationalization tools for WordPress projects.
 
-[![Testing](https://github.com/wp-cli/i18n-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/i18n-command/actions/workflows/testing.yml)
+[![Testing](https://github.com/wp-cli/i18n-command/actions/workflows/testing.yml/badge.svg)](https://github.com/wp-cli/i18n-command/actions/workflows/testing.yml) [![Code Coverage](https://codecov.io/gh/wp-cli/i18n-command/branch/main/graph/badge.svg)](https://codecov.io/gh/wp-cli/i18n-command/tree/main)
 
 Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing) | [Support](#support)
 

@@ -99,9 +99,24 @@ Feature: Generate a POT file of a WordPress project
       Plugin Description
       """
 
+  @skip-windows
   Scenario: Adds copyright comments
     When I run `wp scaffold plugin hello-world`
     And I run `date +"%Y"`
+    Then STDOUT should not be empty
+    And save STDOUT as {YEAR}
+
+    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
+    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
+      # Copyright (C) {YEAR} YOUR NAME HERE
+      # This file is distributed under the same license as the Hello World plugin.
+      """
+
+  @require-windows
+  Scenario: Adds copyright comments
+    When I run `wp scaffold plugin hello-world`
+    And I run `get-date –f yyyy`
     Then STDOUT should not be empty
     And save STDOUT as {YEAR}
 
@@ -1692,6 +1707,8 @@ Feature: Generate a POT file of a WordPress project
       msgid "Hello World JS"
       """
 
+  # Because of the date command usage.
+  @skip-windows
   Scenario: Uses newer file headers when merging translations
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:
@@ -2637,6 +2654,9 @@ Feature: Generate a POT file of a WordPress project
        __( 'Hello World', 'foo-plugin' );
       """
 
+    When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
+    And save STDOUT as {DIRECTORY_SEPARATOR}
+
     When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
@@ -2653,7 +2673,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      foo-plugin/foo-plugin.php
+      foo-plugin{DIRECTORY_SEPARATOR}foo-plugin.php
       """
     And STDERR should contain:
       """
@@ -2707,6 +2727,9 @@ Feature: Generate a POT file of a WordPress project
       */
       """
 
+    When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
+    And save STDOUT as {DIRECTORY_SEPARATOR}
+
     When I try `wp i18n make-pot foo-theme --debug`
     Then STDOUT should be:
       """
@@ -2723,7 +2746,7 @@ Feature: Generate a POT file of a WordPress project
       """
     And STDERR should contain:
       """
-      foo-theme/style.css
+      foo-theme{DIRECTORY_SEPARATOR}style.css
       """
     And STDERR should contain:
       """

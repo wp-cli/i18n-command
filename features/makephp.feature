@@ -153,7 +153,6 @@ Feature: Generate PHP files from PO files
     And STDERR should be empty
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      <?php
       return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','language'=>'de_DE','project-id-version'=>'Development (5.2.x)','pot-creation-date'=>'','po-revision-date'=>'2019-03-28 19:42+0300','x-generator'=>'Poedit 2.2.1','messages'=>['html_lang_attribute'=>'de-DE','text directionltr'=>'ltr','number_format_decimal_point'=>',','number_format_thousands_sep'=>'.','Update %s now'=>'Jetzt %s aktualisieren','[%1$s] Confirm Action: %2$s'=>'[%1$s] Aktion bestätigen: %2$s','[%s] Erasure Request Fulfilled'=>'[%s] Löschauftrag ausgeführt','[%s] Personal Data Export'=>'[%s] Export personenbezogener Daten']];
       """
 

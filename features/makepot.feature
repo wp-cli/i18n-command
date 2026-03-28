@@ -116,7 +116,7 @@ Feature: Generate a POT file of a WordPress project
   @require-windows
   Scenario: Adds copyright comments
     When I run `wp scaffold plugin hello-world`
-    And I run `get-date –f yyyy`
+    And I run `get-date -f yyyy`
     Then STDOUT should not be empty
     And save STDOUT as {YEAR}
 
@@ -2657,7 +2657,7 @@ Feature: Generate a POT file of a WordPress project
     When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
     And save STDOUT as {DIRECTORY_SEPARATOR}
 
-    When I try `wp i18n make-pot foo-plugin --debug`
+    And I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should be:
       """
       Plugin file detected.
@@ -2730,7 +2730,7 @@ Feature: Generate a POT file of a WordPress project
     When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
     And save STDOUT as {DIRECTORY_SEPARATOR}
 
-    When I try `wp i18n make-pot foo-theme --debug`
+    And I try `wp i18n make-pot foo-theme --debug`
     Then STDOUT should be:
       """
       Theme stylesheet detected.

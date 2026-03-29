@@ -1170,7 +1170,11 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored either
       """
 
-  # TODO: Investigate.
+  # Skipped on Windows because the `--exclude="/myvendor/,/ignored.php"` argument
+  # relies on forward-slash path matching, which does not behave as expected with
+  # Windows backslash directory separators. On Windows, `foo-plugin/myvendor/foo.php`
+  # and `foo-plugin/ignored.php` are not excluded correctly and their strings still
+  # appear in the generated POT file, causing this scenario's assertions to fail.
   @skip-windows
   Scenario: Removes trailing and leading slashes of excluded paths
     Given an empty foo-plugin directory

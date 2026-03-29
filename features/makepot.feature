@@ -99,24 +99,9 @@ Feature: Generate a POT file of a WordPress project
       Plugin Description
       """
 
-  @skip-windows
   Scenario: Adds copyright comments
     When I run `wp scaffold plugin hello-world`
-    And I run `date +"%Y"`
-    Then STDOUT should not be empty
-    And save STDOUT as {YEAR}
-
-    When I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
-    Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
-      """
-      # Copyright (C) {YEAR} YOUR NAME HERE
-      # This file is distributed under the same license as the Hello World plugin.
-      """
-
-  @require-windows
-  Scenario: Adds copyright comments
-    When I run `wp scaffold plugin hello-world`
-    And I run `get-date -f yyyy`
+    When I run `php -r "echo date('Y');"`
     Then STDOUT should not be empty
     And save STDOUT as {YEAR}
 

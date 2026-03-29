@@ -2641,7 +2641,7 @@ Feature: Generate a POT file of a WordPress project
        __( 'Hello World', 'foo-plugin' );
       """
 
-    When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
+    When I run `php -r "echo DIRECTORY_SEPARATOR;"`
     And save STDOUT as {DIRECTORY_SEPARATOR}
 
     And I try `wp i18n make-pot foo-plugin --debug`
@@ -2714,7 +2714,7 @@ Feature: Generate a POT file of a WordPress project
       */
       """
 
-    When I run `wp eval "echo DIRECTORY_SEPARATOR;"`
+    When I run `php -r "echo DIRECTORY_SEPARATOR;"`
     And save STDOUT as {DIRECTORY_SEPARATOR}
 
     And I try `wp i18n make-pot foo-theme --debug`

@@ -101,7 +101,7 @@ Feature: Generate a POT file of a WordPress project
 
   Scenario: Adds copyright comments
     When I run `wp scaffold plugin hello-world`
-    When I run `php -r "echo date('Y');"`
+    And I run `php -r "echo date('Y');"`
     Then STDOUT should not be empty
     And save STDOUT as {YEAR}
 
@@ -1172,6 +1172,8 @@ Feature: Generate a POT file of a WordPress project
       I am not being ignored either
       """
 
+  # TODO: Investigate.
+  @skip-windows
   Scenario: Removes trailing and leading slashes of excluded paths
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

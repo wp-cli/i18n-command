@@ -171,7 +171,7 @@ trait IterableCodeExtractor {
 		}
 
 		// Check for more complex paths, e.g. /some/sub/folder.
-		$root_relative_path = str_replace( static::$dir, '', $file->getPathname() );
+		$root_relative_path = str_replace( static::$dir, '', Utils\normalize_path( $file->getPathname() ) );
 
 		foreach ( $matchers as $path_or_file ) {
 			$pattern = preg_quote( str_replace( '*', '__wildcard__', $path_or_file ), '#' );
@@ -221,7 +221,7 @@ trait IterableCodeExtractor {
 		}
 
 		/** @var string $root_relative_path */
-		$root_relative_path = str_replace( static::$dir, '', $dir->getPathname() );
+		$root_relative_path = str_replace( static::$dir, '', Utils\normalize_path( $dir->getPathname() ) );
 		$root_relative_path = static::trim_leading_slash( $root_relative_path );
 
 		foreach ( $matchers as $path_or_file ) {

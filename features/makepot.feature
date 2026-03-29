@@ -577,6 +577,8 @@ Feature: Generate a POT file of a WordPress project
       msgid "\\_e"
       """
 
+  # TODO: Use something like `echo "`t hello"` on Windows.
+  @skip-windows
   Scenario: Extract translator comments
     Given I run `echo "\t"`
     And save STDOUT as {TAB}

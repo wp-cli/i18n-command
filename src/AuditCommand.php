@@ -6,7 +6,9 @@ use Gettext\Translation;
 use Gettext\Translations;
 use Gettext\Utils\ParsedComment;
 use WP_CLI;
+use WP_CLI\Path;
 use WP_CLI\Utils;
+
 
 /**
  * Audit strings in a WordPress project.
@@ -98,7 +100,7 @@ class AuditCommand extends MakePotCommand {
 			WP_CLI::error( 'Not a valid source directory.' );
 		}
 
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
 		$this->domain          = Utils\get_flag_value( $assoc_args, 'domain', null );
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );

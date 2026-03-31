@@ -9,7 +9,9 @@ use Gettext\Translations;
 use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI_Command;
+use WP_CLI\Path;
 use WP_CLI\Utils;
+
 use DirectoryIterator;
 use IteratorIterator;
 
@@ -323,7 +325,7 @@ class MakePotCommand extends WP_CLI_Command {
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$this->source          = realpath( $args[0] );
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
 		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
@@ -629,7 +631,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( $this->main_file_path && $this->location ) {
-				$file_reference = ltrim( str_replace( Utils\normalize_path( "$this->source/" ), '', Utils\normalize_path( $this->main_file_path ) ), '/' );
+				$file_reference = ltrim( str_replace( Path::normalize( "$this->source/" ), '', Path::normalize( $this->main_file_path ) ), '/' );
 				// Add line number if available
 				if ( ! empty( $data['line'] ) ) {
 					$translation->addReference( $file_reference, $data['line'] );

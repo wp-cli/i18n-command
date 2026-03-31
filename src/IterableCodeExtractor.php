@@ -9,7 +9,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use WP_CLI;
-use WP_CLI\Utils;
+use WP_CLI\Path;
+
+
 
 trait IterableCodeExtractor {
 
@@ -33,13 +35,13 @@ trait IterableCodeExtractor {
 	public static function fromFile( $file_or_files, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file_or_files ) as $file ) {
 			if ( ! empty( $options['restrictFileNames'] ) ) {
-				$basename = Utils\basename( $file );
+				$basename = Path::basename( $file );
 				if ( ! in_array( $basename, $options['restrictFileNames'], true ) ) {
 					continue;
 				}
 			}
 
-			$relative_file_path = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
+			$relative_file_path = ltrim( str_replace( static::$dir, '', Path::normalize( $file ) ), '/' );
 
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = $relative_file_path;
@@ -138,7 +140,7 @@ trait IterableCodeExtractor {
 	 * @return void
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
-		$dir = Utils\normalize_path( $dir );
+		$dir = Path::normalize( $dir );
 
 		static::$dir = $dir;
 
@@ -308,7 +310,7 @@ trait IterableCodeExtractor {
 				continue;
 			}
 
-			$filtered_files[] = Utils\normalize_path( $file->getPathname() );
+			$filtered_files[] = Path::normalize( $file->getPathname() );
 		}
 
 		sort( $filtered_files, SORT_NATURAL | SORT_FLAG_CASE );

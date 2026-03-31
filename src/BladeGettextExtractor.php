@@ -16,9 +16,11 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	/**
 	 * Prepares a Blade compiler/engine and returns it.
 	 *
+	 * @param array $options Options array.
 	 * @return BladeOne
 	 */
-	protected static function getBladeCompiler() {
+	protected static function getBladeCompiler( array $options = [] ) {
+
 		$cache_path     = empty( $options['cachePath'] ) ? sys_get_temp_dir() : $options['cachePath'];
 		$blade_compiler = new BladeOne( null, $cache_path );
 
@@ -33,10 +35,11 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	 * Compiles the Blade template string into a PHP string in one step.
 	 *
 	 * @param string $text Blade string to be compiled to a PHP string
+	 * @param array $options Options array.
 	 * @return string
 	 */
-	protected static function compileBladeToPhp( $text ) {
-		return static::getBladeCompiler()->compileString( $text );
+	protected static function compileBladeToPhp( $text, array $options = [] ) {
+		return static::getBladeCompiler( $options )->compileString( $text );
 	}
 
 	/**
@@ -79,7 +82,8 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	 * Note: In the parent PhpCode class fromString() uses fromStringMultiple() (overridden here)
 	 */
 	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
-		$php_string  = static::compileBladeToPhp( $text );
+		$php_string = static::compileBladeToPhp( $text, $options );
+
 		$php_string .= static::extractComponentPropExpressions( $text );
 		return parent::fromStringMultiple( $php_string, $translations, $options );
 	}

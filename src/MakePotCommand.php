@@ -117,9 +117,9 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $package_name;
 
 	/**
-	 * @var string
+	 * @var string|null
 	 */
-	protected $file_comment;
+	protected $file_comment = null;
 
 	/**
 	 * @var string

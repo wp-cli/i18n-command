@@ -123,6 +123,8 @@ trait IterableCodeExtractor {
 
 			static::fromString( $text, $translations, $options );
 		}
+
+		return null;
 	}
 
 	/**

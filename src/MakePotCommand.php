@@ -811,8 +811,6 @@ class MakePotCommand extends WP_CLI_Command {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
-						/** @var ParsedComment|string $comment */
-						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
 							if ( 0 === strpos( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
 								return null;

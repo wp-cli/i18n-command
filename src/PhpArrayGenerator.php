@@ -24,7 +24,7 @@ class PhpArrayGenerator extends PhpArray {
 		$options = array_merge( static::$options, $options );
 		$array   = static::generate( $translations, $options );
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, $options['prettyPrint'] ) . ';';
+		return '<?php' . PHP_EOL . 'return ' . self::var_export( $array, $options['prettyPrint'] ) . ';';
 	}
 
 	/**

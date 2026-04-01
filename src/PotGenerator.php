@@ -109,7 +109,7 @@ class PotGenerator extends PoGenerator {
 	 *
 	 * @return string[]
 	 */
-	protected static function multilineQuote( $text ) {
+	protected static function wpMultilineQuote( $text ) {
 		$lines = explode( "\n", $text );
 		$last  = count( $lines ) - 1;
 
@@ -132,7 +132,7 @@ class PotGenerator extends PoGenerator {
 	 * @param string $value  The line to add.
 	 */
 	protected static function addLines( array &$lines, $name, $value ) {
-		$newlines = self::multilineQuote( $value );
+		$newlines = self::wpMultilineQuote( $value );
 
 		if ( count( $newlines ) === 1 ) {
 			$lines[] = $name . ' ' . $newlines[0];

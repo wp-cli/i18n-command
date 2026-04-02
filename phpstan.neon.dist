@@ -1,5 +1,5 @@
 parameters:
-  level: 5
+  level: 6
   paths:
     - src
     - i18n-command.php
@@ -10,3 +10,6 @@ parameters:
     - tests/phpstan/scan-files.php
 
   treatPhpDocTypesAsCertain: false
+
+  stubFiles:
+    - stubs/Gettext.stub

@@ -27,7 +27,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $destination;
 
 	/**
-	 * @var array
+	 * @var array<string>
 	 */
 	protected $merge = [];
 
@@ -42,12 +42,12 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $subtract_and_merge;
 
 	/**
-	 * @var array
+	 * @var array<string>
 	 */
 	protected $include = [];
 
 	/**
-	 * @var array
+	 * @var array<string>
 	 */
 	protected $exclude = [ 'node_modules', '.*', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js', 'test', 'tests' ];
 
@@ -57,7 +57,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $slug;
 
 	/**
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	protected $main_file_data = [];
 
@@ -102,7 +102,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $location = true;
 
 	/**
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	protected $headers = [];
 
@@ -284,6 +284,10 @@ class MakePotCommand extends WP_CLI_Command {
 	 *     # Create a POT file for the WordPress theme in the current directory with custom headers.
 	 *     $ wp i18n make-pot . languages/my-theme.pot --headers='{"Report-Msgid-Bugs-To":"https://github.com/theme-author/my-theme/","POT-Creation-Date":""}'
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
@@ -317,8 +321,9 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @throws WP_CLI\ExitException
 	 *
-	 * @param array $args       Command arguments.
-	 * @param array $assoc_args Associative arguments.
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function handle_arguments( $args, $assoc_args ) {
 		$array_arguments = array( 'headers' );
@@ -467,7 +472,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Retrieves the main file data of the plugin or theme.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	protected function get_main_file_data() {
 		$files = new IteratorIterator( new DirectoryIterator( $this->source ) );
@@ -551,7 +556,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @param string $type Source type, either theme or plugin.
 	 *
-	 * @return array List of file headers.
+	 * @return array<string> List of file headers.
 	 */
 	protected function get_file_headers( $type ) {
 		switch ( $type ) {
@@ -782,7 +787,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * Goes through all extracted strings to find possible mistakes.
 	 *
-	 * @param Translations $translations Translations object.
+	 * @param \Gettext\Translations $translations Translations object.
+	 * @return void
 	 */
 	protected function audit_strings( $translations ) {
 		foreach ( $translations as $translation ) {
@@ -968,7 +974,8 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Sets default POT file headers for the project.
 	 *
-	 * @param Translations $translations Translations object.
+	 * @param \Gettext\Translations $translations Translations object.
+	 * @return void
 	 */
 	protected function set_default_headers( $translations ) {
 		$name         = null;

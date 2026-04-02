@@ -13,6 +13,9 @@ use Gettext\Utils\ParsedComment;
  * adds some comments at the very beginning of the file.
  */
 class PotGenerator extends PoGenerator {
+	/**
+	 * @var array<string>
+	 */
 	protected static $comments_before_headers = [];
 
 	/**
@@ -21,6 +24,7 @@ class PotGenerator extends PoGenerator {
 	 * Doesn't need to include # in the beginning of lines, these are added automatically.
 	 *
 	 * @param string $comment File comment.
+	 * @return void
 	 */
 	public static function setCommentBeforeHeaders( $comment ) {
 		$comments = explode( "\n", $comment );
@@ -33,7 +37,11 @@ class PotGenerator extends PoGenerator {
 	}
 
 	/**
-	 * {@parentDoc}.
+	 * {@inheritdoc}
+	 *
+	 * @param \Gettext\Translations $translations
+	 * @param array<mixed>         $options
+	 * @return string
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
 		$lines   = static::$comments_before_headers;
@@ -127,9 +135,10 @@ class PotGenerator extends PoGenerator {
 	/**
 	 * Add one or more lines depending whether the string is multiline or not.
 	 *
-	 * @param array  &$lines Array lines should be added to.
-	 * @param string $name   Name of the line, e.g. msgstr or msgid_plural.
-	 * @param string $value  The line to add.
+	 * @param array<mixed> &$lines Array lines should be added to.
+	 * @param string        $name   Name of the line, e.g. msgstr or msgid_plural.
+	 * @param string        $value  The line to add.
+	 * @return void
 	 */
 	protected static function addLines( array &$lines, $name, $value ) {
 		$newlines = self::wpMultilineQuote( $value );

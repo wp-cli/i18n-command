@@ -13,7 +13,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
 	 * If not false, comments will be extracted.
 	 *
-	 * @var string|false|array
+	 * @var string|false|array<string>
 	 */
 	private $extract_comments = false;
 
@@ -29,7 +29,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).
 	 *
-	 * @param mixed $tag
+	 * @param string|array<string> $tag Tag to extract.
+	 * @return void
 	 */
 	public function enableCommentsExtraction( $tag = '' ) {
 		$this->extract_comments = $tag;
@@ -37,6 +38,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 	/**
 	 * Disable comments extraction.
+	 *
+	 * @return void
 	 */
 	public function disableCommentsExtraction() {
 		$this->extract_comments = false;
@@ -44,6 +47,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param \Gettext\Translations $translations Translations instance.
+	 * @param array<mixed>         $options      Options.
+	 * @return void
 	 */
 	public function saveGettextFunctions( $translations, array $options ) {
 		// Ignore multiple translations for now.
@@ -260,7 +267,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @param Node\CallExpression $node The call expression whose callee to resolve.
 	 *
-	 * @return array|bool Array containing the name and comments of the identifier if resolved. False if not.
+	 * @return array<string, mixed>|bool Array containing the name and comments of the identifier if resolved. False if not.
 	 */
 	private function resolveExpressionCallee( Node\CallExpression $node ) {
 		$callee = $node->getCallee();

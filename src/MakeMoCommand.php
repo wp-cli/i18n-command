@@ -35,6 +35,10 @@ class MakeMoCommand extends WP_CLI_Command {
 	 *     # Create a MO file from a single PO file to a specific file destination
 	 *     $ wp i18n make-mo example-plugin-de_DE.po languages/bar.mo
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException

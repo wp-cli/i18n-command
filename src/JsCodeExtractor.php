@@ -11,6 +11,9 @@ use WP_CLI;
 final class JsCodeExtractor extends JsCode {
 	use IterableCodeExtractor;
 
+	/**
+	 * @var array<mixed>
+	 */
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
@@ -22,10 +25,18 @@ final class JsCodeExtractor extends JsCode {
 		],
 	];
 
+	/**
+	 * @var string
+	 */
 	protected static $functionsScannerClass = 'WP_CLI\I18n\JsFunctionsScanner';
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
+	 *
+	 * @param string       $text         The text to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
@@ -56,7 +67,12 @@ final class JsCodeExtractor extends JsCode {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritdoc}
+	 *
+	 * @param string               $text         The text to extract strings from.
+	 * @param array<\Gettext\Translations> $translations Translations instances.
+	 * @param array<mixed>         $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
 		$options += self::$options;

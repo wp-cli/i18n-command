@@ -55,6 +55,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *
 	 * @when before_wp_load
 	 *
+	 * @param array<string>        $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
+	 * @return void
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {

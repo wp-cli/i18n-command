@@ -10,6 +10,9 @@ use WP_CLI;
 final class PhpCodeExtractor extends PhpCode {
 	use IterableCodeExtractor;
 
+	/**
+	 * @var array<mixed>
+	 */
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
@@ -43,10 +46,18 @@ final class PhpCodeExtractor extends PhpCode {
 		],
 	];
 
+	/**
+	 * @var string
+	 */
 	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param string       $text
+	 * @param Translations $translations
+	 * @param array<mixed> $options
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );

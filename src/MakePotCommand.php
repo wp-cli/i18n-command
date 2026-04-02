@@ -332,10 +332,13 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
 		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
 		$this->skip_audit      = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
-		$this->headers         = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
-		$this->file_comment    = Utils\get_flag_value( $assoc_args, 'file-comment' );
-		$this->package_name    = Utils\get_flag_value( $assoc_args, 'package-name' );
-		$this->location        = Utils\get_flag_value( $assoc_args, 'location', true );
+		$headers               = Utils\get_flag_value( $assoc_args, 'headers', null );
+		if ( null !== $headers ) {
+			$this->headers = (array) $headers; // Cast to array if single string given
+		}
+		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
+		$this->package_name = Utils\get_flag_value( $assoc_args, 'package-name' );
+		$this->location     = Utils\get_flag_value( $assoc_args, 'location', true );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -829,12 +832,12 @@ class MakePotCommand extends WP_CLI_Command {
 					function ( $comment ) use ( &$unique_comments ) {
 						/** @var ParsedComment|string $comment */
 						if ( in_array( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
-							return null;
+							return false;
 						}
 
 						$unique_comments[] = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
 
-						return $comment;
+						return true;
 					}
 				);
 

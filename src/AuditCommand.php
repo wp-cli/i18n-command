@@ -110,12 +110,12 @@ class AuditCommand extends MakePotCommand {
 		$this->format          = Utils\get_flag_value( $assoc_args, 'format', $this->format );
 		$ignore_domain         = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
-		$include = Utils\get_flag_value( $assoc_args, 'include', [] );
+		$include = Utils\get_flag_value( $assoc_args, 'include', null );
 		if ( ! empty( $include ) ) {
 			$this->include = array_map( 'trim', explode( ',', $include ) );
 		}
 
-		$exclude = Utils\get_flag_value( $assoc_args, 'exclude', [] );
+		$exclude = Utils\get_flag_value( $assoc_args, 'exclude', null );
 		if ( ! empty( $exclude ) ) {
 			$this->exclude = array_map( 'trim', explode( ',', $exclude ) );
 		}

@@ -64,6 +64,9 @@ final class JsCodeExtractor extends JsCode {
 		/** @var JsFunctionsScanner $functions */
 		$functions = new self::$functionsScannerClass( $text );
 		$functions->enableCommentsExtraction( $options['extractComments'] );
-		$functions->saveGettextFunctions( $translations, $options );
+
+		if ( ! empty( $translations ) ) {
+			$functions->saveGettextFunctions( $translations[0], $options );
+		}
 	}
 }

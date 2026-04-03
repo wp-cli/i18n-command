@@ -8,6 +8,10 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param \Gettext\Translations $translations Translations instance.
+	 * @param array<mixed>         $options      Options.
+	 * @return void
 	 */
 	public function saveGettextFunctions( $translations, array $options ) {
 		// Ignore multiple translations for now.

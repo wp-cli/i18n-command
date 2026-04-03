@@ -9,6 +9,9 @@ use WP_CLI;
 final class BladeCodeExtractor extends BladeGettextExtractor {
 	use IterableCodeExtractor;
 
+	/**
+	 * @var array<mixed>
+	 */
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
@@ -42,10 +45,18 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 		],
 	];
 
+	/**
+	 * @var string
+	 */
 	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param string       $text         The text to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );

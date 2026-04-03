@@ -12,6 +12,9 @@ use Gettext\Translations;
  * Returns output in the form WordPress uses.
  */
 class PhpArrayGenerator extends PhpArray {
+	/**
+	 * @var array<string, bool>
+	 */
 	public static $options = [
 		'includeHeaders' => false,
 		'prettyPrint'    => false,
@@ -19,21 +22,24 @@ class PhpArrayGenerator extends PhpArray {
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param array<mixed> $options
+	 * @return string
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
 		$options = array_merge( static::$options, $options );
 		$array   = static::generate( $translations, $options );
 
-		return '<?php' . PHP_EOL . 'return ' . static::var_export( $array, $options['prettyPrint'] ) . ';';
+		return '<?php' . PHP_EOL . 'return ' . self::var_export( $array, $options['prettyPrint'] ) . ';';
 	}
 
 	/**
 	 * Generates an array with the translations.
 	 *
 	 * @param Translations $translations
-	 * @param array        $options
+	 * @param array<mixed> $options
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	public static function generate( Translations $translations, array $options = [] ) {
 		$options += static::$options;
@@ -48,7 +54,7 @@ class PhpArrayGenerator extends PhpArray {
 	 * @param bool         $include_headers
 	 * @param bool         $force_array Unused.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	protected static function toArray( Translations $translations, $include_headers, $force_array = false ) {
 		$messages = [];

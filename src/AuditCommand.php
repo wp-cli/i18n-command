@@ -6,7 +6,9 @@ use Gettext\Translation;
 use Gettext\Translations;
 use Gettext\Utils\ParsedComment;
 use WP_CLI;
+use WP_CLI\Path;
 use WP_CLI\Utils;
+
 
 /**
  * Audit strings in a WordPress project.
@@ -88,8 +90,9 @@ class AuditCommand extends MakePotCommand {
 	 *     # Audit a plugin with GitHub Actions annotations format.
 	 *     $ wp i18n audit wp-content/plugins/hello-world --format=github-actions
 	 *
-	 * @when before_wp_load
-	 *
+	 * @param array<string> $args       Positional arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
@@ -98,7 +101,7 @@ class AuditCommand extends MakePotCommand {
 			WP_CLI::error( 'Not a valid source directory.' );
 		}
 
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
 		$this->domain          = Utils\get_flag_value( $assoc_args, 'domain', null );
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
@@ -108,12 +111,12 @@ class AuditCommand extends MakePotCommand {
 		$this->format          = Utils\get_flag_value( $assoc_args, 'format', $this->format );
 		$ignore_domain         = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
-		$include = Utils\get_flag_value( $assoc_args, 'include', [] );
+		$include = Utils\get_flag_value( $assoc_args, 'include', null );
 		if ( ! empty( $include ) ) {
 			$this->include = array_map( 'trim', explode( ',', $include ) );
 		}
 
-		$exclude = Utils\get_flag_value( $assoc_args, 'exclude', [] );
+		$exclude = Utils\get_flag_value( $assoc_args, 'exclude', null );
 		if ( ! empty( $exclude ) ) {
 			$this->exclude = array_map( 'trim', explode( ',', $exclude ) );
 		}
@@ -166,7 +169,7 @@ class AuditCommand extends MakePotCommand {
 	 *
 	 * Overrides parent method to suppress log messages when using non-plaintext formats.
 	 *
-	 * @return array
+	 * @return array<string, array<string, mixed>>
 	 */
 	protected function get_main_file_data() {
 		$files = new \IteratorIterator( new \DirectoryIterator( $this->source ) );
@@ -378,7 +381,7 @@ class AuditCommand extends MakePotCommand {
 	 * Goes through all extracted strings to find possible mistakes.
 	 *
 	 * @param Translations $translations Translations object.
-	 * @return array Array of issues found.
+	 * @return array<int, array<string, mixed>> Array of issues found.
 	 */
 	protected function collect_audit_issues( $translations ) {
 		$issues = [];
@@ -420,8 +423,6 @@ class AuditCommand extends MakePotCommand {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
-						/** @var ParsedComment|string $comment */
-						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
 							if ( 0 === strpos( $this->get_comment_text( $comment ), $file_header ) ) {
 								return false;
@@ -517,7 +518,8 @@ class AuditCommand extends MakePotCommand {
 	/**
 	 * Outputs audit results in the specified format.
 	 *
-	 * @param array $issues Array of issues found.
+	 * @param array<int, array<string, mixed>> $issues Array of issues found.
+	 * @return void
 	 */
 	protected function output_results( $issues ) {
 		if ( empty( $issues ) ) {

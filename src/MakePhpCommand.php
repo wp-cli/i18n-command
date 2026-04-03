@@ -41,6 +41,10 @@ class MakePhpCommand extends WP_CLI_Command {
 	 *     $ wp i18n make-php example-plugin-de_DE.po languages --pretty-print
 	 *     Success: Created 1 file.
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException

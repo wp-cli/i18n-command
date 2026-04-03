@@ -67,6 +67,10 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *     # Create JSON files with object mapping
 	 *     $ wp i18n make-json languages '--use-map={"source/index.js":"build/index.js"}'
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
@@ -129,8 +133,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Collect maps from paths, normalize and merge
 	 *
-	 * @param string|array|bool $paths_or_maps argument. False to do nothing.
-	 * @return array|null       Mapping array. Null if no maps specified.
+	 * @param string|array<mixed>|bool $paths_or_maps argument. False to do nothing.
+	 * @return array<string, mixed>|null Mapping array. Null if no maps specified.
 	 */
 	protected function build_map( $paths_or_maps ) {
 		if ( false === $paths_or_maps ) {
@@ -204,12 +208,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Splits a single PO file into multiple JSON files.
 	 *
-	 * @param string     $source_file Path to the source file.
-	 * @param string     $destination Path to the destination directory.
-	 * @param array|null $map         Source to build file mapping.
-	 * @param string     $domain      Override text domain to use.
-	 * @param array      $extensions  Additional extensions.
-	 * @return array     List of created JSON files.
+	 * @param string                    $source_file Path to the source file.
+	 * @param string                    $destination Path to the destination directory.
+	 * @param array<string, mixed>|null $map         Source to build file mapping.
+	 * @param string                    $domain      Override text domain to use.
+	 * @param array<string>             $extensions  Additional extensions.
+	 * @return array<string>     List of created JSON files.
 	 */
 	protected function make_json( $source_file, $destination, $map, $domain, $extensions ) {
 		/** @var Translations[] $mapping */
@@ -277,9 +281,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Takes the references and applies map, if given
 	 *
-	 * @param array      $references translation references
-	 * @param array|null $map file mapping
-	 * @return array     mapped references
+	 * @param array<mixed>              $references translation references
+	 * @param array<string, mixed>|null $map file mapping
+	 * @return array<mixed>     mapped references
 	 */
 	protected function reference_map( $references, $map ) {
 		if ( is_null( $map ) ) {
@@ -321,11 +325,11 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *
 	 * Exports translations for each JS file to a separate translation file.
 	 *
-	 * @param array  $mapping        A mapping of files to translation entries.
-	 * @param string $base_file_name Base file name for JSON files.
-	 * @param string $destination    Path to the destination directory.
+	 * @param array<string, \Gettext\Translations> $mapping        A mapping of files to translation entries.
+	 * @param string                              $base_file_name Base file name for JSON files.
+	 * @param string                              $destination    Path to the destination directory.
 	 *
-	 * @return array List of created JSON files.
+	 * @return array<string> List of created JSON files.
 	 */
 	protected function build_json_files( $mapping, $base_file_name, $destination ) {
 		$result = [];

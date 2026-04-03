@@ -9,7 +9,9 @@ use Gettext\Translations;
 use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI_Command;
+use WP_CLI\Path;
 use WP_CLI\Utils;
+
 use DirectoryIterator;
 use IteratorIterator;
 
@@ -25,7 +27,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $destination;
 
 	/**
-	 * @var array
+	 * @var array<string>
 	 */
 	protected $merge = [];
 
@@ -40,12 +42,12 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $subtract_and_merge;
 
 	/**
-	 * @var array
+	 * @var array<string>
 	 */
 	protected $include = [];
 
 	/**
-	 * @var array
+	 * @var array<string>
 	 */
 	protected $exclude = [ 'node_modules', '.*', 'vendor', 'Gruntfile.js', 'webpack.config.js', '*.min.js', 'test', 'tests' ];
 
@@ -55,7 +57,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $slug;
 
 	/**
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	protected $main_file_data = [];
 
@@ -100,7 +102,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $location = true;
 
 	/**
-	 * @var array
+	 * @var array<string, mixed>
 	 */
 	protected $headers = [];
 
@@ -115,9 +117,9 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $package_name;
 
 	/**
-	 * @var string
+	 * @var string|null
 	 */
-	protected $file_comment;
+	protected $file_comment = null;
 
 	/**
 	 * @var string
@@ -282,6 +284,10 @@ class MakePotCommand extends WP_CLI_Command {
 	 *     # Create a POT file for the WordPress theme in the current directory with custom headers.
 	 *     $ wp i18n make-pot . languages/my-theme.pot --headers='{"Report-Msgid-Bugs-To":"https://github.com/theme-author/my-theme/","POT-Creation-Date":""}'
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
@@ -315,25 +321,29 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @throws WP_CLI\ExitException
 	 *
-	 * @param array $args       Command arguments.
-	 * @param array $assoc_args Associative arguments.
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
 	 */
 	public function handle_arguments( $args, $assoc_args ) {
 		$array_arguments = array( 'headers' );
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
 		$this->source          = realpath( $args[0] );
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
 		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
 		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
 		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
 		$this->skip_audit      = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
-		$this->headers         = Utils\get_flag_value( $assoc_args, 'headers', $this->headers );
-		$this->file_comment    = Utils\get_flag_value( $assoc_args, 'file-comment' );
-		$this->package_name    = Utils\get_flag_value( $assoc_args, 'package-name' );
-		$this->location        = Utils\get_flag_value( $assoc_args, 'location', true );
+		$headers               = Utils\get_flag_value( $assoc_args, 'headers', null );
+		if ( null !== $headers ) {
+			$this->headers = (array) $headers; // Cast to array if single string given
+		}
+		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
+		$this->package_name = Utils\get_flag_value( $assoc_args, 'package-name' );
+		$this->location     = Utils\get_flag_value( $assoc_args, 'location', true );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
 
@@ -462,7 +472,7 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Retrieves the main file data of the plugin or theme.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	protected function get_main_file_data() {
 		$files = new IteratorIterator( new DirectoryIterator( $this->source ) );
@@ -546,7 +556,7 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * @param string $type Source type, either theme or plugin.
 	 *
-	 * @return array List of file headers.
+	 * @return array<string> List of file headers.
 	 */
 	protected function get_file_headers( $type ) {
 		switch ( $type ) {
@@ -629,7 +639,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 
 			if ( $this->main_file_path && $this->location ) {
-				$file_reference = ltrim( str_replace( Utils\normalize_path( "$this->source/" ), '', Utils\normalize_path( $this->main_file_path ) ), '/' );
+				$file_reference = ltrim( str_replace( Path::normalize( "$this->source/" ), '', Path::normalize( $this->main_file_path ) ), '/' );
 				// Add line number if available
 				if ( ! empty( $data['line'] ) ) {
 					$translation->addReference( $file_reference, $data['line'] );
@@ -777,7 +787,8 @@ class MakePotCommand extends WP_CLI_Command {
 	 *
 	 * Goes through all extracted strings to find possible mistakes.
 	 *
-	 * @param Translations $translations Translations object.
+	 * @param \Gettext\Translations $translations Translations object.
+	 * @return void
 	 */
 	protected function audit_strings( $translations ) {
 		foreach ( $translations as $translation ) {
@@ -809,8 +820,6 @@ class MakePotCommand extends WP_CLI_Command {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
-						/** @var ParsedComment|string $comment */
-						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
 							if ( 0 === strpos( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $file_header ) ) {
 								return null;
@@ -829,12 +838,12 @@ class MakePotCommand extends WP_CLI_Command {
 					function ( $comment ) use ( &$unique_comments ) {
 						/** @var ParsedComment|string $comment */
 						if ( in_array( ( $comment instanceof ParsedComment ? $comment->getComment() : $comment ), $unique_comments, true ) ) {
-							return null;
+							return false;
 						}
 
 						$unique_comments[] = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
 
-						return $comment;
+						return true;
 					}
 				);
 
@@ -965,7 +974,8 @@ class MakePotCommand extends WP_CLI_Command {
 	/**
 	 * Sets default POT file headers for the project.
 	 *
-	 * @param Translations $translations Translations object.
+	 * @param \Gettext\Translations $translations Translations object.
+	 * @return void
 	 */
 	protected function set_default_headers( $translations ) {
 		$name         = null;

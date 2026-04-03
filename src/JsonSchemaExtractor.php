@@ -80,7 +80,12 @@ class JsonSchemaExtractor extends Extractor {
 	}
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
+	 *
+	 * @param string       $text         The text to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		$file = $options['file'];
@@ -114,10 +119,10 @@ class JsonSchemaExtractor extends Extractor {
 	/**
 	 * Extract strings from a JSON file using its i18n schema.
 	 *
-	 * @param Translations                   $translations The translations instance to append the new translations.
-	 * @param string|null                    $file         JSON file name or null if no reference should be added.
-	 * @param string|string[]|array[]|object $i18n_schema  I18n schema for the setting.
-	 * @param string|string[]|array[]        $settings     Value for the settings.
+	 * @param Translations         $translations The translations instance to append the new translations.
+	 * @param string|null          $file         JSON file name or null if no reference should be added.
+	 * @param mixed                $i18n_schema  I18n schema for the setting.
+	 * @param mixed                $settings     Value for the settings.
 	 *
 	 * @return void
 	 */

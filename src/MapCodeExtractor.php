@@ -10,6 +10,9 @@ use WP_CLI;
 final class MapCodeExtractor extends JsCode {
 	use IterableCodeExtractor;
 
+	/**
+	 * @var array<mixed>
+	 */
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
@@ -23,6 +26,11 @@ final class MapCodeExtractor extends JsCode {
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param string       $text
+	 * @param Translations $translations
+	 * @param array<mixed> $options
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
 		if ( ! array_key_exists( 'file', $options ) || substr( $options['file'], -7 ) !== '.js.map' ) {

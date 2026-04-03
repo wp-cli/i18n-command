@@ -13,7 +13,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
 	 * If not false, comments will be extracted.
 	 *
-	 * @var string|false|array
+	 * @var string|false|array<string>
 	 */
 	private $extract_comments = false;
 
@@ -29,7 +29,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).
 	 *
-	 * @param mixed $tag
+	 * @param string|array<string> $tag Tag to extract.
+	 * @return void
 	 */
 	public function enableCommentsExtraction( $tag = '' ) {
 		$this->extract_comments = $tag;
@@ -37,6 +38,8 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 	/**
 	 * Disable comments extraction.
+	 *
+	 * @return void
 	 */
 	public function disableCommentsExtraction() {
 		$this->extract_comments = false;
@@ -44,6 +47,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param \Gettext\Translations $translations Translations instance.
+	 * @param array<mixed>         $options      Options.
+	 * @return void
 	 */
 	public function saveGettextFunctions( $translations, array $options ) {
 		// Ignore multiple translations for now.
@@ -75,13 +82,12 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$file          = $options['file'];
 				$add_reference = ! empty( $options['addReferences'] );
 
-				/** @var Node\Node $node */
 				foreach ( $node->getLeadingComments() as $comment ) {
 					$all_comments[] = $comment;
 				}
 
 				/** @var Node\CallExpression $node */
-				if ( 'CallExpression' !== $node->getType() ) {
+				if ( ! $node instanceof Node\CallExpression ) {
 					return;
 				}
 
@@ -91,7 +97,6 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					return;
 				}
 
-				/** @var Node\CallExpression $node */
 				foreach ( $node->getArguments() as $argument ) {
 					// Support nested function calls.
 					$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
@@ -107,7 +112,6 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$plural   = null;
 				$args     = [];
 
-				/** @var Node\Node $argument */
 				foreach ( $node->getArguments() as $argument ) {
 					foreach ( $argument->getLeadingComments() as $comment ) {
 						$all_comments[] = $comment;
@@ -121,13 +125,13 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						continue;
 					}
 
-					if ( 'Literal' === $argument->getType() ) {
+					if ( $argument instanceof Node\Literal ) {
 						/** @var Node\Literal $argument */
 						$args[] = $argument->getValue();
 						continue;
 					}
 
-					if ( 'TemplateLiteral' === $argument->getType() && 0 === count( $argument->getExpressions() ) ) {
+					if ( $argument instanceof Node\TemplateLiteral && 0 === count( $argument->getExpressions() ) ) {
 						/** @var Node\TemplateLiteral $argument */
 						/** @var Node\TemplateElement[] $parts */
 
@@ -233,7 +237,6 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 
 				$eval_contents = '';
-				/** @var Node\Node $argument */
 				foreach ( $node->getArguments() as $argument ) {
 					if ( 'Literal' === $argument->getType() ) {
 						/** @var Node\Literal $argument */
@@ -264,14 +267,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 *
 	 * @param Node\CallExpression $node The call expression whose callee to resolve.
 	 *
-	 * @return array|bool Array containing the name and comments of the identifier if resolved. False if not.
+	 * @return array<string, mixed>|bool Array containing the name and comments of the identifier if resolved. False if not.
 	 */
 	private function resolveExpressionCallee( Node\CallExpression $node ) {
 		$callee = $node->getCallee();
 
 		// If the callee is a simple identifier it can simply be returned.
 		// For example: __( "translation" ).
-		if ( 'Identifier' === $callee->getType() ) {
+		if ( $callee instanceof Node\Identifier ) {
 			return [
 				'name'     => $callee->getName(),
 				'comments' => $callee->getLeadingComments(),
@@ -281,11 +284,11 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		// If the callee is a member expression resolve it to the property.
 		// For example: wp.i18n.__( "translation" ) or u.__( "translation" ).
 		if (
-			'MemberExpression' === $callee->getType() &&
-			'Identifier' === $callee->getProperty()->getType()
+			$callee instanceof Node\MemberExpression &&
+			$callee->getProperty() instanceof Node\Identifier
 		) {
 			// Make sure to unpack wp.i18n which is a nested MemberExpression.
-			$comments = 'MemberExpression' === $callee->getObject()->getType()
+			$comments = $callee->getObject() instanceof Node\MemberExpression
 				? $callee->getObject()->getObject()->getLeadingComments()
 				: $callee->getObject()->getLeadingComments();
 
@@ -298,16 +301,16 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		// If the callee is a call expression as created by Webpack resolve it.
 		// For example: Object(u.__)( "translation" ).
 		if (
-			'CallExpression' === $callee->getType() &&
-			'Identifier' === $callee->getCallee()->getType() &&
+			$callee instanceof Node\CallExpression &&
+			$callee->getCallee() instanceof Node\Identifier &&
 			'Object' === $callee->getCallee()->getName() &&
 			[] !== $callee->getArguments() &&
-			'MemberExpression' === $callee->getArguments()[0]->getType()
+			$callee->getArguments()[0] instanceof Node\MemberExpression
 		) {
 			$property = $callee->getArguments()[0]->getProperty();
 
 			// Matches minified webpack statements: Object(u.__)( "translation" ).
-			if ( 'Identifier' === $property->getType() ) {
+			if ( $property instanceof Node\Identifier ) {
 				return [
 					'name'     => $property->getName(),
 					'comments' => $callee->getCallee()->getLeadingComments(),
@@ -316,7 +319,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 			// Matches unminified webpack statements:
 			// Object(_wordpress_i18n__WEBPACK_IMPORTED_MODULE_7__["__"])( "translation" );
-			if ( 'Literal' === $property->getType() ) {
+			if ( $property instanceof Node\Literal ) {
 				$name = $property->getValue();
 
 				// Matches mangled webpack statement:
@@ -336,14 +339,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		// If the callee is an indirect function call as created by babel, resolve it.
 		// For example: `(0, u.__)( "translation" )`.
 		if (
-			'ParenthesizedExpression' === $callee->getType()
-			&& 'SequenceExpression' === $callee->getExpression()->getType()
+			$callee instanceof Node\ParenthesizedExpression
+			&& $callee->getExpression() instanceof Node\SequenceExpression
 			&& 2 === count( $callee->getExpression()->getExpressions() )
-			&& 'Literal' === $callee->getExpression()->getExpressions()[0]->getType()
+			&& $callee->getExpression()->getExpressions()[0] instanceof Node\Literal
 			&& [] !== $node->getArguments()
 		) {
 			// Matches any general indirect function call: `(0, __)( "translation" )`.
-			if ( 'Identifier' === $callee->getExpression()->getExpressions()[1]->getType() ) {
+			if ( $callee->getExpression()->getExpressions()[1] instanceof Node\Identifier ) {
 				return [
 					'name'     => $callee->getExpression()->getExpressions()[1]->getName(),
 					'comments' => $callee->getLeadingComments(),
@@ -351,10 +354,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			}
 
 			// Matches indirect function calls used by babel for module imports: `(0, _i18n.__)( "translation" )`.
-			if ( 'MemberExpression' === $callee->getExpression()->getExpressions()[1]->getType() ) {
+			if ( $callee->getExpression()->getExpressions()[1] instanceof Node\MemberExpression ) {
 				$property = $callee->getExpression()->getExpressions()[1]->getProperty();
 
-				if ( 'Identifier' === $property->getType() ) {
+				if ( $property instanceof Node\Identifier ) {
 					return [
 						'name'     => $property->getName(),
 						'comments' => $callee->getLeadingComments(),

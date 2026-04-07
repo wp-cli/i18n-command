@@ -376,7 +376,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 			if ( isset( $this->main_file_data['Text Domain'] ) && is_array( $this->main_file_data['Text Domain'] ) ) {
 				$text_domain_val = $this->main_file_data['Text Domain']['value'] ?? '';
-				if ( is_scalar( $text_domain_val ) ) {
+				if ( is_scalar( $text_domain_val ) && '' !== $text_domain_val ) {
 					$this->domain = (string) $text_domain_val;
 				}
 			}
@@ -685,6 +685,7 @@ class MakePotCommand extends WP_CLI_Command {
 					'exclude'            => $this->exclude,
 					'extensions'         => [ 'php' ],
 					'addReferences'      => $this->location,
+					'domain'             => $translations->getDomain(),
 				];
 				PhpCodeExtractor::fromDirectory( $this->source, $translations, $options );
 			}

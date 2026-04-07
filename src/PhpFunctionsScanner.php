@@ -92,7 +92,8 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				continue;
 			}
 
-			if ( $domain !== $translations->getDomain() && null !== $translations->getDomain() ) {
+			$target_domain = isset( $options['domain'] ) ? $options['domain'] : $translations->getDomain();
+			if ( $domain !== $target_domain && null !== $target_domain ) {
 				continue;
 			}
 
@@ -113,6 +114,8 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				foreach ( $function[3] as $extracted_comment ) {
 					if ( is_scalar( $extracted_comment ) ) {
 						$translation = $translation->addExtractedComment( (string) $extracted_comment );
+					} elseif ( is_object( $extracted_comment ) && method_exists( $extracted_comment, 'getComment' ) ) {
+						$translation = $translation->addExtractedComment( $extracted_comment->getComment() );
 					}
 				}
 			}

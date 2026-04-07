@@ -180,6 +180,10 @@ class PhpArrayGenerator extends PhpArray {
 				}
 			}
 
+			if ( empty( $entries ) ) {
+				return '[]';
+			}
+
 			return '[' . PHP_EOL . implode( $separator, $entries ) . ',' . PHP_EOL . $closing_indent . ']';
 		} else {
 			foreach ( $value as $key => $val ) {

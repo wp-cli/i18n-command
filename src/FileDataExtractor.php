@@ -83,6 +83,7 @@ class FileDataExtractor {
 	 * @return string
 	 */
 	protected static function _cleanup_header_comment( $str ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Not changing because third-party commands might use/extend.
-		return trim( preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str ) );
+		$replaced = preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str );
+		return trim( is_string( $replaced ) ? $replaced : '' );
 	}
 }

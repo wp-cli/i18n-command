@@ -862,7 +862,8 @@ class MakePotCommand extends WP_CLI_Command {
 				}
 			}
 
-			$non_placeholder_content = trim( preg_replace( '`^([\'"])(.*)\1$`Ds', '$2', $translation->getOriginal() ) );
+			$replaced                = preg_replace( '`^([\'"])(.*)\1$`Ds', '$2', $translation->getOriginal() );
+			$non_placeholder_content = trim( is_string( $replaced ) ? $replaced : '' );
 			$non_placeholder_content = preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $non_placeholder_content );
 
 			// Check 3: Flag empty strings without any translatable content.

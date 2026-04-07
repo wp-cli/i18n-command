@@ -265,7 +265,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 					// $mapping[ $source ]->setDomain( $translations->getDomain() );
 
 					$mapping[ $source ]->setHeader( 'Language', $translations->getLanguage() );
-					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
+					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) ?? '' );
 
 					$plural_forms = $translations->getPluralForms();
 

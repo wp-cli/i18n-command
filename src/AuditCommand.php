@@ -96,10 +96,12 @@ class AuditCommand extends MakePotCommand {
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->source = realpath( $args[0] );
-		if ( ! $this->source || ! is_dir( $this->source ) ) {
+		$source = realpath( $args[0] );
+		if ( ! $source || ! is_dir( $source ) ) {
 			WP_CLI::error( 'Not a valid source directory.' );
 		}
+
+		$this->source = $source;
 
 		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
 		$this->domain          = Utils\get_flag_value( $assoc_args, 'domain', null );
@@ -205,7 +207,8 @@ class AuditCommand extends MakePotCommand {
 					}
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet_path ), 'audit' );
 
-					$this->project_type   = 'theme';
+					$this->project_type = 'theme';
+					assert( is_string( $project_path ) );
 					$this->main_file_path = $project_path;
 
 					return $theme_data;
@@ -528,7 +531,8 @@ class AuditCommand extends MakePotCommand {
 
 		switch ( $this->format ) {
 			case 'json':
-				WP_CLI::line( json_encode( $issues, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
+				$json = json_encode( $issues, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+				WP_CLI::line( false !== $json ? $json : '[]' );
 				break;
 
 			case 'github-actions':

@@ -41,7 +41,7 @@ class JsonSchemaExtractor extends Extractor {
 	/**
 	 * Static cache for the remote schema files.
 	 *
-	 * @var array<string, string>
+	 * @var array<string, object>
 	 */
 	protected static $schema_cache = [];
 
@@ -61,6 +61,11 @@ class JsonSchemaExtractor extends Extractor {
 		if ( empty( $json ) ) {
 			WP_CLI::debug( 'Remote file could not be accessed, will use local file as fallback', 'make-pot' );
 			$json = file_get_contents( $fallback );
+		}
+
+		if ( false === $json ) {
+			WP_CLI::debug( 'Could not read file for schema', 'make-pot' );
+			return [];
 		}
 
 		$file_structure = json_decode( $json, false );
@@ -147,12 +152,13 @@ class JsonSchemaExtractor extends Extractor {
 			}
 		}
 		if ( is_object( $i18n_schema ) && is_array( $settings ) ) {
-			$group_key = '*';
+			$i18n_schema_arr = (array) $i18n_schema;
+			$group_key       = '*';
 			foreach ( $settings as $key => $value ) {
-				if ( isset( $i18n_schema->$key ) ) {
-					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema->$key, $value );
-				} elseif ( isset( $i18n_schema->$group_key ) ) {
-					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema->$group_key, $value );
+				if ( isset( $i18n_schema_arr[ $key ] ) ) {
+					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema_arr[ $key ], $value );
+				} elseif ( isset( $i18n_schema_arr[ $group_key ] ) ) {
+					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema_arr[ $group_key ], $value );
 				}
 			}
 		}

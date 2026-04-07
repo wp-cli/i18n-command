@@ -93,13 +93,15 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 				$callee = $this->resolveExpressionCallee( $node );
 
-				if ( ! $callee || ! isset( $functions[ $callee['name'] ] ) ) {
+				if ( ! is_array( $callee ) || ! isset( $functions[ $callee['name'] ] ) ) {
 					return;
 				}
 
 				foreach ( $node->getArguments() as $argument ) {
 					// Support nested function calls.
-					$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
+					if ( method_exists( $argument, 'getLeadingComments' ) && method_exists( $argument, 'setLeadingComments' ) ) {
+						$argument->setLeadingComments( $argument->getLeadingComments() + $node->getLeadingComments() );
+					}
 				}
 
 				foreach ( $callee['comments'] as $comment ) {
@@ -113,16 +115,20 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				$args     = [];
 
 				foreach ( $node->getArguments() as $argument ) {
-					foreach ( $argument->getLeadingComments() as $comment ) {
-						$all_comments[] = $comment;
+					if ( method_exists( $argument, 'getLeadingComments' ) ) {
+						foreach ( $argument->getLeadingComments() as $comment ) {
+							$all_comments[] = $comment;
+						}
 					}
 
-					if (
-						'Identifier' === $argument->getType() ||
-						'Expression' === substr( $argument->getType(), -strlen( 'Expression' ) )
-					) {
-						$args[] = ''; // The value doesn't matter as it's unused.
-						continue;
+					if ( method_exists( $argument, 'getType' ) ) {
+						if (
+							'Identifier' === $argument->getType() ||
+							'Expression' === substr( $argument->getType(), -strlen( 'Expression' ) )
+						) {
+							$args[] = ''; // The value doesn't matter as it's unused.
+							continue;
+						}
 					}
 
 					if ( $argument instanceof Node\Literal ) {
@@ -232,13 +238,13 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 				$callee = $this->resolveExpressionCallee( $node );
 
-				if ( ! $callee || 'eval' !== $callee['name'] ) {
+				if ( ! is_array( $callee ) || 'eval' !== $callee['name'] ) {
 					return;
 				}
 
 				$eval_contents = '';
 				foreach ( $node->getArguments() as $argument ) {
-					if ( 'Literal' === $argument->getType() ) {
+					if ( method_exists( $argument, 'getType' ) && 'Literal' === $argument->getType() ) {
 						/** @var Node\Literal $argument */
 						$eval_contents = $argument->getValue();
 						break;
@@ -288,9 +294,16 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			$callee->getProperty() instanceof Node\Identifier
 		) {
 			// Make sure to unpack wp.i18n which is a nested MemberExpression.
-			$comments = $callee->getObject() instanceof Node\MemberExpression
-				? $callee->getObject()->getObject()->getLeadingComments()
-				: $callee->getObject()->getLeadingComments();
+			$object   = $callee->getObject();
+			$comments = [];
+			if ( $object instanceof Node\MemberExpression ) {
+				$sub_object = $object->getObject();
+				if ( method_exists( $sub_object, 'getLeadingComments' ) ) {
+					$comments = $sub_object->getLeadingComments();
+				}
+			} elseif ( method_exists( $object, 'getLeadingComments' ) ) {
+					$comments = $object->getLeadingComments();
+			}
 
 			return [
 				'name'     => $callee->getProperty()->getName(),

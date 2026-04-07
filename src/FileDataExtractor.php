@@ -23,12 +23,19 @@ class FileDataExtractor {
 	public static function get_file_data( $file, $headers ) {
 		// We don't need to write to the file, so just open for reading.
 		$fp = fopen( $file, 'rb' );
+		if ( false === $fp ) {
+			return [];
+		}
 
 		// Pull only the first 8kiB of the file in.
 		$file_data = fread( $fp, 8192 );
 
 		// PHP will close file handle, but we are good citizens.
 		fclose( $fp );
+
+		if ( false === $file_data ) {
+			return [];
+		}
 
 		// Make sure we catch CR-only line endings.
 		$file_data = str_replace( "\r", "\n", $file_data );

@@ -55,7 +55,7 @@ class JedGenerator extends Jed {
 	 */
 	public static function buildMessages( Translations $translations ) {
 		$plural_forms      = $translations->getPluralForms();
-		$number_of_plurals = is_array( $plural_forms ) ? ( $plural_forms[0] - 1 ) : null;
+		$number_of_plurals = is_array( $plural_forms ) ? (int) ( $plural_forms[0] - 1 ) : null;
 		$messages          = [];
 		$context_glue      = chr( 4 );
 

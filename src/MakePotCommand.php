@@ -329,8 +329,13 @@ class MakePotCommand extends WP_CLI_Command {
 		$array_arguments = array( 'headers' );
 		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
 
-		$this->source          = realpath( $args[0] );
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
+		$source = realpath( $args[0] );
+		if ( ! $source || ! is_dir( $source ) ) {
+			WP_CLI::error( 'Not a valid source directory.' );
+		}
+
+		$this->source          = $source;
+		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $source ) );
 		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
 		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
 		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
@@ -346,10 +351,6 @@ class MakePotCommand extends WP_CLI_Command {
 		$this->location     = Utils\get_flag_value( $assoc_args, 'location', true );
 
 		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
-
-		if ( ! $this->source || ! is_dir( $this->source ) ) {
-			WP_CLI::error( 'Not a valid source directory.' );
-		}
 
 		$this->main_file_data = $this->get_main_file_data();
 
@@ -1022,10 +1023,11 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	protected function get_wp_version() {
 		$version_php = $this->source . '/wp-includes/version.php';
-		if ( ! file_exists( $version_php ) || ! is_readable( $version_php ) ) {
+		$contents    = file_get_contents( $version_php );
+		if ( false === $contents ) {
 			return false;
 		}
 
-		return preg_match( '/\$wp_version\s*=\s*\'(.*?)\';/', file_get_contents( $version_php ), $matches ) ? $matches[1] : false;
+		return preg_match( '/\$wp_version\s*=\s*\'(.*?)\';/', $contents, $matches ) ? $matches[1] : false;
 	}
 }

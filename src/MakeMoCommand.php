@@ -59,7 +59,7 @@ class MakeMoCommand extends WP_CLI_Command {
 				if ( ! is_file( $source ) ) {
 					WP_CLI::error( 'Destination file not supported when source is a directory.' );
 				}
-				$destination      = $destination_pathinfo['dirname'];
+				$destination      = $destination_pathinfo['dirname'] ?? '.';
 				$custom_file_name = $destination_pathinfo['filename'] . '.' . $destination_pathinfo['extension'];
 			}
 		}

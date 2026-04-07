@@ -167,7 +167,13 @@ class MakeJsonCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$json = json_decode( file_get_contents( $path ), true );
+			$contents = file_get_contents( $path );
+			if ( false === $contents ) {
+				WP_CLI::warning( sprintf( 'Could not read map file %s', $path ) );
+				continue;
+			}
+
+			$json = json_decode( $contents, true );
 			if ( ! is_array( $json ) ) {
 				WP_CLI::warning( sprintf( 'Map file %s invalid', $path ) );
 				continue;

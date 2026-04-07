@@ -185,6 +185,7 @@ trait IterableCodeExtractor {
 			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern );
 
 			// Base score is the amount of nested directories, discounting wildcards.
+			// Scaled by 10 to avoid floats.
 			$base_score = count(
 				array_filter(
 					explode( '/', $path_or_file ),
@@ -192,10 +193,10 @@ trait IterableCodeExtractor {
 						return '*' !== $component;
 					}
 				)
-			);
+			) * 10;
 			if ( 0 === $base_score ) {
 				// If the matcher is simply * it gets a score above the implicit score but below 1.
-				$base_score = 0.2;
+				$base_score = 2; // Was 0.2
 			}
 
 			// If the matcher contains no wildcards and matches the end of the path.

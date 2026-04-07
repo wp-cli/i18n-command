@@ -103,23 +103,33 @@ class AuditCommand extends MakePotCommand {
 
 		$this->source = $source;
 
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $this->source ) );
-		$this->domain          = Utils\get_flag_value( $assoc_args, 'domain', null );
-		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
-		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
-		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
-		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
-		$this->format          = Utils\get_flag_value( $assoc_args, 'format', $this->format );
-		$ignore_domain         = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
+		/** @var array<string, bool|string> $assoc_args_simple */
+		$assoc_args_simple = $assoc_args;
 
-		$include = Utils\get_flag_value( $assoc_args, 'include', null );
-		if ( ! empty( $include ) ) {
+		$slug       = Utils\get_flag_value( $assoc_args_simple, 'slug', Path::basename( $this->source ) );
+		$this->slug = is_string( $slug ) ? $slug : Path::basename( $this->source );
+
+		$domain       = Utils\get_flag_value( $assoc_args_simple, 'domain', null );
+		$this->domain = is_string( $domain ) ? $domain : null;
+
+		$this->skip_js         = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-js', $this->skip_js );
+		$this->skip_php        = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-php', $this->skip_php );
+		$this->skip_blade      = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-blade', $this->skip_blade );
+		$this->skip_block_json = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-block-json', $this->skip_block_json );
+		$this->skip_theme_json = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-theme-json', $this->skip_theme_json );
+
+		$format       = Utils\get_flag_value( $assoc_args_simple, 'format', $this->format );
+		$this->format = is_string( $format ) ? $format : 'plaintext';
+
+		$ignore_domain = (bool) Utils\get_flag_value( $assoc_args_simple, 'ignore-domain', false );
+
+		$include = Utils\get_flag_value( $assoc_args_simple, 'include', null );
+		if ( is_string( $include ) && '' !== $include ) {
 			$this->include = array_map( 'trim', explode( ',', $include ) );
 		}
 
-		$exclude = Utils\get_flag_value( $assoc_args, 'exclude', null );
-		if ( ! empty( $exclude ) ) {
+		$exclude = Utils\get_flag_value( $assoc_args_simple, 'exclude', null );
+		if ( is_string( $exclude ) && '' !== $exclude ) {
 			$this->exclude = array_map( 'trim', explode( ',', $exclude ) );
 		}
 
@@ -133,7 +143,7 @@ class AuditCommand extends MakePotCommand {
 			if ( null === $this->domain ) {
 				$this->domain = $this->slug;
 
-				if ( ! empty( $this->main_file_data['Text Domain']['value'] ) ) {
+				if ( ! empty( $this->main_file_data['Text Domain']['value'] ) && is_string( $this->main_file_data['Text Domain']['value'] ) ) {
 					$this->domain = $this->main_file_data['Text Domain']['value'];
 				}
 			}
@@ -538,9 +548,9 @@ class AuditCommand extends MakePotCommand {
 
 			case 'github-actions':
 				foreach ( $issues as $issue ) {
-					$file    = $issue['file'];
-					$line    = $issue['line'] ?? 1;
-					$message = $issue['message'];
+					$file    = isset( $issue['file'] ) && is_scalar( $issue['file'] ) ? (string) $issue['file'] : '';
+					$line    = isset( $issue['line'] ) && is_scalar( $issue['line'] ) ? (int) $issue['line'] : 1;
+					$message = isset( $issue['message'] ) && is_scalar( $issue['message'] ) ? (string) $issue['message'] : '';
 
 					WP_CLI::line( sprintf( '::warning file=%s,line=%d::%s', $file, $line, $message ) );
 				}
@@ -549,9 +559,9 @@ class AuditCommand extends MakePotCommand {
 			case 'plaintext':
 			default:
 				foreach ( $issues as $issue ) {
-					$file     = $issue['file'];
-					$line     = $issue['line'] ?? null;
-					$message  = $issue['message'];
+					$file     = isset( $issue['file'] ) && is_scalar( $issue['file'] ) ? (string) $issue['file'] : '';
+					$line     = isset( $issue['line'] ) && is_scalar( $issue['line'] ) ? (int) $issue['line'] : null;
+					$message  = isset( $issue['message'] ) && is_scalar( $issue['message'] ) ? (string) $issue['message'] : '';
 					$location = $line ? "$file:$line" : $file;
 
 					WP_CLI::warning( sprintf( '%s: %s', $location, $message ) );

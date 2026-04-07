@@ -41,13 +41,14 @@ final class MapCodeExtractor extends JsCode {
 		try {
 			$options += self::$options;
 
-			$map_object = json_decode( $text );
+			$map_object = json_decode( $text, true );
 
-			if ( ! isset( $map_object->sourcesContent ) || ! is_array( $map_object->sourcesContent ) ) {
+			if ( ! is_array( $map_object ) || ! isset( $map_object['sourcesContent'] ) || ! is_array( $map_object['sourcesContent'] ) ) {
 				return;
 			}
 
-			$text = implode( "\n", $map_object->sourcesContent );
+			$sources_content = array_filter( $map_object['sourcesContent'], 'is_string' );
+			$text            = implode( "\n", $sources_content );
 
 			WP_CLI::debug( "Parsing file {$options['file']}.map", 'make-pot' );
 

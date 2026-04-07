@@ -44,12 +44,16 @@ class PotGenerator extends PoGenerator {
 	 * @return string
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
+		/** @var array<string> $lines */
 		$lines   = static::$comments_before_headers;
 		$lines[] = 'msgid ""';
 		$lines[] = 'msgstr ""';
 
 		$plural_form = $translations->getPluralForms();
-		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : 1;
+		$plural_size = 1;
+		if ( is_array( $plural_form ) && isset( $plural_form[0] ) && is_numeric( $plural_form[0] ) ) {
+			$plural_size = (int) $plural_form[0] - 1;
+		}
 
 		foreach ( $translations->getHeaders() as $name => $value ) {
 			$lines[] = sprintf( '"%s: %s\\n"', $name, $value );
@@ -61,7 +65,9 @@ class PotGenerator extends PoGenerator {
 			/** @var \Gettext\Translation $translation */
 			if ( $translation->hasComments() ) {
 				foreach ( $translation->getComments() as $comment ) {
-					$lines[] = '# ' . $comment;
+					if ( is_scalar( $comment ) ) {
+						$lines[] = '# ' . $comment;
+					}
 				}
 			}
 
@@ -71,15 +77,25 @@ class PotGenerator extends PoGenerator {
 				/** @var ParsedComment|string $comment */
 				foreach ( $translation->getExtractedComments() as $comment ) {
 					$comment = ( $comment instanceof ParsedComment ? $comment->getComment() : $comment );
-					if ( ! in_array( $comment, $unique_comments, true ) ) {
-						$lines[]           = '#. ' . $comment;
-						$unique_comments[] = $comment;
+					if ( is_scalar( $comment ) ) {
+						$comment_str = (string) $comment;
+						if ( ! in_array( $comment_str, $unique_comments, true ) ) {
+							$lines[]           = '#. ' . $comment_str;
+							$unique_comments[] = $comment_str;
+						}
 					}
 				}
 			}
 
 			foreach ( $translation->getReferences() as $reference ) {
-				$lines[] = '#: ' . $reference[0] . ( null !== $reference[1] ? ':' . $reference[1] : '' );
+				if ( is_array( $reference ) && isset( $reference[0] ) ) {
+					$ref_str  = is_scalar( $reference[0] ) ? (string) $reference[0] : '';
+					$line_str = '';
+					if ( isset( $reference[1] ) && is_scalar( $reference[1] ) ) {
+						$line_str = ':' . $reference[1];
+					}
+					$lines[] = '#: ' . $ref_str . $line_str;
+				}
 			}
 
 			if ( $translation->hasFlags() ) {
@@ -107,7 +123,8 @@ class PotGenerator extends PoGenerator {
 			$lines[] = '';
 		}
 
-		return implode( "\n", $lines );
+		$string_lines = array_filter( $lines, 'is_string' );
+		return implode( "\n", $string_lines );
 	}
 
 	/**

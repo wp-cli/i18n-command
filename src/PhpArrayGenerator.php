@@ -27,10 +27,11 @@ class PhpArrayGenerator extends PhpArray {
 	 * @return string
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
-		$options = array_merge( static::$options, $options );
-		$array   = static::generate( $translations, $options );
+		$options      = array_merge( static::$options, $options );
+		$array        = static::generate( $translations, $options );
+		$pretty_print = isset( $options['prettyPrint'] ) ? (bool) $options['prettyPrint'] : false;
 
-		return '<?php' . PHP_EOL . 'return ' . self::var_export( $array, $options['prettyPrint'] ) . ';';
+		return '<?php' . PHP_EOL . 'return ' . self::var_export( $array, $pretty_print ) . ';';
 	}
 
 	/**
@@ -44,7 +45,9 @@ class PhpArrayGenerator extends PhpArray {
 	public static function generate( Translations $translations, array $options = [] ) {
 		$options += static::$options;
 
-		return static::toArray( $translations, $options['includeHeaders'] );
+		$include_headers = isset( $options['includeHeaders'] ) ? (bool) $options['includeHeaders'] : false;
+
+		return static::toArray( $translations, $include_headers );
 	}
 
 	/**

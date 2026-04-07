@@ -37,7 +37,7 @@ trait IterableCodeExtractor {
 	 */
 	public static function fromFile( $file_or_files, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file_or_files ) as $file ) {
-			if ( ! empty( $options['restrictFileNames'] ) ) {
+			if ( ! empty( $options['restrictFileNames'] ) && is_array( $options['restrictFileNames'] ) ) {
 				$basename = Path::basename( $file );
 				if ( ! in_array( $basename, $options['restrictFileNames'], true ) ) {
 					continue;
@@ -49,7 +49,7 @@ trait IterableCodeExtractor {
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = $relative_file_path;
 
-			if ( ! empty( $options['restrictDirectories'] ) ) {
+			if ( ! empty( $options['restrictDirectories'] ) && is_array( $options['restrictDirectories'] ) ) {
 				$top_level_dirname = explode( '/', $relative_file_path )[0];
 
 				if ( ! in_array( $top_level_dirname, $options['restrictDirectories'], true ) ) {
@@ -149,10 +149,15 @@ trait IterableCodeExtractor {
 
 		static::$dir = $dir;
 
-		$include = isset( $options['include'] ) ? $options['include'] : [];
-		$exclude = isset( $options['exclude'] ) ? $options['exclude'] : [];
+		$include    = isset( $options['include'] ) && is_array( $options['include'] ) ? array_filter( $options['include'], 'is_string' ) : [];
+		$exclude    = isset( $options['exclude'] ) && is_array( $options['exclude'] ) ? array_filter( $options['exclude'], 'is_string' ) : [];
+		$extensions = isset( $options['extensions'] ) && is_array( $options['extensions'] ) ? array_filter( $options['extensions'], 'is_string' ) : [];
 
-		$files = static::getFilesFromDirectory( $dir, $include, $exclude, $options['extensions'] );
+		/** @var array<string> $include */
+		/** @var array<string> $exclude */
+		/** @var array<string> $extensions */
+
+		$files = static::getFilesFromDirectory( $dir, $include, $exclude, $extensions );
 
 		if ( ! empty( $files ) ) {
 			static::fromFile( $files, $translations, $options );
@@ -333,6 +338,9 @@ trait IterableCodeExtractor {
 	 * @return bool Whether the file has a file extension that matches any of the ones in the list.
 	 */
 	protected static function file_has_file_extension( $file, $extensions ) {
+		if ( ! is_array( $extensions ) ) {
+			return false;
+		}
 		return in_array( $file->getExtension(), $extensions, true ) ||
 			in_array( static::file_get_extension_multi( $file ), $extensions, true );
 	}

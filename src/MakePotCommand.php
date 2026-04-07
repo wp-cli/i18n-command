@@ -107,7 +107,7 @@ class MakePotCommand extends WP_CLI_Command {
 	protected $headers = [];
 
 	/**
-	 * @var string
+	 * @var string|null
 	 */
 	protected $domain;
 
@@ -327,30 +327,43 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	public function handle_arguments( $args, $assoc_args ) {
 		$array_arguments = array( 'headers' );
-		$assoc_args      = Utils\parse_shell_arrays( $assoc_args, $array_arguments );
+		/** @var array<string, string> $assoc_args_array */
+		$assoc_args_array = $assoc_args;
+		$assoc_args       = Utils\parse_shell_arrays( $assoc_args_array, $array_arguments );
+		/** @var array<string, mixed> $assoc_args */
 
 		$source = realpath( $args[0] );
 		if ( ! $source || ! is_dir( $source ) ) {
 			WP_CLI::error( 'Not a valid source directory.' );
 		}
 
-		$this->source          = $source;
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Path::basename( $source ) );
-		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
-		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
-		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
-		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
-		$this->skip_audit      = Utils\get_flag_value( $assoc_args, 'skip-audit', $this->skip_audit );
-		$headers               = Utils\get_flag_value( $assoc_args, 'headers', null );
-		if ( null !== $headers ) {
-			$this->headers = (array) $headers; // Cast to array if single string given
-		}
-		$this->file_comment = Utils\get_flag_value( $assoc_args, 'file-comment' );
-		$this->package_name = Utils\get_flag_value( $assoc_args, 'package-name' );
-		$this->location     = Utils\get_flag_value( $assoc_args, 'location', true );
+		$this->source = $source;
 
-		$ignore_domain = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
+		/** @var array<string, bool|string> $assoc_args_simple */
+		$assoc_args_simple = $assoc_args;
+
+		$slug       = Utils\get_flag_value( $assoc_args_simple, 'slug', Path::basename( $source ) );
+		$this->slug = is_scalar( $slug ) ? (string) $slug : Path::basename( $source );
+
+		$this->skip_js         = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-js', $this->skip_js );
+		$this->skip_php        = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-php', $this->skip_php );
+		$this->skip_blade      = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-blade', $this->skip_blade );
+		$this->skip_block_json = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-block-json', $this->skip_block_json );
+		$this->skip_theme_json = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-theme-json', $this->skip_theme_json );
+		$this->skip_audit      = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-audit', $this->skip_audit );
+
+		$headers = $assoc_args['headers'] ?? null;
+		if ( null !== $headers && is_array( $headers ) ) {
+			/** @var array<string, mixed> $headers */
+			$this->headers = $headers;
+		}
+
+		$file_comment       = Utils\get_flag_value( $assoc_args_simple, 'file-comment' );
+		$this->file_comment = is_string( $file_comment ) ? $file_comment : null;
+		$this->package_name = (string) Utils\get_flag_value( $assoc_args_simple, 'package-name', '' );
+		$this->location     = (bool) Utils\get_flag_value( $assoc_args_simple, 'location', true );
+
+		$ignore_domain = (bool) Utils\get_flag_value( $assoc_args_simple, 'ignore-domain', false );
 
 		$this->main_file_data = $this->get_main_file_data();
 
@@ -361,11 +374,15 @@ class MakePotCommand extends WP_CLI_Command {
 		if ( ! $ignore_domain ) {
 			$this->domain = $this->slug;
 
-			if ( ! empty( $this->main_file_data['Text Domain']['value'] ) ) {
-				$this->domain = $this->main_file_data['Text Domain']['value'];
+			if ( isset( $this->main_file_data['Text Domain'] ) && is_array( $this->main_file_data['Text Domain'] ) ) {
+				$text_domain_val = $this->main_file_data['Text Domain']['value'] ?? '';
+				if ( is_scalar( $text_domain_val ) ) {
+					$this->domain = (string) $text_domain_val;
+				}
 			}
 
-			$this->domain = Utils\get_flag_value( $assoc_args, 'domain', $this->domain );
+			$domain       = Utils\get_flag_value( $assoc_args_simple, 'domain', $this->domain );
+			$this->domain = is_scalar( $domain ) ? (string) $domain : $this->domain;
 
 			WP_CLI::debug( sprintf( 'Extracting all strings with text domain "%s"', $this->domain ), 'make-pot' );
 		}
@@ -373,14 +390,17 @@ class MakePotCommand extends WP_CLI_Command {
 		// Determine destination.
 		$this->destination = "{$this->source}/{$this->slug}.pot";
 
-		if ( ! empty( $this->main_file_data['Domain Path']['value'] ) ) {
-			// Domain Path inside source folder.
-			$this->destination = sprintf(
-				'%s/%s/%s.pot',
-				$this->source,
-				$this->unslashit( $this->main_file_data['Domain Path']['value'] ),
-				$this->slug
-			);
+		if ( isset( $this->main_file_data['Domain Path'] ) && is_array( $this->main_file_data['Domain Path'] ) ) {
+			$domain_path_val = $this->main_file_data['Domain Path']['value'] ?? '';
+			if ( is_scalar( $domain_path_val ) && ! empty( $domain_path_val ) ) {
+				// Domain Path inside source folder.
+				$this->destination = sprintf(
+					'%s/%s/%s.pot',
+					$this->source,
+					$this->unslashit( (string) $domain_path_val ),
+					$this->slug
+				);
+			}
 		}
 
 		if ( isset( $args[1] ) ) {
@@ -396,7 +416,7 @@ class MakePotCommand extends WP_CLI_Command {
 		if ( isset( $assoc_args['merge'] ) ) {
 			if ( true === $assoc_args['merge'] ) {
 				$this->merge = [ $this->destination ];
-			} elseif ( ! empty( $assoc_args['merge'] ) ) {
+			} elseif ( ! empty( $assoc_args['merge'] ) && is_string( $assoc_args['merge'] ) ) {
 				$this->merge = explode( ',', $assoc_args['merge'] );
 			}
 
@@ -425,8 +445,8 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 		}
 
-		if ( isset( $assoc_args['subtract'] ) ) {
-			$this->subtract_and_merge = Utils\get_flag_value( $assoc_args, 'subtract-and-merge', false );
+		if ( isset( $assoc_args['subtract'] ) && is_string( $assoc_args['subtract'] ) ) {
+			$this->subtract_and_merge = (bool) Utils\get_flag_value( $assoc_args_simple, 'subtract-and-merge', false );
 
 			$files = explode( ',', $assoc_args['subtract'] );
 
@@ -443,7 +463,7 @@ class MakePotCommand extends WP_CLI_Command {
 			}
 		}
 
-		if ( isset( $assoc_args['include'] ) ) {
+		if ( isset( $assoc_args['include'] ) && is_string( $assoc_args['include'] ) ) {
 			$this->include = array_filter( explode( ',', $assoc_args['include'] ) );
 			$this->include = array_map( [ $this, 'unslashit' ], $this->include );
 			$this->include = array_unique( $this->include );
@@ -451,7 +471,7 @@ class MakePotCommand extends WP_CLI_Command {
 			WP_CLI::debug( sprintf( 'Only including the following files: %s', implode( ',', $this->include ) ), 'make-pot' );
 		}
 
-		if ( isset( $assoc_args['exclude'] ) ) {
+		if ( isset( $assoc_args['exclude'] ) && is_string( $assoc_args['exclude'] ) ) {
 			$this->exclude = array_filter( array_merge( $this->exclude, explode( ',', $assoc_args['exclude'] ) ) );
 			$this->exclude = array_map( [ $this, 'unslashit' ], $this->exclude );
 			$this->exclude = array_unique( $this->exclude );
@@ -627,11 +647,12 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Set entries from main file data.
 		foreach ( $this->main_file_data as $header => $data ) {
-			if ( empty( $data['value'] ) ) {
+			if ( ! is_array( $data ) || empty( $data['value'] ) ) {
 				continue;
 			}
 
-			$translation = new Translation( '', $data['value'] );
+			$val         = $data['value'];
+			$translation = new Translation( '', is_scalar( $val ) ? (string) $val : '' );
 
 			if ( $is_theme ) {
 				$translation->addExtractedComment( sprintf( '%s of the theme', $header ) );
@@ -643,7 +664,8 @@ class MakePotCommand extends WP_CLI_Command {
 				$file_reference = ltrim( str_replace( Path::normalize( "$this->source/" ), '', Path::normalize( $this->main_file_path ) ), '/' );
 				// Add line number if available
 				if ( ! empty( $data['line'] ) ) {
-					$translation->addReference( $file_reference, $data['line'] );
+					$line_val = $data['line'];
+					$translation->addReference( $file_reference, is_numeric( $line_val ) ? (int) $line_val : null );
 				} else {
 					$translation->addReference( $file_reference );
 				}
@@ -765,7 +787,9 @@ class MakePotCommand extends WP_CLI_Command {
 
 				if ( $this->subtract_and_merge ) {
 					$translation = $translations[ $exception_translation->getId() ];
-					$exception_translation->mergeWith( $translation );
+					if ( $translation instanceof Translation ) {
+						$exception_translation->mergeWith( $translation );
+					}
 				}
 
 				unset( $translations[ $exception_translation->getId() ] );
@@ -934,39 +958,63 @@ class MakePotCommand extends WP_CLI_Command {
 			return implode( "\n", explode( '\n', $this->file_comment ) );
 		}
 
+		$license_val = '';
+		$license     = $this->main_file_data['License'] ?? null;
+		if ( is_array( $license ) && isset( $license['value'] ) && is_scalar( $license['value'] ) ) {
+			$license_val = (string) $license['value'];
+		}
+
+		$author_val = '';
+		$author     = $this->main_file_data['Author'] ?? null;
+		if ( is_array( $author ) && isset( $author['value'] ) && is_scalar( $author['value'] ) ) {
+			$author_val = (string) $author['value'];
+		}
+
 		if ( isset( $this->main_file_data['Theme Name'] ) ) {
-			if ( ! empty( $this->main_file_data['License']['value'] ) ) {
+			$theme_name     = $this->main_file_data['Theme Name'];
+			$theme_name_val = '';
+			if ( is_array( $theme_name ) && isset( $theme_name['value'] ) && is_scalar( $theme_name['value'] ) ) {
+				$theme_name_val = (string) $theme_name['value'];
+			}
+
+			if ( '' !== $license_val ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
 					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-					$this->main_file_data['Author']['value'],
-					$this->main_file_data['License']['value']
+					$author_val,
+					$license_val
 				);
 			}
 
 			return sprintf(
 				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s theme.",
 				date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-				$this->main_file_data['Author']['value'],
-				$this->main_file_data['Theme Name']['value']
+				$author_val,
+				$theme_name_val
 			);
 		}
 
 		if ( isset( $this->main_file_data['Plugin Name'] ) ) {
-			if ( ! empty( $this->main_file_data['License']['value'] ) ) {
+			$plugin_name     = $this->main_file_data['Plugin Name'];
+			$plugin_name_val = '';
+			if ( is_array( $plugin_name ) && isset( $plugin_name['value'] ) && is_scalar( $plugin_name['value'] ) ) {
+				$plugin_name_val = (string) $plugin_name['value'];
+			}
+
+			if ( '' !== $license_val ) {
 				return sprintf(
 					"Copyright (C) %1\$s %2\$s\nThis file is distributed under the %3\$s.",
 					date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-					$this->main_file_data['Author']['value'],
-					$this->main_file_data['License']['value']
+					$author_val,
+					$license_val
 				);
 			}
 
 			return sprintf(
 				"Copyright (C) %1\$s %2\$s\nThis file is distributed under the same license as the %3\$s plugin.",
 				date( 'Y' ), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-				$this->main_file_data['Author']['value'],
-				$this->main_file_data['Plugin Name']['value']
+				$author_val,
+				$plugin_name_val
 			);
 		}
 
@@ -985,18 +1033,27 @@ class MakePotCommand extends WP_CLI_Command {
 		$bugs_address = null;
 
 		if ( ! $version && isset( $this->main_file_data['Version'] ) ) {
-			$version = $this->main_file_data['Version']['value'];
+			$version_data = $this->main_file_data['Version'];
+			if ( is_array( $version_data ) && isset( $version_data['value'] ) && is_scalar( $version_data['value'] ) ) {
+				$version = (string) $version_data['value'];
+			}
 		}
 
 		if ( isset( $this->main_file_data['Theme Name'] ) ) {
-			$name         = $this->main_file_data['Theme Name']['value'];
+			$theme_name = $this->main_file_data['Theme Name'];
+			if ( is_array( $theme_name ) && isset( $theme_name['value'] ) && is_scalar( $theme_name['value'] ) ) {
+				$name = (string) $theme_name['value'];
+			}
 			$bugs_address = sprintf( 'https://wordpress.org/support/theme/%s', $this->slug );
 		} elseif ( isset( $this->main_file_data['Plugin Name'] ) ) {
-			$name         = $this->main_file_data['Plugin Name']['value'];
+			$plugin_name = $this->main_file_data['Plugin Name'];
+			if ( is_array( $plugin_name ) && isset( $plugin_name['value'] ) && is_scalar( $plugin_name['value'] ) ) {
+				$name = (string) $plugin_name['value'];
+			}
 			$bugs_address = sprintf( 'https://wordpress.org/support/plugin/%s', $this->slug );
 		}
 
-		if ( null !== $this->package_name ) {
+		if ( '' !== $this->package_name ) {
 			$name = $this->package_name;
 		}
 
@@ -1013,7 +1070,9 @@ class MakePotCommand extends WP_CLI_Command {
 		$translations->setHeader( 'X-Generator', 'WP-CLI ' . WP_CLI_VERSION );
 
 		foreach ( $this->headers as $key => $value ) {
-			$translations->setHeader( $key, $value );
+			if ( is_scalar( $value ) ) {
+				$translations->setHeader( $key, (string) $value );
+			}
 		}
 	}
 

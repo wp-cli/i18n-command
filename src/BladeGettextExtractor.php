@@ -21,7 +21,7 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	 */
 	protected static function getBladeCompiler( array $options = [] ) {
 
-		$cache_path     = empty( $options['cachePath'] ) ? sys_get_temp_dir() : $options['cachePath'];
+		$cache_path     = ! empty( $options['cachePath'] ) && is_string( $options['cachePath'] ) ? $options['cachePath'] : sys_get_temp_dir();
 		$blade_compiler = new BladeOne( null, $cache_path );
 
 		return $blade_compiler;

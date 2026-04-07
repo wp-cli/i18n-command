@@ -93,10 +93,22 @@ class JsonSchemaExtractor extends Extractor {
 	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
-		$file = $options['file'];
-		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
+		$file     = $options['file'] ?? '';
+		$file_str = is_scalar( $file ) ? (string) $file : '';
+		WP_CLI::debug( "Parsing file {$file_str}", 'make-pot' );
 
-		$schema = self::load_schema( $options['schema'], $options['schemaFallback'] );
+		$schema_url      = $options['schema'] ?? '';
+		$schema_fallback = $options['schemaFallback'] ?? '';
+
+		if ( ! is_string( $schema_url ) ) {
+			$schema_url = '';
+		}
+
+		if ( ! is_string( $schema_fallback ) ) {
+			$schema_fallback = '';
+		}
+
+		$schema = self::load_schema( $schema_url, $schema_fallback );
 
 		$json = json_decode( $text, true );
 
@@ -104,7 +116,7 @@ class JsonSchemaExtractor extends Extractor {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: error code %2$s',
-					$file,
+					$file_str,
 					json_last_error()
 				),
 				'make-pot'
@@ -113,9 +125,11 @@ class JsonSchemaExtractor extends Extractor {
 			return;
 		}
 
+		$add_references = ! empty( $options['addReferences'] );
+
 		self::extract_strings_using_i18n_schema(
 			$translations,
-			$options['addReferences'] ? $file : null,
+			$add_references ? $file_str : null,
 			$schema,
 			$json
 		);

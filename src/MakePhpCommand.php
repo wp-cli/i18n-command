@@ -70,7 +70,10 @@ class MakePhpCommand extends WP_CLI_Command {
 			$files = new IteratorIterator( new DirectoryIterator( $source ) );
 		}
 
-		$pretty_print = Utils\get_flag_value( $assoc_args, 'pretty-print', false );
+		/** @var array<string, bool|string> $assoc_args_simple */
+		$assoc_args_simple = $assoc_args;
+
+		$pretty_print = Utils\get_flag_value( $assoc_args_simple, 'pretty-print', false );
 
 		$result_count = 0;
 		/** @var DirectoryIterator $file */

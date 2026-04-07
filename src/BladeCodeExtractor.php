@@ -59,7 +59,8 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
-		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
+		$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
+		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		try {
 			self::fromStringMultiple( $text, [ $translations ], $options );
@@ -67,7 +68,7 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s',
-					$options['file'],
+					$file,
 					$exception->getMessage()
 				),
 				'make-pot'

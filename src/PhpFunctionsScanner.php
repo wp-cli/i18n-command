@@ -20,11 +20,24 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 			$translations = $translations[0];
 		}
 
-		$functions     = $options['functions'];
-		$file          = $options['file'];
+		$functions = isset( $options['functions'] ) ? $options['functions'] : [];
+		if ( ! is_array( $functions ) ) {
+			$functions = [];
+		}
+
+		$file = '';
+		if ( isset( $options['file'] ) && is_scalar( $options['file'] ) ) {
+			$file = (string) $options['file'];
+		}
+
 		$add_reference = ! empty( $options['addReferences'] );
 
-		foreach ( $this->getFunctions( $options['constants'] ) as $function ) {
+		$constants = isset( $options['constants'] ) ? $options['constants'] : [];
+		if ( ! is_array( $constants ) ) {
+			$constants = [];
+		}
+
+		foreach ( $this->getFunctions( $constants ) as $function ) {
 			list( $name, $line, $args ) = $function;
 
 			if ( ! isset( $functions[ $name ] ) ) {
@@ -64,10 +77,18 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 
 				default:
 					// Should never happen.
-					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $functions[ $name ], $name ) );
+					$func_map     = isset( $functions[ $name ] ) ? $functions[ $name ] : '';
+					$func_map_str = is_scalar( $func_map ) ? (string) $func_map : '';
+					$name_str     = is_scalar( $name ) ? (string) $name : '';
+					\WP_CLI::error( sprintf( "Internal error: unknown function map '%s' for '%s'.", $func_map_str, $name_str ) );
 			}
 
-			if ( '' === (string) $original ) {
+			$original_str = '';
+			if ( is_scalar( $original ) ) {
+				$original_str = (string) $original;
+			}
+
+			if ( '' === $original_str ) {
 				continue;
 			}
 
@@ -75,22 +96,24 @@ class PhpFunctionsScanner extends GettextPhpFunctionsScanner {
 				continue;
 			}
 
-			$translation = $translations->insert( $context, $original, $plural );
+			$translation = $translations->insert( $context, $original_str, $plural );
 
 			if ( $add_reference ) {
 				$translation = $translation->addReference( $file, $line );
 			}
 
 			if (
-				1 === preg_match( MakePotCommand::SPRINTF_PLACEHOLDER_REGEX, $original ) ||
-				1 === preg_match( MakePotCommand::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $original )
+				1 === preg_match( MakePotCommand::SPRINTF_PLACEHOLDER_REGEX, $original_str ) ||
+				1 === preg_match( MakePotCommand::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $original_str )
 			) {
 				$translation->addFlag( 'php-format' );
 			}
 
-			if ( isset( $function[3] ) ) {
+			if ( isset( $function[3] ) && is_array( $function[3] ) ) {
 				foreach ( $function[3] as $extracted_comment ) {
-					$translation = $translation->addExtractedComment( $extracted_comment );
+					if ( is_scalar( $extracted_comment ) ) {
+						$translation = $translation->addExtractedComment( (string) $extracted_comment );
+					}
 				}
 			}
 		}

@@ -78,7 +78,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		 */
 		$traverser->addFunction(
 			function ( $node ) use ( &$translations, $options, &$all_comments ) {
-				$functions     = $options['functions'];
+				$functions = $options['functions'] ?? [];
+				if ( ! is_array( $functions ) ) {
+					return;
+				}
 				$file          = $options['file'];
 				$add_reference = ! empty( $options['addReferences'] );
 
@@ -93,7 +96,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 				$callee = $this->resolveExpressionCallee( $node );
 
-				if ( ! is_array( $callee ) || ! isset( $functions[ $callee['name'] ] ) ) {
+				if ( ! is_array( $callee ) || ! isset( $callee['name'] ) || ! is_string( $callee['name'] ) || ! isset( $functions[ $callee['name'] ] ) ) {
 					return;
 				}
 
@@ -104,8 +107,10 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					}
 				}
 
-				foreach ( $callee['comments'] as $comment ) {
-					$all_comments[] = $comment;
+				if ( isset( $callee['comments'] ) && is_array( $callee['comments'] ) ) {
+					foreach ( $callee['comments'] as $comment ) {
+						$all_comments[] = $comment;
+					}
 				}
 
 				$domain   = null;
@@ -171,7 +176,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 						break;
 				}
 
-				if ( '' === (string) $original ) {
+				if ( ! is_string( $original ) || '' === $original ) {
 					return;
 				}
 
@@ -251,7 +256,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					}
 				}
 
-				if ( ! $eval_contents ) {
+				if ( ! is_string( $eval_contents ) ) {
 					return;
 				}
 
@@ -260,7 +265,20 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 				$class = get_class( $scanner );
 				$evals = new $class( $eval_contents );
-				$evals->enableCommentsExtraction( $options['extractComments'] );
+
+				$extract_comments = $options['extractComments'] ?? '';
+				if ( is_string( $extract_comments ) ) {
+					$evals->enableCommentsExtraction( $extract_comments );
+				} elseif ( is_array( $extract_comments ) ) {
+					$valid_tags = [];
+					foreach ( $extract_comments as $tag ) {
+						if ( is_string( $tag ) ) {
+							$valid_tags[] = $tag;
+						}
+					}
+					$evals->enableCommentsExtraction( $valid_tags );
+				}
+
 				$evals->saveGettextFunctions( $translations, $options );
 			}
 		);

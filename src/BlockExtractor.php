@@ -10,7 +10,7 @@ final class BlockExtractor extends JsonSchemaExtractor {
 	 * @inheritdoc
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
-		$file = $options['file'];
+		$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
 		WP_CLI::debug( "Parsing file $file", 'make-pot' );
 
 		$json = json_decode( $text, true );
@@ -25,6 +25,10 @@ final class BlockExtractor extends JsonSchemaExtractor {
 				'make-pot'
 			);
 
+			return;
+		}
+
+		if ( ! is_array( $json ) ) {
 			return;
 		}
 

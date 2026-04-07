@@ -1083,7 +1083,11 @@ class MakePotCommand extends WP_CLI_Command {
 	 */
 	protected function get_wp_version() {
 		$version_php = $this->source . '/wp-includes/version.php';
-		$contents    = file_get_contents( $version_php );
+		if ( ! file_exists( $version_php ) || ! is_readable( $version_php ) ) {
+			return false;
+		}
+
+		$contents = file_get_contents( $version_php );
 		if ( false === $contents ) {
 			return false;
 		}

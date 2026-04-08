@@ -188,17 +188,21 @@ class AuditCommand extends MakePotCommand {
 
 		/** @var \DirectoryIterator $file */
 		foreach ( $files as $file ) {
+			$real_path = $file->getRealPath();
+			if ( false === $real_path ) {
+				continue;
+			}
 			$stylesheet_path = null;
 			$project_path    = null;
 
 			// wp-content/themes/my-theme/style.css
 			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
-				$stylesheet_path = $file->getRealPath();
-				$project_path    = $file->getRealPath();
-			} elseif ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+				$stylesheet_path = $real_path;
+				$project_path    = $real_path;
+			} elseif ( $file->isDir() && ! $file->isDot() && is_readable( $real_path . '/style.css' ) ) {
 				// wp-content/themes/my-themes/theme-a/style.css
-				$stylesheet_path = $file->getRealPath() . '/style.css';
-				$project_path    = $file->getRealPath();
+				$stylesheet_path = $real_path . '/style.css';
+				$project_path    = $real_path;
 			}
 
 			if ( $stylesheet_path ) {
@@ -218,8 +222,9 @@ class AuditCommand extends MakePotCommand {
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet_path ), 'audit' );
 
 					$this->project_type = 'theme';
-					assert( is_string( $project_path ) );
-					$this->main_file_path = $project_path;
+					if ( is_string( $project_path ) ) {
+						$this->main_file_path = $project_path;
+					}
 
 					return $theme_data;
 				}
@@ -228,7 +233,7 @@ class AuditCommand extends MakePotCommand {
 			// wp-content/plugins/my-plugin/my-plugin.php
 			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
 				$plugin_data = FileDataExtractor::get_file_data(
-					$file->getRealPath(),
+					$real_path,
 					array_combine(
 						$this->get_file_headers( 'plugin' ),
 						$this->get_file_headers( 'plugin' )
@@ -240,10 +245,10 @@ class AuditCommand extends MakePotCommand {
 					if ( 'plaintext' === $this->format ) {
 						WP_CLI::log( 'Plugin file detected.' );
 					}
-					WP_CLI::debug( sprintf( 'Plugin file: %s', $file->getRealPath() ), 'audit' );
+					WP_CLI::debug( sprintf( 'Plugin file: %s', $real_path ), 'audit' );
 
 					$this->project_type   = 'plugin';
-					$this->main_file_path = $file->getRealPath();
+					$this->main_file_path = $real_path;
 
 					return $plugin_data;
 				}

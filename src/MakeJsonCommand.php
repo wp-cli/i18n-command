@@ -67,22 +67,41 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *     # Create JSON files with object mapping
 	 *     $ wp i18n make-json languages '--use-map={"source/index.js":"build/index.js"}'
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$assoc_args = Utils\parse_shell_arrays( $assoc_args, array( 'use-map' ) );
-		$map_paths  = Utils\get_flag_value( $assoc_args, 'use-map', false );
-		$domain     = Utils\get_flag_value( $assoc_args, 'domain', '' );
+		/** @var array<string, string> $assoc_args_array */
+		$assoc_args_array = $assoc_args;
+		$assoc_args       = Utils\parse_shell_arrays( $assoc_args_array, array( 'use-map' ) );
+		/** @var array<string, mixed> $assoc_args */
+
+		$map_paths = $assoc_args['use-map'] ?? false;
+		if ( ! is_string( $map_paths ) && ! is_array( $map_paths ) && ! is_bool( $map_paths ) ) {
+			$map_paths = false;
+		}
+
+		/** @var array<string, bool|string> $assoc_args_simple */
+		$assoc_args_simple = $assoc_args;
+
+		$domain          = Utils\get_flag_value( $assoc_args_simple, 'domain', '' );
+		$domain_str      = is_string( $domain ) ? $domain : '';
+		$extensions_flag = Utils\get_flag_value( $assoc_args_simple, 'extensions', '' );
+		$extensions_str  = is_string( $extensions_flag ) ? $extensions_flag : '';
+
 		$extensions = array_map(
 			function ( $extension ) {
 				return trim( $extension, ' .' );
 			},
-			explode( ',', Utils\get_flag_value( $assoc_args, 'extensions', '' ) )
+			explode( ',', $extensions_str )
 		);
 
-		if ( Utils\get_flag_value( $assoc_args, 'pretty-print', false ) ) {
+		if ( Utils\get_flag_value( $assoc_args_simple, 'pretty-print', false ) ) {
 			$this->json_options |= JSON_PRETTY_PRINT;
 		}
 
@@ -118,7 +137,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		/** @var DirectoryIterator $file */
 		foreach ( $files as $file ) {
 			if ( $file->isFile() && $file->isReadable() && 'po' === $file->getExtension() ) {
-				$result        = $this->make_json( $file->getRealPath(), $destination, $map, $domain, $extensions );
+				$result        = $this->make_json( (string) $file->getRealPath(), $destination, $map, $domain_str, $extensions );
 				$result_count += count( $result );
 			}
 		}
@@ -129,8 +148,8 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Collect maps from paths, normalize and merge
 	 *
-	 * @param string|array|bool $paths_or_maps argument. False to do nothing.
-	 * @return array|null       Mapping array. Null if no maps specified.
+	 * @param string|array<mixed>|bool $paths_or_maps argument. False to do nothing.
+	 * @return array<string, mixed>|null Mapping array. Null if no maps specified.
 	 */
 	protected function build_map( $paths_or_maps ) {
 		if ( false === $paths_or_maps ) {
@@ -163,7 +182,13 @@ class MakeJsonCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			$json = json_decode( file_get_contents( $path ), true );
+			$contents = file_get_contents( $path );
+			if ( false === $contents ) {
+				WP_CLI::warning( sprintf( 'Could not read map file %s', $path ) );
+				continue;
+			}
+
+			$json = json_decode( $contents, true );
 			if ( ! is_array( $json ) ) {
 				WP_CLI::warning( sprintf( 'Map file %s invalid', $path ) );
 				continue;
@@ -204,12 +229,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Splits a single PO file into multiple JSON files.
 	 *
-	 * @param string     $source_file Path to the source file.
-	 * @param string     $destination Path to the destination directory.
-	 * @param array|null $map         Source to build file mapping.
-	 * @param string     $domain      Override text domain to use.
-	 * @param array      $extensions  Additional extensions.
-	 * @return array     List of created JSON files.
+	 * @param string                    $source_file Path to the source file.
+	 * @param string                    $destination Path to the destination directory.
+	 * @param array<string, mixed>|null $map         Source to build file mapping.
+	 * @param string                    $domain      Override text domain to use.
+	 * @param array<string>             $extensions  Additional extensions.
+	 * @return array<string>     List of created JSON files.
 	 */
 	protected function make_json( $source_file, $destination, $map, $domain, $extensions ) {
 		/** @var Translations[] $mapping */
@@ -234,11 +259,17 @@ class MakeJsonCommand extends WP_CLI_Command {
 			// Find all unique sources this translation originates from.
 			$sources = array_map(
 				static function ( $reference ) use ( $extensions ) {
-					$file      = $reference[0];
+					if ( ! is_array( $reference ) || ! isset( $reference[0] ) ) {
+						return null;
+					}
+					$file = $reference[0];
+					if ( ! is_string( $file ) ) {
+						return null;
+					}
 					$extension = pathinfo( $file, PATHINFO_EXTENSION );
 
 					return in_array( $extension, $extensions, true )
-						? preg_replace( "/\.min\.{$extension}$/", ".{$extension}", $file )
+						? (string) preg_replace( "/\.min\.{$extension}$/", ".{$extension}", $file )
 						: null;
 				},
 				$this->reference_map( $translation->getReferences(), $map )
@@ -255,7 +286,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 					// $mapping[ $source ]->setDomain( $translations->getDomain() );
 
 					$mapping[ $source ]->setHeader( 'Language', $translations->getLanguage() );
-					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) );
+					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) ?? '' );
 
 					$plural_forms = $translations->getPluralForms();
 
@@ -277,9 +308,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	/**
 	 * Takes the references and applies map, if given
 	 *
-	 * @param array      $references translation references
-	 * @param array|null $map file mapping
-	 * @return array     mapped references
+	 * @param array<mixed>              $references translation references
+	 * @param array<string, mixed>|null $map file mapping
+	 * @return array<mixed>     mapped references
 	 */
 	protected function reference_map( $references, $map ) {
 		if ( is_null( $map ) ) {
@@ -289,9 +320,12 @@ class MakeJsonCommand extends WP_CLI_Command {
 		// translate using map
 		$temp = array_map(
 			static function ( $reference ) use ( &$map ) {
+				if ( ! is_array( $reference ) || ! isset( $reference[0] ) ) {
+					return null;
+				}
 				$file = $reference[0];
 
-				if ( array_key_exists( $file, $map ) ) {
+				if ( is_string( $file ) && array_key_exists( $file, $map ) ) {
 					return $map[ $file ];
 				}
 
@@ -321,11 +355,11 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *
 	 * Exports translations for each JS file to a separate translation file.
 	 *
-	 * @param array  $mapping        A mapping of files to translation entries.
-	 * @param string $base_file_name Base file name for JSON files.
-	 * @param string $destination    Path to the destination directory.
+	 * @param array<string, \Gettext\Translations> $mapping        A mapping of files to translation entries.
+	 * @param string                              $base_file_name Base file name for JSON files.
+	 * @param string                              $destination    Path to the destination directory.
 	 *
-	 * @return array List of created JSON files.
+	 * @return array<string> List of created JSON files.
 	 */
 	protected function build_json_files( $mapping, $base_file_name, $destination ) {
 		$result = [];

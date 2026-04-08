@@ -1,0 +1,36 @@
+<?php
+
+namespace Gettext\Extractors {
+	abstract class PhpCode {
+		/**
+		 * @var array<mixed>
+		 */
+		public static $options;
+
+		/**
+		 * @var string
+		 */
+		protected static $functionsScannerClass;
+	}
+
+	abstract class JsCode {
+		/**
+		 * @var array<mixed>
+		 */
+		public static $options;
+
+		/**
+		 * @var string
+		 */
+		protected static $functionsScannerClass;
+	}
+}
+
+namespace Gettext\Generators {
+	class PhpArray {
+		/**
+		 * @var array<string, bool>
+		 */
+		public static $options;
+	}
+}

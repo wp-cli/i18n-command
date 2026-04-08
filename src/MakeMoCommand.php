@@ -35,6 +35,10 @@ class MakeMoCommand extends WP_CLI_Command {
 	 *     # Create a MO file from a single PO file to a specific file destination
 	 *     $ wp i18n make-mo example-plugin-de_DE.po languages/bar.mo
 	 *
+	 * @param array<string> $args       Command arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
+	 *
 	 * @when before_wp_load
 	 *
 	 * @throws WP_CLI\ExitException
@@ -55,7 +59,7 @@ class MakeMoCommand extends WP_CLI_Command {
 				if ( ! is_file( $source ) ) {
 					WP_CLI::error( 'Destination file not supported when source is a directory.' );
 				}
-				$destination      = $destination_pathinfo['dirname'];
+				$destination      = $destination_pathinfo['dirname'] ?? '.';
 				$custom_file_name = $destination_pathinfo['filename'] . '.' . $destination_pathinfo['extension'];
 			}
 		}

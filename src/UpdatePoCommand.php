@@ -55,6 +55,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 *
 	 * @when before_wp_load
 	 *
+	 * @param array<string>        $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
+	 * @return void
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
@@ -84,6 +87,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 		// Build merge flags based on options
 		$merge_flags = Merge::ADD | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE;
 
+		/** @var array<int|string, bool|string> $assoc_args */
 		$purge = Utils\get_flag_value( $assoc_args, 'purge', true );
 
 		if ( $purge ) {
@@ -244,6 +248,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Compare each translation entry.
 		foreach ( $original as $translation ) {
+			/** @var \Gettext\Translation $translation */
 			$context      = $translation->getContext();
 			$original_str = $translation->getOriginal();
 
@@ -313,6 +318,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Add translations in POT file order.
 		foreach ( $pot_translations as $pot_entry ) {
+			/** @var \Gettext\Translation $pot_entry */
 			$po_entry = $po_translations->find( $pot_entry );
 			if ( $po_entry ) {
 				$ordered[] = $po_entry->getClone();
@@ -321,6 +327,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Add any remaining translations from PO that aren't in POT (e.g., obsolete/disabled translations).
 		foreach ( $po_translations as $po_entry ) {
+			/** @var \Gettext\Translation $po_entry */
 			// Check if this entry is already in the ordered set.
 			if ( ! $ordered->find( $po_entry ) ) {
 				$ordered[] = $po_entry->getClone();

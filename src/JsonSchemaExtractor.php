@@ -41,7 +41,7 @@ class JsonSchemaExtractor extends Extractor {
 	/**
 	 * Static cache for the remote schema files.
 	 *
-	 * @var array<string, string>
+	 * @var array<string, object>
 	 */
 	protected static $schema_cache = [];
 
@@ -63,6 +63,11 @@ class JsonSchemaExtractor extends Extractor {
 			$json = file_get_contents( $fallback );
 		}
 
+		if ( false === $json ) {
+			WP_CLI::debug( 'Could not read file for schema', 'make-pot' );
+			return [];
+		}
+
 		$file_structure = json_decode( $json, false );
 
 		if ( JSON_ERROR_NONE !== json_last_error() ) {
@@ -80,13 +85,30 @@ class JsonSchemaExtractor extends Extractor {
 	}
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
+	 *
+	 * @param string       $text         The text to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
-		$file = $options['file'];
-		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
+		$file     = $options['file'] ?? '';
+		$file_str = is_scalar( $file ) ? (string) $file : '';
+		WP_CLI::debug( "Parsing file {$file_str}", 'make-pot' );
 
-		$schema = self::load_schema( $options['schema'], $options['schemaFallback'] );
+		$schema_url      = $options['schema'] ?? '';
+		$schema_fallback = $options['schemaFallback'] ?? '';
+
+		if ( ! is_string( $schema_url ) ) {
+			$schema_url = '';
+		}
+
+		if ( ! is_string( $schema_fallback ) ) {
+			$schema_fallback = '';
+		}
+
+		$schema = self::load_schema( $schema_url, $schema_fallback );
 
 		$json = json_decode( $text, true );
 
@@ -94,7 +116,7 @@ class JsonSchemaExtractor extends Extractor {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: error code %2$s',
-					$file,
+					$file_str,
 					json_last_error()
 				),
 				'make-pot'
@@ -103,9 +125,11 @@ class JsonSchemaExtractor extends Extractor {
 			return;
 		}
 
+		$add_references = ! empty( $options['addReferences'] );
+
 		self::extract_strings_using_i18n_schema(
 			$translations,
-			$options['addReferences'] ? $file : null,
+			$add_references ? $file_str : null,
 			$schema,
 			$json
 		);
@@ -114,10 +138,10 @@ class JsonSchemaExtractor extends Extractor {
 	/**
 	 * Extract strings from a JSON file using its i18n schema.
 	 *
-	 * @param Translations                   $translations The translations instance to append the new translations.
-	 * @param string|null                    $file         JSON file name or null if no reference should be added.
-	 * @param string|string[]|array[]|object $i18n_schema  I18n schema for the setting.
-	 * @param string|string[]|array[]        $settings     Value for the settings.
+	 * @param Translations         $translations The translations instance to append the new translations.
+	 * @param string|null          $file         JSON file name or null if no reference should be added.
+	 * @param mixed                $i18n_schema  I18n schema for the setting.
+	 * @param mixed                $settings     Value for the settings.
 	 *
 	 * @return void
 	 */
@@ -142,12 +166,13 @@ class JsonSchemaExtractor extends Extractor {
 			}
 		}
 		if ( is_object( $i18n_schema ) && is_array( $settings ) ) {
-			$group_key = '*';
+			$i18n_schema_arr = (array) $i18n_schema;
+			$group_key       = '*';
 			foreach ( $settings as $key => $value ) {
-				if ( isset( $i18n_schema->$key ) ) {
-					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema->$key, $value );
-				} elseif ( isset( $i18n_schema->$group_key ) ) {
-					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema->$group_key, $value );
+				if ( isset( $i18n_schema_arr[ $key ] ) ) {
+					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema_arr[ $key ], $value );
+				} elseif ( isset( $i18n_schema_arr[ $group_key ] ) ) {
+					self::extract_strings_using_i18n_schema( $translations, $file, $i18n_schema_arr[ $group_key ], $value );
 				}
 			}
 		}

@@ -14,6 +14,10 @@ use Gettext\Translations;
 class JedGenerator extends Jed {
 	/**
 	 * {@parentDoc}.
+	 *
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Options.
+	 * @return string
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
 		$options += static::$options;
@@ -38,19 +42,20 @@ class JedGenerator extends Jed {
 			],
 		];
 
-		return json_encode( $data, $options['json'] );
+		$result = json_encode( $data, $options['json'] );
+		return false === $result ? '' : $result;
 	}
 
 	/**
 	 * Generates an array with all translations.
 	 *
-	 * @param Translations $translations
+	 * @param Translations $translations Translations instance.
 	 *
-	 * @return array
+	 * @return array<string, array<string>>
 	 */
 	public static function buildMessages( Translations $translations ) {
 		$plural_forms      = $translations->getPluralForms();
-		$number_of_plurals = is_array( $plural_forms ) ? ( $plural_forms[0] - 1 ) : null;
+		$number_of_plurals = is_array( $plural_forms ) && is_numeric( $plural_forms[0] ) ? ( (int) $plural_forms[0] ) - 1 : null;
 		$messages          = [];
 		$context_glue      = chr( 4 );
 

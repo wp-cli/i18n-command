@@ -15,20 +15,27 @@ class FileDataExtractor {
 	 *
 	 * @see get_file_data()
 	 *
-	 * @param string $file Path to the file.
-	 * @param array $headers List of headers, in the format array('HeaderKey' => 'Header Name').
+	 * @param string               $file    Path to the file.
+	 * @param array<string, string> $headers List of headers, in the format array('HeaderKey' => 'Header Name').
 	 *
-	 * @return array Array of file headers in `HeaderKey => ['value' => Header Value, 'line' => Line Number]` format.
+	 * @return array<string, array{value: string, line: int}> Array of file headers in `HeaderKey => ['value' => Header Value, 'line' => Line Number]` format.
 	 */
 	public static function get_file_data( $file, $headers ) {
 		// We don't need to write to the file, so just open for reading.
 		$fp = fopen( $file, 'rb' );
+		if ( false === $fp ) {
+			return [];
+		}
 
 		// Pull only the first 8kiB of the file in.
 		$file_data = fread( $fp, 8192 );
 
 		// PHP will close file handle, but we are good citizens.
 		fclose( $fp );
+
+		if ( false === $file_data ) {
+			return [];
+		}
 
 		// Make sure we catch CR-only line endings.
 		$file_data = str_replace( "\r", "\n", $file_data );
@@ -39,10 +46,10 @@ class FileDataExtractor {
 	/**
 	 * Retrieves metadata from a string.
 	 *
-	 * @param string $text String to look for metadata in.
-	 * @param array $headers List of headers.
+	 * @param string               $text    String to look for metadata in.
+	 * @param array<string, string> $headers List of headers.
 	 *
-	 * @return array Array of file headers in `HeaderKey => ['value' => Header Value, 'line' => Line Number]` format.
+	 * @return array<string, array{value: string, line: int}> Array of file headers in `HeaderKey => ['value' => Header Value, 'line' => Line Number]` format.
 	 */
 	public static function get_file_data_from_string( $text, $headers ) {
 		foreach ( $headers as $field => $regex ) {
@@ -76,6 +83,7 @@ class FileDataExtractor {
 	 * @return string
 	 */
 	protected static function _cleanup_header_comment( $str ) { // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore -- Not changing because third-party commands might use/extend.
-		return trim( preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str ) );
+		$replaced = preg_replace( '/\s*(?:\*\/|\?>).*/', '', $str );
+		return trim( is_string( $replaced ) ? $replaced : '' );
 	}
 }

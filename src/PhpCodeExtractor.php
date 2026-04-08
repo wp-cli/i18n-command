@@ -10,6 +10,9 @@ use WP_CLI;
 final class PhpCodeExtractor extends PhpCode {
 	use IterableCodeExtractor;
 
+	/**
+	 * @var array<mixed>
+	 */
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
@@ -43,13 +46,25 @@ final class PhpCodeExtractor extends PhpCode {
 		],
 	];
 
+	/**
+	 * @var string
+	 */
 	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
 
 	/**
 	 * {@inheritdoc}
+	 *
+	 * @param string       $text
+	 * @param Translations $translations
+	 * @param array<mixed> $options
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
-		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
+		$file = '';
+		if ( isset( $options['file'] ) && is_scalar( $options['file'] ) ) {
+			$file = (string) $options['file'];
+		}
+		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		try {
 			self::fromStringMultiple( $text, [ $translations ], $options );
@@ -57,7 +72,7 @@ final class PhpCodeExtractor extends PhpCode {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s',
-					$options['file'],
+					$file,
 					$exception->getMessage()
 				),
 				'make-pot'

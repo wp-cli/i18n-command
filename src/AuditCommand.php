@@ -6,7 +6,9 @@ use Gettext\Translation;
 use Gettext\Translations;
 use Gettext\Utils\ParsedComment;
 use WP_CLI;
+use WP_CLI\Path;
 use WP_CLI\Utils;
+
 
 /**
  * Audit strings in a WordPress project.
@@ -88,33 +90,46 @@ class AuditCommand extends MakePotCommand {
 	 *     # Audit a plugin with GitHub Actions annotations format.
 	 *     $ wp i18n audit wp-content/plugins/hello-world --format=github-actions
 	 *
-	 * @when before_wp_load
-	 *
+	 * @param array<string> $args       Positional arguments.
+	 * @param array<mixed>  $assoc_args Associative arguments.
+	 * @return void
 	 * @throws WP_CLI\ExitException
 	 */
 	public function __invoke( $args, $assoc_args ) {
-		$this->source = realpath( $args[0] );
-		if ( ! $this->source || ! is_dir( $this->source ) ) {
+		$source = realpath( $args[0] );
+		if ( ! $source || ! is_dir( $source ) ) {
 			WP_CLI::error( 'Not a valid source directory.' );
 		}
 
-		$this->slug            = Utils\get_flag_value( $assoc_args, 'slug', Utils\basename( $this->source ) );
-		$this->domain          = Utils\get_flag_value( $assoc_args, 'domain', null );
-		$this->skip_js         = Utils\get_flag_value( $assoc_args, 'skip-js', $this->skip_js );
-		$this->skip_php        = Utils\get_flag_value( $assoc_args, 'skip-php', $this->skip_php );
-		$this->skip_blade      = Utils\get_flag_value( $assoc_args, 'skip-blade', $this->skip_blade );
-		$this->skip_block_json = Utils\get_flag_value( $assoc_args, 'skip-block-json', $this->skip_block_json );
-		$this->skip_theme_json = Utils\get_flag_value( $assoc_args, 'skip-theme-json', $this->skip_theme_json );
-		$this->format          = Utils\get_flag_value( $assoc_args, 'format', $this->format );
-		$ignore_domain         = Utils\get_flag_value( $assoc_args, 'ignore-domain', false );
+		$this->source = $source;
 
-		$include = Utils\get_flag_value( $assoc_args, 'include', [] );
-		if ( ! empty( $include ) ) {
+		/** @var array<string, bool|string> $assoc_args_simple */
+		$assoc_args_simple = $assoc_args;
+
+		$slug       = Utils\get_flag_value( $assoc_args_simple, 'slug', Path::basename( $this->source ) );
+		$this->slug = is_string( $slug ) ? $slug : Path::basename( $this->source );
+
+		$domain       = Utils\get_flag_value( $assoc_args_simple, 'domain', null );
+		$this->domain = is_string( $domain ) ? $domain : null;
+
+		$this->skip_js         = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-js', $this->skip_js );
+		$this->skip_php        = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-php', $this->skip_php );
+		$this->skip_blade      = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-blade', $this->skip_blade );
+		$this->skip_block_json = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-block-json', $this->skip_block_json );
+		$this->skip_theme_json = (bool) Utils\get_flag_value( $assoc_args_simple, 'skip-theme-json', $this->skip_theme_json );
+
+		$format       = Utils\get_flag_value( $assoc_args_simple, 'format', $this->format );
+		$this->format = is_string( $format ) ? $format : 'plaintext';
+
+		$ignore_domain = (bool) Utils\get_flag_value( $assoc_args_simple, 'ignore-domain', false );
+
+		$include = Utils\get_flag_value( $assoc_args_simple, 'include', null );
+		if ( is_string( $include ) && '' !== $include ) {
 			$this->include = array_map( 'trim', explode( ',', $include ) );
 		}
 
-		$exclude = Utils\get_flag_value( $assoc_args, 'exclude', [] );
-		if ( ! empty( $exclude ) ) {
+		$exclude = Utils\get_flag_value( $assoc_args_simple, 'exclude', null );
+		if ( is_string( $exclude ) && '' !== $exclude ) {
 			$this->exclude = array_map( 'trim', explode( ',', $exclude ) );
 		}
 
@@ -128,7 +143,7 @@ class AuditCommand extends MakePotCommand {
 			if ( null === $this->domain ) {
 				$this->domain = $this->slug;
 
-				if ( ! empty( $this->main_file_data['Text Domain']['value'] ) ) {
+				if ( ! empty( $this->main_file_data['Text Domain']['value'] ) && is_string( $this->main_file_data['Text Domain']['value'] ) ) {
 					$this->domain = $this->main_file_data['Text Domain']['value'];
 				}
 			}
@@ -166,24 +181,28 @@ class AuditCommand extends MakePotCommand {
 	 *
 	 * Overrides parent method to suppress log messages when using non-plaintext formats.
 	 *
-	 * @return array
+	 * @return array<string, array<string, mixed>>
 	 */
 	protected function get_main_file_data() {
 		$files = new \IteratorIterator( new \DirectoryIterator( $this->source ) );
 
 		/** @var \DirectoryIterator $file */
 		foreach ( $files as $file ) {
+			$real_path = $file->getRealPath();
+			if ( false === $real_path ) {
+				continue;
+			}
 			$stylesheet_path = null;
 			$project_path    = null;
 
 			// wp-content/themes/my-theme/style.css
 			if ( $file->isFile() && 'style' === $file->getBasename( '.css' ) && $file->isReadable() ) {
-				$stylesheet_path = $file->getRealPath();
-				$project_path    = $file->getRealPath();
-			} elseif ( $file->isDir() && ! $file->isDot() && is_readable( $file->getRealPath() . '/style.css' ) ) {
+				$stylesheet_path = $real_path;
+				$project_path    = $real_path;
+			} elseif ( $file->isDir() && ! $file->isDot() && is_readable( $real_path . '/style.css' ) ) {
 				// wp-content/themes/my-themes/theme-a/style.css
-				$stylesheet_path = $file->getRealPath() . '/style.css';
-				$project_path    = $file->getRealPath();
+				$stylesheet_path = $real_path . '/style.css';
+				$project_path    = $real_path;
 			}
 
 			if ( $stylesheet_path ) {
@@ -202,8 +221,10 @@ class AuditCommand extends MakePotCommand {
 					}
 					WP_CLI::debug( sprintf( 'Theme stylesheet: %s', $stylesheet_path ), 'audit' );
 
-					$this->project_type   = 'theme';
-					$this->main_file_path = $project_path;
+					$this->project_type = 'theme';
+					if ( is_string( $project_path ) ) {
+						$this->main_file_path = $project_path;
+					}
 
 					return $theme_data;
 				}
@@ -212,7 +233,7 @@ class AuditCommand extends MakePotCommand {
 			// wp-content/plugins/my-plugin/my-plugin.php
 			if ( $file->isFile() && $file->isReadable() && 'php' === $file->getExtension() ) {
 				$plugin_data = FileDataExtractor::get_file_data(
-					$file->getRealPath(),
+					$real_path,
 					array_combine(
 						$this->get_file_headers( 'plugin' ),
 						$this->get_file_headers( 'plugin' )
@@ -224,10 +245,10 @@ class AuditCommand extends MakePotCommand {
 					if ( 'plaintext' === $this->format ) {
 						WP_CLI::log( 'Plugin file detected.' );
 					}
-					WP_CLI::debug( sprintf( 'Plugin file: %s', $file->getRealPath() ), 'audit' );
+					WP_CLI::debug( sprintf( 'Plugin file: %s', $real_path ), 'audit' );
 
 					$this->project_type   = 'plugin';
-					$this->main_file_path = $file->getRealPath();
+					$this->main_file_path = $real_path;
 
 					return $plugin_data;
 				}
@@ -378,7 +399,7 @@ class AuditCommand extends MakePotCommand {
 	 * Goes through all extracted strings to find possible mistakes.
 	 *
 	 * @param Translations $translations Translations object.
-	 * @return array Array of issues found.
+	 * @return array<int, array<string, mixed>> Array of issues found.
 	 */
 	protected function collect_audit_issues( $translations ) {
 		$issues = [];
@@ -420,8 +441,6 @@ class AuditCommand extends MakePotCommand {
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
-						/** @var ParsedComment|string $comment */
-						/** @var string $file_header */
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
 							if ( 0 === strpos( $this->get_comment_text( $comment ), $file_header ) ) {
 								return false;
@@ -453,7 +472,8 @@ class AuditCommand extends MakePotCommand {
 				}
 			}
 
-			$non_placeholder_content = trim( preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $translation->getOriginal() ) );
+			$replaced                = preg_replace( self::SPRINTF_PLACEHOLDER_REGEX, '', $translation->getOriginal() );
+			$non_placeholder_content = trim( is_string( $replaced ) ? $replaced : '' );
 
 			// Check 3: Flag empty strings without any translatable content.
 			if ( '' === $non_placeholder_content ) {
@@ -517,7 +537,8 @@ class AuditCommand extends MakePotCommand {
 	/**
 	 * Outputs audit results in the specified format.
 	 *
-	 * @param array $issues Array of issues found.
+	 * @param array<int, array<string, mixed>> $issues Array of issues found.
+	 * @return void
 	 */
 	protected function output_results( $issues ) {
 		if ( empty( $issues ) ) {
@@ -526,14 +547,15 @@ class AuditCommand extends MakePotCommand {
 
 		switch ( $this->format ) {
 			case 'json':
-				WP_CLI::line( json_encode( $issues, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
+				$json = json_encode( $issues, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+				WP_CLI::line( false !== $json ? $json : '[]' );
 				break;
 
 			case 'github-actions':
 				foreach ( $issues as $issue ) {
-					$file    = $issue['file'];
-					$line    = $issue['line'] ?? 1;
-					$message = $issue['message'];
+					$file    = isset( $issue['file'] ) && is_scalar( $issue['file'] ) ? (string) $issue['file'] : '';
+					$line    = isset( $issue['line'] ) && is_scalar( $issue['line'] ) ? (int) $issue['line'] : 1;
+					$message = isset( $issue['message'] ) && is_scalar( $issue['message'] ) ? (string) $issue['message'] : '';
 
 					WP_CLI::line( sprintf( '::warning file=%s,line=%d::%s', $file, $line, $message ) );
 				}
@@ -542,9 +564,9 @@ class AuditCommand extends MakePotCommand {
 			case 'plaintext':
 			default:
 				foreach ( $issues as $issue ) {
-					$file     = $issue['file'];
-					$line     = $issue['line'] ?? null;
-					$message  = $issue['message'];
+					$file     = isset( $issue['file'] ) && is_scalar( $issue['file'] ) ? (string) $issue['file'] : '';
+					$line     = isset( $issue['line'] ) && is_scalar( $issue['line'] ) ? (int) $issue['line'] : null;
+					$message  = isset( $issue['message'] ) && is_scalar( $issue['message'] ) ? (string) $issue['message'] : '';
 					$location = $line ? "$file:$line" : $file;
 
 					WP_CLI::warning( sprintf( '%s: %s', $location, $message ) );

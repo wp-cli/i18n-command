@@ -11,6 +11,9 @@ use WP_CLI;
 final class JsCodeExtractor extends JsCode {
 	use IterableCodeExtractor;
 
+	/**
+	 * @var array<mixed>
+	 */
 	public static $options = [
 		'extractComments' => [ 'translators', 'Translators' ],
 		'constants'       => [],
@@ -22,13 +25,22 @@ final class JsCodeExtractor extends JsCode {
 		],
 	];
 
+	/**
+	 * @var string
+	 */
 	protected static $functionsScannerClass = 'WP_CLI\I18n\JsFunctionsScanner';
 
 	/**
-	 * @inheritdoc
+	 * {@inheritdoc}
+	 *
+	 * @param string       $text         The text to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
-		WP_CLI::debug( "Parsing file {$options['file']}", 'make-pot' );
+		$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
+		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		try {
 			self::fromStringMultiple( $text, [ $translations ], $options );
@@ -36,7 +48,7 @@ final class JsCodeExtractor extends JsCode {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s (line %3$d, column %4$d)',
-					$options['file'],
+					$file,
 					$exception->getMessage(),
 					$exception->getPosition()->getLine(),
 					$exception->getPosition()->getColumn()
@@ -47,7 +59,7 @@ final class JsCodeExtractor extends JsCode {
 			WP_CLI::debug(
 				sprintf(
 					'Could not parse file %1$s: %2$s',
-					$options['file'],
+					$file,
 					$exception->getMessage()
 				),
 				'make-pot'
@@ -56,14 +68,26 @@ final class JsCodeExtractor extends JsCode {
 	}
 
 	/**
-	 * @inheritDoc
+	 * {@inheritdoc}
+	 *
+	 * @param string               $text         The text to extract strings from.
+	 * @param array<\Gettext\Translations> $translations Translations instances.
+	 * @param array<mixed>         $options      Extraction options.
+	 * @return void
 	 */
 	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
 		$options += self::$options;
 
 		/** @var JsFunctionsScanner $functions */
 		$functions = new self::$functionsScannerClass( $text );
-		$functions->enableCommentsExtraction( $options['extractComments'] );
-		$functions->saveGettextFunctions( $translations, $options );
+		if ( isset( $options['extractComments'] ) && ( is_string( $options['extractComments'] ) || is_array( $options['extractComments'] ) ) ) {
+			/** @var array<string>|string $extract_comments */
+			$extract_comments = $options['extractComments'];
+			$functions->enableCommentsExtraction( $extract_comments );
+		}
+
+		if ( ! empty( $translations ) ) {
+			$functions->saveGettextFunctions( $translations[0], $options );
+		}
 	}
 }

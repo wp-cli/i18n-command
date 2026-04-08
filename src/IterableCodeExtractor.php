@@ -9,42 +9,47 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use WP_CLI;
-use WP_CLI\Utils;
+use WP_CLI\Path;
+
+
 
 trait IterableCodeExtractor {
 
+	/**
+	 * @var string
+	 */
 	protected static $dir = '';
 
 	/**
 	 * Extract the translations from a file.
 	 *
-	 * @param array|string $file_or_files A path of a file or files
-	 * @param Translations $translations  The translations instance to append the new translations.
-	 * @param array        $options      {
+	 * @param array<mixed>|string $file_or_files A path of a file or files
+	 * @param Translations         $translations  The translations instance to append the new translations.
+	 * @param array<mixed>         $options      {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
 	 *     @type bool  $wpExtractTemplates  Extract 'Template Name' headers in theme files. Default 'false'.
 	 *     @type bool  $wpExtractPatterns   Extract 'Title' and 'Description' headers in pattern files. Default 'false'.
-	 *     @type array $restrictFileNames   Skip all files which are not included in this array.
-	 *     @type array $restrictDirectories Skip all directories which are not included in this array.
+	 *     @type array<string> $restrictFileNames   Skip all files which are not included in this array.
+	 *     @type array<string> $restrictDirectories Skip all directories which are not included in this array.
 	 * }
 	 * @return null
 	 */
 	public static function fromFile( $file_or_files, Translations $translations, array $options = [] ) {
 		foreach ( static::getFiles( $file_or_files ) as $file ) {
-			if ( ! empty( $options['restrictFileNames'] ) ) {
-				$basename = Utils\basename( $file );
+			if ( ! empty( $options['restrictFileNames'] ) && is_array( $options['restrictFileNames'] ) ) {
+				$basename = Path::basename( $file );
 				if ( ! in_array( $basename, $options['restrictFileNames'], true ) ) {
 					continue;
 				}
 			}
 
-			$relative_file_path = ltrim( str_replace( static::$dir, '', Utils\normalize_path( $file ) ), '/' );
+			$relative_file_path = ltrim( str_replace( static::$dir, '', Path::normalize( $file ) ), '/' );
 
 			// Make sure a relative file path is added as a comment.
 			$options['file'] = $relative_file_path;
 
-			if ( ! empty( $options['restrictDirectories'] ) ) {
+			if ( ! empty( $options['restrictDirectories'] ) && is_array( $options['restrictDirectories'] ) ) {
 				$top_level_dirname = explode( '/', $relative_file_path )[0];
 
 				if ( ! in_array( $top_level_dirname, $options['restrictDirectories'], true ) ) {
@@ -121,31 +126,38 @@ trait IterableCodeExtractor {
 
 			static::fromString( $text, $translations, $options );
 		}
+
+		return null;
 	}
 
 	/**
 	 * Extract the translations from a file.
 	 *
-	 * @param string $dir                Root path to start the recursive traversal in.
-	 * @param Translations $translations The translations instance to append the new translations.
-	 * @param array        $options      {
+	 * @param string               $dir                Root path to start the recursive traversal in.
+	 * @param Translations         $translations The translations instance to append the new translations.
+	 * @param array<string, mixed> $options      {
 	 *     Optional. An array of options passed down to static::fromString()
 	 *
 	 *     @type bool $wpExtractTemplates Extract 'Template Name' headers in theme files. Default 'false'.
-	 *     @type array $exclude           A list of path to exclude. Default [].
-	 *     @type array $extensions        A list of extensions to process. Default [].
+	 *     @type array<string> $exclude           A list of path to exclude. Default [].
+	 *     @type array<string> $extensions        A list of extensions to process. Default [].
 	 * }
 	 * @return void
 	 */
 	public static function fromDirectory( $dir, Translations $translations, array $options = [] ) {
-		$dir = Utils\normalize_path( $dir );
+		$dir = Path::normalize( $dir );
 
 		static::$dir = $dir;
 
-		$include = isset( $options['include'] ) ? $options['include'] : [];
-		$exclude = isset( $options['exclude'] ) ? $options['exclude'] : [];
+		$include    = isset( $options['include'] ) && is_array( $options['include'] ) ? array_filter( $options['include'], 'is_string' ) : [];
+		$exclude    = isset( $options['exclude'] ) && is_array( $options['exclude'] ) ? array_filter( $options['exclude'], 'is_string' ) : [];
+		$extensions = isset( $options['extensions'] ) && is_array( $options['extensions'] ) ? array_filter( $options['extensions'], 'is_string' ) : [];
 
-		$files = static::getFilesFromDirectory( $dir, $include, $exclude, $options['extensions'] );
+		/** @var array<string> $include */
+		/** @var array<string> $exclude */
+		/** @var array<string> $extensions */
+
+		$files = static::getFilesFromDirectory( $dir, $include, $exclude, $extensions );
 
 		if ( ! empty( $files ) ) {
 			static::fromFile( $files, $translations, $options );
@@ -157,8 +169,8 @@ trait IterableCodeExtractor {
 	/**
 	 * Determines whether a file is valid based on given matchers.
 	 *
-	 * @param SplFileInfo $file     File or directory.
-	 * @param array       $matchers List of files and directories to match.
+	 * @param SplFileInfo   $file     File or directory.
+	 * @param array<string> $matchers List of files and directories to match.
 	 * @return int How strongly the file is matched.
 	 */
 	protected static function calculateMatchScore( SplFileInfo $file, array $matchers = [] ) {
@@ -178,6 +190,7 @@ trait IterableCodeExtractor {
 			$pattern = '(^|/)' . str_replace( '__wildcard__', '(.+)', $pattern );
 
 			// Base score is the amount of nested directories, discounting wildcards.
+			// Scaled by 10 to avoid floats.
 			$base_score = count(
 				array_filter(
 					explode( '/', $path_or_file ),
@@ -185,10 +198,10 @@ trait IterableCodeExtractor {
 						return '*' !== $component;
 					}
 				)
-			);
+			) * 10;
 			if ( 0 === $base_score ) {
 				// If the matcher is simply * it gets a score above the implicit score but below 1.
-				$base_score = 0.2;
+				$base_score = 2; // Was 0.2
 			}
 
 			// If the matcher contains no wildcards and matches the end of the path.
@@ -211,8 +224,8 @@ trait IterableCodeExtractor {
 	/**
 	 * Determines whether or not a directory has children that may be matched.
 	 *
-	 * @param SplFileInfo $dir      Directory.
-	 * @param array       $matchers List of files and directories to match.
+	 * @param SplFileInfo   $dir      Directory.
+	 * @param array<string> $matchers List of files and directories to match.
 	 * @return bool Whether or not there are any matchers for children of this directory.
 	 */
 	protected static function containsMatchingChildren( SplFileInfo $dir, array $matchers = [] ) {
@@ -252,12 +265,12 @@ trait IterableCodeExtractor {
 	/**
 	 * Recursively gets all PHP files within a directory.
 	 *
-	 * @param string $dir A path of a directory.
-	 * @param array $includes List of files and directories to include.
-	 * @param array $excludes List of files and directories to skip.
-	 * @param array $extensions List of filename extensions to process.
+	 * @param string        $dir A path of a directory.
+	 * @param array<string> $includes List of files and directories to include.
+	 * @param array<string> $excludes List of files and directories to skip.
+	 * @param array<string> $extensions List of filename extensions to process.
 	 *
-	 * @return array File list.
+	 * @return array<string> File list.
 	 */
 	public static function getFilesFromDirectory( $dir, array $includes = [], array $excludes = [], $extensions = [] ) {
 		$filtered_files = [];
@@ -308,7 +321,7 @@ trait IterableCodeExtractor {
 				continue;
 			}
 
-			$filtered_files[] = Utils\normalize_path( $file->getPathname() );
+			$filtered_files[] = Path::normalize( $file->getPathname() );
 		}
 
 		sort( $filtered_files, SORT_NATURAL | SORT_FLAG_CASE );
@@ -320,11 +333,14 @@ trait IterableCodeExtractor {
 	 * Determines whether the file extension of a file matches any of the given file extensions.
 	 * The end/last part of a multi file extension must also match (`js` of `min.js`).
 	 *
-	 * @param SplFileInfo $file       File or directory.
-	 * @param array       $extensions List of file extensions to match.
+	 * @param SplFileInfo   $file       File or directory.
+	 * @param array<string> $extensions List of file extensions to match.
 	 * @return bool Whether the file has a file extension that matches any of the ones in the list.
 	 */
 	protected static function file_has_file_extension( $file, $extensions ) {
+		if ( ! is_array( $extensions ) ) {
+			return false;
+		}
 		return in_array( $file->getExtension(), $extensions, true ) ||
 			in_array( static::file_get_extension_multi( $file ), $extensions, true );
 	}

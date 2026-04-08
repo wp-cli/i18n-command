@@ -31,6 +31,6 @@ namespace Gettext\Generators {
 		/**
 		 * @var array<string, bool>
 		 */
-		public $options;
+		public static $options;
 	}
 }

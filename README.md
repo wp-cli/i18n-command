@@ -148,7 +148,7 @@ if the source directory is detected as either a plugin or theme.
 	[--include=<paths>]
 		Comma-separated list of files and paths that should be used for string extraction.
 		If provided, only these files and folders will be taken into account for string extraction.
-		For example, `--include="src,my-file.php` will ignore anything besides `my-file.php` and files in the `src`
+		For example, `--include="src,my-file.php"` will ignore anything besides `my-file.php` and files in the `src`
 		directory. Simple glob patterns can be used, i.e. `--include="foo-*.php"` includes any PHP file with the `foo-`
 		prefix. Leading and trailing slashes are ignored, i.e. `/my/directory/` is the same as `my/directory`.
 

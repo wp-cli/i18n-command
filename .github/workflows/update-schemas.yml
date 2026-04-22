@@ -31,14 +31,34 @@ jobs:
         curl -s https://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json -o assets/theme-i18n.json
         curl -s https://develop.svn.wordpress.org/trunk/src/wp-includes/block-i18n.json -o assets/block-i18n.json
 
-    - name: Create pull request
-      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
-      with:
-        branch: update-schemas
-        base: ${{ github.event.repository.default_branch }}
-        token: ${{ secrets.GITHUB_TOKEN }}
-        title: Update schema fallback files
-        body: "**This is an automated pull-request**\n\nRefreshes the i18n schema files with the latest changes from core.\n\nThese are only used as a fallback if they can't be accessed directly."
-        reviewers: swissspidy
-        labels: scope:distribution
-        commit-message: "Update schema fallback files"
+    - name: Commit and Create Pull Request
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b update-schemas
+          git add assets/
+          git commit -m "Update schema fallback files"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          git push -f origin update-schemas
+          
+          PR_NUMBER=$(gh pr list --head update-schemas --json number --jq '.[0].number')
+          if [ -z "$PR_NUMBER" ]; then
+            gh pr create \
+              --title "Update schema fallback files" \
+              --body-file - <<EOF
+**This is an automated pull-request**
+
+Refreshes the i18n schema files with the latest changes from core.
+
+These are only used as a fallback if they can't be accessed directly.
+EOF
+              --label "scope:distribution" \
+              --base "${{ github.event.repository.default_branch }}" \
+              --head "update-schemas" \
+              --reviewer "swissspidy"
+          fi
+        fi
+

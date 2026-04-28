@@ -33,7 +33,7 @@ jobs:
 
     - name: Commit and Create Pull Request
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ github.token }}
         PR_BODY: |
           **This is an automated pull-request**
 
@@ -47,10 +47,9 @@ jobs:
           git checkout -b update-schemas
           git add assets/
           git commit -m "Update schema fallback files"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           git push -f origin update-schemas
           
-          PR_NUMBER=$(gh pr list --head update-schemas --json number --jq '.[0].number')
+          PR_NUMBER=$(gh pr list --head update-schemas --json number --jq '.[0].number // empty')
           if [ -z "$PR_NUMBER" ]; then
             gh pr create \
               --title "Update schema fallback files" \
@@ -59,6 +58,13 @@ jobs:
               --base "${{ github.event.repository.default_branch }}" \
               --head "update-schemas" \
               --reviewer "swissspidy"
+          else
+            gh pr edit "$PR_NUMBER" \
+              --title "Update schema fallback files" \
+              --body "$PR_BODY" \
+              --add-label "scope:distribution" \
+              --base "${{ github.event.repository.default_branch }}"
           fi
+
         fi
 

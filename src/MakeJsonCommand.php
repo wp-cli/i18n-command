@@ -249,6 +249,10 @@ class MakeJsonCommand extends WP_CLI_Command {
 
 		$domain = ( ! empty( $domain ) ) ? $domain : $translations->getDomain();
 
+		if ( ! empty( $domain ) ) {
+			$domain = preg_replace( '/[^a-z0-9-]/i', '', $domain );
+		}
+
 		if ( $domain && 0 !== strpos( $base_file_name, $domain ) ) {
 			$base_file_name = "{$domain}-{$base_file_name}";
 		}

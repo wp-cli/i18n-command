@@ -393,13 +393,21 @@ class MakePotCommand extends WP_CLI_Command {
 		if ( isset( $this->main_file_data['Domain Path'] ) && is_array( $this->main_file_data['Domain Path'] ) ) {
 			$domain_path_val = $this->main_file_data['Domain Path']['value'] ?? '';
 			if ( is_scalar( $domain_path_val ) && ! empty( $domain_path_val ) ) {
-				// Domain Path inside source folder.
-				$this->destination = sprintf(
-					'%s/%s/%s.pot',
-					$this->source,
-					$this->unslashit( (string) $domain_path_val ),
-					$this->slug
-				);
+				$domain_path = $this->unslashit( Path::normalize( (string) $domain_path_val ) );
+
+				if ( false !== strpos( $domain_path, '..' ) || Path::is_absolute( $domain_path ) || Path::is_stream( $domain_path ) ) {
+					WP_CLI::error( sprintf( 'Invalid Domain Path value: %s', $domain_path_val ) );
+				}
+
+				if ( ! empty( $domain_path ) ) {
+					// Domain Path inside source folder.
+					$this->destination = sprintf(
+						'%s/%s/%s.pot',
+						$this->source,
+						$domain_path,
+						$this->slug
+					);
+				}
 			}
 		}
 

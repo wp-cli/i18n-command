@@ -1089,3 +1089,43 @@ Feature: Split PO files into JSON files.
       """
       "source":"app.min.admin.js"
       """
+
+  Scenario: Normalizes domain in X-Domain header and --domain argument
+    Given an empty foo-plugin directory
+    And a foo-plugin/de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "MIME-Version: 1.0\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Content-Transfer-Encoding: 8bit\n"
+      "X-Domain: ../../../invalid-domain\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+      #: script.js:5
+      msgid "Script"
+      msgstr "Skript"
+      """
+
+    When I run `wp i18n make-json foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/invalid-domain-de_DE-9a9569e9d73f33740eada95275da7f30.json file should exist
+    And the invalid-domain-de_DE-9a9569e9d73f33740eada95275da7f30.json file should not exist
+
+    When I run `wp i18n make-json foo-plugin --domain=../../another-invalid`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/another-invalid-de_DE-9a9569e9d73f33740eada95275da7f30.json file should exist
+    And the another-invalid-de_DE-9a9569e9d73f33740eada95275da7f30.json file should not exist
+
+

@@ -326,6 +326,25 @@ Feature: Generate a POT file of a WordPress project
     And STDERR should be empty
     And the foo-plugin/languages/foo-plugin.pot file should exist
 
+  Scenario: Refuses Domain Path header with invalid path.
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       * Text Domain: foo-plugin
+       * Domain Path: ../../../../../../../../tmp/custom-languages
+       */
+      """
+
+    When I try `wp i18n make-pot foo-plugin`
+    Then STDERR should contain:
+      """
+      Error: Invalid Domain Path value: ../../../../../../../../tmp/custom-languages
+      """
+    And the return code should be 1
+
   Scenario: Uses Text Domain header when no domain is set.
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

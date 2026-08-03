@@ -395,7 +395,7 @@ class MakePotCommand extends WP_CLI_Command {
 			if ( is_scalar( $domain_path_val ) && ! empty( $domain_path_val ) ) {
 				$domain_path = $this->unslashit( Path::normalize( (string) $domain_path_val ) );
 
-				if ( false !== strpos( $domain_path, '..' ) || Path::is_absolute( $domain_path ) || Path::is_stream( $domain_path ) ) {
+				if ( preg_match( '#(?:^|/)\.\.(?:/|$)#', $domain_path ) || Path::is_absolute( $domain_path ) || Path::is_stream( $domain_path ) ) {
 					WP_CLI::error( sprintf( 'Invalid Domain Path value: %s', $domain_path_val ) );
 				}
 

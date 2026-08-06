@@ -192,7 +192,7 @@ class JsonSchemaExtractor extends Extractor {
 			return '';
 		}
 
-		$headers  = [ 'Content-type: application/json' ];
+		$headers  = [ 'Content-Type' => 'application/json' ];
 		$options  = [ 'halt_on_error' => false ];
 		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
 

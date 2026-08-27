@@ -153,10 +153,10 @@ Feature: Generate PHP files from PO files
     And STDERR should be empty
     And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
       """
-      return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','language'=>'de_DE','project-id-version'=>'Development (5.2.x)','pot-creation-date'=>'','translation-revision-date'=>'2019-03-28 19:42+0300','po-revision-date'=>'2019-03-28 19:42+0300','x-generator'=>'Poedit 2.2.1','messages'=>['html_lang_attribute'=>'de-DE','text directionltr'=>'ltr','number_format_decimal_point'=>',','number_format_thousands_sep'=>'.','Update %s now'=>'Jetzt %s aktualisieren','[%1$s] Confirm Action: %2$s'=>'[%1$s] Aktion bestätigen: %2$s','[%s] Erasure Request Fulfilled'=>'[%s] Löschauftrag ausgeführt','[%s] Personal Data Export'=>'[%s] Export personenbezogener Daten']];
+      return ['domain'=>NULL,'plural-forms'=>'nplurals=2; plural=n != 1;','language'=>'de_DE','project-id-version'=>'Development (5.2.x)','pot-creation-date'=>'','translation-revision-date'=>'2019-03-28 19:42+0300','x-generator'=>'Poedit 2.2.1','messages'=>['html_lang_attribute'=>'de-DE','text directionltr'=>'ltr','number_format_decimal_point'=>',','number_format_thousands_sep'=>'.','Update %s now'=>'Jetzt %s aktualisieren','[%1$s] Confirm Action: %2$s'=>'[%1$s] Aktion bestätigen: %2$s','[%s] Erasure Request Fulfilled'=>'[%s] Löschauftrag ausgeführt','[%s] Personal Data Export'=>'[%s] Export personenbezogener Daten']];
       """
 
-  Scenario: Writes the revision date under both header keys
+  Scenario: Writes the revision date as translation-revision-date
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin-de_DE.po file:
       """
@@ -183,9 +183,9 @@ Feature: Generate PHP files from PO files
       """
       'translation-revision-date'=>'2018-05-02T22:06:24+00:00'
       """
-    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should not contain:
       """
-      'po-revision-date'=>'2018-05-02T22:06:24+00:00'
+      'po-revision-date'
       """
 
   Scenario: Does include translations

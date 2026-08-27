@@ -72,16 +72,24 @@ class PhpArrayGenerator extends PhpArray {
 			$result['language'] = $language;
 		}
 
+		/*
+		 * `PO-Revision-Date` maps onto two keys. GlotPress exports the revision date as
+		 * `translation-revision-date`, which is what the language packs on WordPress.org
+		 * ship and what `make-json` already emits, while WordPress reads `po-revision-date`
+		 * in `wp_get_l10n_php_file_data()`. Writing both keeps the file readable either way.
+		 */
 		$headers_allowlist = [
-			'POT-Creation-Date'  => 'pot-creation-date',
-			'PO-Revision-Date'   => 'po-revision-date',
-			'Project-Id-Version' => 'project-id-version',
-			'X-Generator'        => 'x-generator',
+			'POT-Creation-Date'  => [ 'pot-creation-date' ],
+			'PO-Revision-Date'   => [ 'translation-revision-date', 'po-revision-date' ],
+			'Project-Id-Version' => [ 'project-id-version' ],
+			'X-Generator'        => [ 'x-generator' ],
 		];
 
 		foreach ( $translations->getHeaders() as $name => $value ) {
 			if ( isset( $headers_allowlist[ $name ] ) ) {
-				$result[ $headers_allowlist[ $name ] ] = $value;
+				foreach ( $headers_allowlist[ $name ] as $key ) {
+					$result[ $key ] = $value;
+				}
 			}
 		}
 

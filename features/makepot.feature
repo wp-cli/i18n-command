@@ -948,7 +948,7 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-          __( 'Hello %1$s %2$s', 'foo-plugin' ),
+          __( 'Hello %s %s', 'foo-plugin' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- Unordered on purpose, this is what make-pot is expected to warn about.
           $a_variable,
           $another_variable
       );

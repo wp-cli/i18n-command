@@ -107,7 +107,7 @@ Feature: Audit strings in a WordPress project
        * Text Domain: foo-plugin
        */
 
-      __( 'Hello %s %s', 'foo-plugin' );
+      __( 'Hello %1$s %2$s', 'foo-plugin' );
       """
 
     When I try `wp i18n audit foo-plugin`

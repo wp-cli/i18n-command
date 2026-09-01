@@ -893,8 +893,8 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        _n( 'One Comment', '%s Comments', $number, 'foo-plugin' ),
-        $number
+          _n( 'One Comment', '%s Comments', $number, 'foo-plugin' ),
+          $number
       );
 
       """
@@ -920,9 +920,9 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        _n( '%1$s Comment (%2$d)', '%2$s Comments (%1$s)', $number, 'foo-plugin' ),
-        $number,
-        $another_variable
+          _n( '%1$s Comment (%2$d)', '%2$s Comments (%1$s)', $number, 'foo-plugin' ),
+          $number,
+          $another_variable
       );
 
       """
@@ -948,9 +948,9 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        __( 'Hello %s %s', 'foo-plugin' ),
-        $a_variable,
-        $another_variable
+          __( 'Hello %1$s %2$s', 'foo-plugin' ),
+          $a_variable,
+          $another_variable
       );
 
       """

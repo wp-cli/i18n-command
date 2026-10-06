@@ -4,6 +4,7 @@ namespace WP_CLI\I18n;
 
 use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
 use Gettext\Utils\ParsedComment;
+use WP_CLI;
 use Peast\Peast;
 use Peast\Syntax\Node;
 use Peast\Traverser;
@@ -59,9 +60,21 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			$translations = $translations[0];
 		}
 
+		$functions = isset( $options['functions'] ) && is_array( $options['functions'] ) ? array_keys( $options['functions'] ) : [];
+
+		// Parsing is by far the most expensive part, so skip it for code that
+		// can't contain any translations, and skip collecting comments if
+		// none of them can matter.
+		$has_eval = $this->containsName( [ 'eval' ] );
+		if ( ! $has_eval && ! $this->containsName( $functions ) ) {
+			$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
+			WP_CLI::debug( "Skipping file {$file}: no translation function calls found", 'make-pot' );
+			return;
+		}
+
 		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
-			'comments'   => false !== $this->extract_comments,
+			'comments'   => $has_eval ? false !== $this->extract_comments : $this->needsComments( $functions ),
 			'jsx'        => true,
 		];
 		$ast           = Peast::latest( $this->code, $peast_options )->parse();
@@ -284,6 +297,58 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		);
 
 		$traverser->traverse( $ast );
+	}
+
+	/**
+	 * Whether the code contains any of the given names as a whole word.
+	 *
+	 * Every call that resolveExpressionCallee() can resolve contains the
+	 * function name as a whole word: as an identifier (`__(`, `u.__(`,
+	 * `(0, u.__)(`), as a string (`u["__"]`) or as a comment (`u[/* __ *\/ "a"]`).
+	 *
+	 * This doesn't hold for code inside string literals passed to `eval()`,
+	 * as in `eval("\n__(...)")`, so callers must check for `eval` too.
+	 *
+	 * @param array<int|string> $names Names to look for.
+	 * @return bool
+	 */
+	private function containsName( array $names ) {
+		if ( empty( $names ) ) {
+			return false;
+		}
+
+		$pattern = implode( '|', array_map( 'preg_quote', array_map( 'strval', $names ) ) );
+
+		return 1 === preg_match( '/(?<![\w$])(?:' . $pattern . ')(?![\w$])/', $this->code );
+	}
+
+	/**
+	 * Whether the code needs to be parsed with comments.
+	 *
+	 * Comments are needed for translator comments, and for the function names
+	 * in mangled webpack output like `u[/* __ *\/ "a"]( "translation" )`.
+	 *
+	 * @param array<int|string> $functions Function names.
+	 * @return bool
+	 */
+	private function needsComments( array $functions ) {
+		if ( false === $this->extract_comments ) {
+			return false;
+		}
+
+		foreach ( (array) $this->extract_comments as $prefix ) {
+			if ( '' === $prefix || false !== strpos( $this->code, $prefix ) ) {
+				return true;
+			}
+		}
+
+		if ( empty( $functions ) ) {
+			return false;
+		}
+
+		$pattern = implode( '|', array_map( 'preg_quote', array_map( 'strval', $functions ) ) );
+
+		return 1 === preg_match( '#/\*\s*(?:' . $pattern . ')\s*\*/#', $this->code );
 	}
 
 	/**

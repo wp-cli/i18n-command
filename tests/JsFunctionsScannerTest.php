@@ -64,4 +64,19 @@ class JsFunctionsScannerTest extends TestCase {
 		$this->assertNotFalse( $translation );
 		$this->assertSame( [ 'translators: A comment.' ], $translation->getExtractedComments() );
 	}
+
+	public function test_extracts_calls_with_unicode_escaped_names() {
+		$translations = $this->extract(
+			"\\u005f\\u005f( 'Escaped', 'foo-plugin' );\n_\\u{78}( 'Braced', 'context', 'foo-plugin' );"
+		);
+
+		$this->assertNotFalse( $translations->find( null, 'Escaped' ) );
+		$this->assertNotFalse( $translations->find( 'context', 'Braced' ) );
+	}
+
+	public function test_skips_code_with_unrelated_unicode_escapes() {
+		$translations = $this->extract( "var s = '\\u005fa'; var t = '\\u00e9';" );
+
+		$this->assertCount( 0, $translations );
+	}
 }

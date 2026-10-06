@@ -64,9 +64,11 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 		// Parsing is by far the most expensive part, so skip it for code that
 		// can't contain any translations, and skip collecting comments if
-		// none of them can matter.
-		$has_eval = $this->containsName( [ 'eval' ] );
-		if ( ! $has_eval && ! $this->containsName( $functions ) ) {
+		// none of them can matter. The checks below work on the raw code, so
+		// they don't apply to code in `eval()` strings or to identifiers
+		// written with Unicode escapes.
+		$parse_all = $this->containsName( [ 'eval' ] ) || $this->containsEscapedName( $functions );
+		if ( ! $parse_all && ! $this->containsName( $functions ) ) {
 			$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
 			WP_CLI::debug( "Skipping file {$file}: no translation function calls found", 'make-pot' );
 			return;
@@ -74,7 +76,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 
 		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
-			'comments'   => $has_eval ? false !== $this->extract_comments : $this->needsComments( $functions ),
+			'comments'   => $parse_all ? false !== $this->extract_comments : $this->needsComments( $functions ),
 			'jsx'        => true,
 		];
 		$ast           = Peast::latest( $this->code, $peast_options )->parse();
@@ -320,6 +322,41 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		$pattern = implode( '|', array_map( 'preg_quote', array_map( 'strval', $names ) ) );
 
 		return 1 === preg_match( '/(?<![\w$])(?:' . $pattern . ')(?![\w$])/', $this->code );
+	}
+
+	/**
+	 * Whether the code contains a Unicode escape for a character of any of the given names.
+	 *
+	 * Identifiers can be written with escapes, like `\u005f\u005f( 'Hello' )`
+	 * for `__( 'Hello' )`. Such a call doesn't contain the name itself.
+	 *
+	 * @param array<int|string> $names Names to look for.
+	 * @return bool
+	 */
+	private function containsEscapedName( array $names ) {
+		if ( false === strpos( $this->code, '\\u' ) ) {
+			return false;
+		}
+
+		$codes = [];
+		foreach ( $names as $name ) {
+			foreach ( str_split( (string) $name ) as $char ) {
+				if ( ord( $char ) > 0x7f ) {
+					// Not worth handling precisely for non-ASCII names.
+					return true;
+				}
+				$codes[] = sprintf( '%x', ord( $char ) );
+			}
+		}
+
+		if ( empty( $codes ) ) {
+			return false;
+		}
+
+		$pattern = implode( '|', array_unique( $codes ) );
+
+		// Either `\uXXXX` with exactly four hex digits, or `\u{X…}`.
+		return 1 === preg_match( '/\\\\u(?:00(?:' . $pattern . ')|\{0*(?:' . $pattern . ')\})/i', $this->code );
 	}
 
 	/**

@@ -2016,6 +2016,75 @@ Feature: Generate a POT file of a WordPress project
       msgid "foo-plugin"
       """
 
+  Scenario: Only parses JavaScript files that can contain translations
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/no-calls.js file:
+      """
+      function __webpack_require__( moduleId ) { return moduleId; }
+      const strings = { label_x: 'Not translated', foo__: 'Not translated either' };
+      """
+    And a foo-plugin/mangled.js file:
+      """
+      Object(i18n[/* __ */ "a"])( 'Mangled webpack', 'foo-plugin' );
+      """
+    And a foo-plugin/eval.js file:
+      """
+      eval( "var a = 1;\n__( 'Inside eval', 'foo-plugin' );" );
+      """
+    And a foo-plugin/minified.js file:
+      """
+      var a=Object(u.__)("Minified","foo-plugin");
+      """
+    And a foo-plugin/comment.js file:
+      """
+      // translators: A comment.
+      wp.i18n._x( 'With comment', 'context', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug=make-pot`
+    Then STDERR should contain:
+      """
+      Skipping file no-calls.js: no translation function calls found
+      """
+    And STDERR should not contain:
+      """
+      Skipping file mangled.js
+      """
+    And STDERR should not contain:
+      """
+      Skipping file eval.js
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Mangled webpack"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Inside eval"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Minified"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: A comment.
+      #: comment.js:2
+      msgctxt "context"
+      msgid "With comment"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      Not translated
+      """
+
   Scenario: Ignores dynamic import in JavaScript file.
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

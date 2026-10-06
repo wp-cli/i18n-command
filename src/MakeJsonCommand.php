@@ -340,7 +340,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 		// this is now an array of arrays of sources, translate to array of sources
 		$references = [];
 		foreach ( $temp as $sources ) {
-			if ( is_null( $sources ) ) {
+			if ( ! is_array( $sources ) ) {
 				continue;
 			}
 			array_push( $references, ...$sources );

@@ -328,7 +328,9 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * Comments are needed for translator comments, and for the function names
 	 * in mangled webpack output like `u[/* __ *\/ "a"]( "translation" )`.
 	 *
-	 * @param array<int|string> $functions Function names.
+	 * Only called for code that contains at least one of the function names.
+	 *
+	 * @param array<int|string> $functions Function names, not empty.
 	 * @return bool
 	 */
 	private function needsComments( array $functions ) {
@@ -340,10 +342,6 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 			if ( '' === $prefix || false !== strpos( $this->code, $prefix ) ) {
 				return true;
 			}
-		}
-
-		if ( empty( $functions ) ) {
-			return false;
 		}
 
 		$pattern = implode( '|', array_map( 'preg_quote', array_map( 'strval', $functions ) ) );

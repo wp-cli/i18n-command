@@ -3498,24 +3498,14 @@ Feature: Generate a POT file of a WordPress project
         }
       }
       """
-    And a no-network.php file:
+    # A response without a header/body separator makes Requests throw, which
+    # WP_CLI\Utils\http_request() turns into a RuntimeException, as on a network error.
+    And that HTTP requests to https://develop.svn.wordpress.org/trunk/src/wp-includes/ will respond with:
       """
-      <?php
-      // Make sure cURL does not bypass the unreachable proxy below.
-      putenv( 'NO_PROXY' );
-      putenv( 'no_proxy' );
-
-      WP_CLI::add_hook(
-        'http_request_options',
-        static function ( $options ) {
-          $options['proxy']   = '127.0.0.1:1';
-          $options['timeout'] = 5;
-          return $options;
-        }
-      );
+      HTTP/1.1 503 Service Unavailable
       """
 
-    When I try `wp i18n make-pot foo-plugin --require=no-network.php --debug`
+    When I try `wp i18n make-pot foo-plugin --debug`
     Then STDOUT should contain:
       """
       Success: POT file successfully generated.

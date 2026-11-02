@@ -3501,6 +3501,10 @@ Feature: Generate a POT file of a WordPress project
     And a no-network.php file:
       """
       <?php
+      // Make sure cURL does not bypass the unreachable proxy below.
+      putenv( 'NO_PROXY' );
+      putenv( 'no_proxy' );
+
       WP_CLI::add_hook(
         'http_request_options',
         static function ( $options ) {

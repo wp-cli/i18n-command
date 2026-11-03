@@ -4,6 +4,7 @@ namespace WP_CLI\I18n;
 
 use Gettext\Extractors\Extractor;
 use Gettext\Translations;
+use RuntimeException;
 use WP_CLI;
 use WP_CLI\Utils;
 
@@ -192,9 +193,15 @@ class JsonSchemaExtractor extends Extractor {
 			return '';
 		}
 
-		$headers  = [ 'Content-Type' => 'application/json' ];
-		$options  = [ 'halt_on_error' => false ];
-		$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+		$headers = [ 'Content-Type' => 'application/json' ];
+		$options = [ 'halt_on_error' => false ];
+
+		try {
+			$response = Utils\http_request( 'GET', $url, null, $headers, $options );
+		} catch ( RuntimeException $exception ) {
+			WP_CLI::debug( "Failed to download from URL {$url}: {$exception->getMessage()}", 'make-pot' );
+			return '';
+		}
 
 		if (
 			! $response->success

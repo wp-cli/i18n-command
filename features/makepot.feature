@@ -3467,6 +3467,77 @@ Feature: Generate a POT file of a WordPress project
       msgid "anotherkeyword"
       """
 
+  Scenario: Falls back to bundled schemas when remote schemas cannot be downloaded
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/block.json file:
+      """
+      {
+        "name": "my-plugin/notice",
+        "title": "Notice",
+        "category": "common",
+        "textdomain": "foo-plugin"
+      }
+      """
+    And a foo-plugin/theme.json file:
+      """
+      {
+        "version": 1,
+        "settings": {
+          "color": {
+            "palette": [
+              { "slug": "black", "color": "#000000", "name": "Black" }
+            ]
+          }
+        }
+      }
+      """
+    # A response without a header/body separator makes Requests throw, which
+    # WP_CLI\Utils\http_request() turns into a RuntimeException, as on a network error.
+    And that HTTP requests to https://develop.svn.wordpress.org/trunk/src/wp-includes/ will respond with:
+      """
+      HTTP/1.1 503 Service Unavailable
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should contain:
+      """
+      Success: POT file successfully generated.
+      """
+    And STDERR should contain:
+      """
+      Failed to download from URL https://develop.svn.wordpress.org/trunk/src/wp-includes/block-i18n.json
+      """
+    And STDERR should contain:
+      """
+      Failed to download from URL https://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json
+      """
+    And STDERR should contain:
+      """
+      Remote file could not be accessed, will use local file as fallback
+      """
+    And STDERR should not contain:
+      """
+      Error:
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block title"
+      msgid "Notice"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "Color name"
+      msgid "Black"
+      """
+
   Scenario: Ignores block.json files with other text domain
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:

@@ -2,7 +2,6 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Translations;
 use WP_CLI;
 
 final class BlockExtractor extends JsonSchemaExtractor {

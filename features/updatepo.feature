@@ -864,3 +864,127 @@ Feature: Update existing PO files from a POT file
       Success: Updated 1 file. 1 file unchanged.
       """
     And STDERR should be empty
+
+  Scenario: Keeps strings and translations that are "0"
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgctxt "start of week"
+      msgid "1"
+      msgstr ""
+
+      #: foo-plugin.php:2
+      msgid "0"
+      msgstr ""
+
+      #: foo-plugin.php:3
+      msgid "%d item"
+      msgid_plural "%d items"
+      msgstr[0] ""
+      msgstr[1] ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:10
+      msgctxt "start of week"
+      msgid "1"
+      msgstr "0"
+
+      #: foo-plugin.php:30
+      msgid "%d item"
+      msgid_plural "%d items"
+      msgstr[0] "0"
+      msgstr[1] "0"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgctxt "start of week"
+      msgid "1"
+      msgstr "0"
+
+      #: foo-plugin.php:2
+      msgid "0"
+      msgstr ""
+
+      #: foo-plugin.php:3
+      msgid "%d item"
+      msgid_plural "%d items"
+      msgstr[0] "0"
+      msgstr[1] "0"
+      """
+
+  Scenario: Keeps the order of headers, flags and references
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:20
+      #: build/index.js:1
+      #: foo-plugin.php:10
+      #, php-format,js-format
+      msgid "Hello %s"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Poedit-Basepath: ..\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Generator: Poedit 3.0\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      #, php-format,fuzzy
+      msgid "Hello %s"
+      msgstr "Hallo %s"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      "Language: de_DE\n"
+      "X-Poedit-Basepath: ..\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Generator: Poedit 3.0\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:20
+      #: build/index.js:1
+      #: foo-plugin.php:10
+      #, php-format,fuzzy,js-format
+      msgid "Hello %s"
+      msgstr "Hallo %s"
+      """

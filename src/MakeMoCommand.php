@@ -3,7 +3,6 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
-use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
 use WP_CLI;
@@ -93,12 +92,12 @@ class MakeMoCommand extends WP_CLI_Command {
 			}
 			$destination_file = "{$destination}/{$file_name}";
 
-			$translations = Translations::fromPoFile( $file->getPathname() );
+			$translations = PoLoader::fromFiles( $file->getPathname() );
 
 			// Remove JS-only strings from MO files to keep them small.
 			$this->remove_js_only_strings( $translations );
 
-			if ( ! $translations->toMoFile( $destination_file ) ) {
+			if ( ! MoGenerator::toFile( $translations, $destination_file ) ) {
 				WP_CLI::warning( sprintf( 'Could not create file %s', $destination_file ) );
 				continue;
 			}

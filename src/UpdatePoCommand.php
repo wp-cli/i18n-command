@@ -3,8 +3,8 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
+use Gettext\Headers;
 use Gettext\Merge;
-use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
 use WP_CLI;
@@ -82,18 +82,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$files = new IteratorIterator( new DirectoryIterator( $destination ) );
 		}
 
-		$pot_translations = Translations::fromPoFile( $source );
-
-		// Build merge flags based on options
-		$merge_flags = Merge::ADD | Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS | Merge::DOMAIN_OVERRIDE;
+		$pot_translations = PoLoader::fromFiles( $source );
 
 		/** @var array<int|string, bool|string> $assoc_args */
-		$purge = Utils\get_flag_value( $assoc_args, 'purge', true );
-
-		if ( $purge ) {
-			// By default, remove obsolete entries and replace translator comments
-			$merge_flags |= Merge::REMOVE | Merge::COMMENTS_THEIRS;
-		}
+		$purge = (bool) Utils\get_flag_value( $assoc_args, 'purge', true );
 
 		$updated_count   = 0;
 		$unchanged_count = 0;
@@ -113,13 +105,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 			if ( ! $purge ) {
 				$file_comments = $this->extract_file_comments( $file->getPathname() );
 			}
-			$po_translations       = Translations::fromPoFile( $file->getPathname() );
-			$original_translations = clone $po_translations;
-
-			$po_translations->mergeWith(
-				$pot_translations,
-				$merge_flags
-			);
+			$original_translations = PoLoader::fromFiles( $file->getPathname() );
+			$po_translations       = $this->merge_translations( $original_translations, $pot_translations, $purge );
 
 			// Check if the translations actually changed by comparing the objects.
 			$has_changes = $this->translations_differ( $original_translations, $po_translations );
@@ -131,12 +118,12 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 			// Update PO-Revision-Date to current date and time in UTC.
 			// Uses gmdate() for consistency across different server timezones.
-			$po_translations->setHeader( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
+			$po_translations->getHeaders()->set( 'PO-Revision-Date', gmdate( 'Y-m-d\TH:i:sP' ) );
 
 			// Reorder translations to match POT file order.
 			$ordered_translations = $this->reorder_translations( $po_translations, $pot_translations );
 
-			if ( ! $ordered_translations->toPoFile( $file->getPathname() ) ) {
+			if ( ! PoGenerator::toFile( $ordered_translations, $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;
 			}
@@ -234,6 +221,43 @@ class UpdatePoCommand extends WP_CLI_Command {
 	}
 
 	/**
+	 * Merges the entries of a POT file into the translations of a PO file.
+	 *
+	 * @param Translations $po_translations  Translations of the PO file.
+	 * @param Translations $pot_translations Translations of the POT file.
+	 * @param bool         $purge            Whether to remove obsolete entries and replace translator comments.
+	 * @return Translations The merged translations.
+	 */
+	private function merge_translations( Translations $po_translations, Translations $pot_translations, $purge ) {
+		$merged = clone $po_translations;
+
+		// The text domain is taken from the POT file if both files have one.
+		$pot_domain = $pot_translations->getDomain();
+		if ( ! empty( $merged->getDomain() ) && ! empty( $pot_domain ) ) {
+			$merged->getHeaders()->set( Headers::HEADER_DOMAIN, $pot_domain );
+		}
+
+		$strategy = Merge::EXTRACTED_COMMENTS_THEIRS | Merge::REFERENCES_THEIRS;
+
+		if ( $purge ) {
+			$strategy |= Merge::COMMENTS_THEIRS;
+
+			foreach ( $merged->getTranslations() as $po_entry ) {
+				if ( ! $pot_translations->has( $po_entry ) ) {
+					$merged->remove( $po_entry );
+				}
+			}
+		}
+
+		foreach ( $pot_translations as $pot_entry ) {
+			/** @var Translation $pot_entry */
+			$merged->addOrMerge( clone $pot_entry, $strategy );
+		}
+
+		return $merged;
+	}
+
+	/**
 	 * Check if two Translations objects differ.
 	 *
 	 * @param Translations $original Original translations.
@@ -248,7 +272,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		// Compare each translation entry.
 		foreach ( $original as $translation ) {
-			/** @var \Gettext\Translation $translation */
+			/** @var Translation $translation */
 			$context      = $translation->getContext();
 			$original_str = $translation->getOriginal();
 
@@ -274,8 +298,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 			}
 
 			// Compare references (source code locations).
-			$original_refs = $translation->getReferences();
-			$updated_refs  = $updated_translation->getReferences();
+			$original_refs = OrderedReferences::entries( $translation->getReferences() );
+			$updated_refs  = OrderedReferences::entries( $updated_translation->getReferences() );
 
 			$original_refs_sorted = $original_refs;
 			$updated_refs_sorted  = $updated_refs;
@@ -288,11 +312,11 @@ class UpdatePoCommand extends WP_CLI_Command {
 			}
 
 			// Compare comments.
-			if ( $translation->getExtractedComments() !== $updated_translation->getExtractedComments() ) {
+			if ( $translation->getExtractedComments()->toArray() !== $updated_translation->getExtractedComments()->toArray() ) {
 				return true;
 			}
 
-			if ( $translation->getComments() !== $updated_translation->getComments() ) {
+			if ( $translation->getComments()->toArray() !== $updated_translation->getComments()->toArray() ) {
 				return true;
 			}
 		}
@@ -309,28 +333,28 @@ class UpdatePoCommand extends WP_CLI_Command {
 	 * @return Translations Translations object with entries in POT file order.
 	 */
 	private function reorder_translations( Translations $po_translations, Translations $pot_translations ) {
-		$ordered = new Translations();
+		$ordered = Translations::create();
 
 		// Copy headers from the merged PO translations.
-		foreach ( $po_translations->getHeaders() as $name => $value ) {
-			$ordered->setHeader( $name, $value );
+		foreach ( $po_translations->getHeaders()->toArray() as $name => $value ) {
+			$ordered->getHeaders()->set( $name, $value );
 		}
 
 		// Add translations in POT file order.
 		foreach ( $pot_translations as $pot_entry ) {
-			/** @var \Gettext\Translation $pot_entry */
-			$po_entry = $po_translations->find( $pot_entry );
+			/** @var Translation $pot_entry */
+			$po_entry = $po_translations->find( $pot_entry->getContext(), $pot_entry->getOriginal() );
 			if ( $po_entry ) {
-				$ordered[] = $po_entry->getClone();
+				$ordered->add( clone $po_entry );
 			}
 		}
 
 		// Add any remaining translations from PO that aren't in POT (e.g., obsolete/disabled translations).
 		foreach ( $po_translations as $po_entry ) {
-			/** @var \Gettext\Translation $po_entry */
+			/** @var Translation $po_entry */
 			// Check if this entry is already in the ordered set.
-			if ( ! $ordered->find( $po_entry ) ) {
-				$ordered[] = $po_entry->getClone();
+			if ( ! $ordered->has( $po_entry ) ) {
+				$ordered->add( clone $po_entry );
 			}
 		}
 

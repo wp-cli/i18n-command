@@ -3,7 +3,6 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
-use Gettext\Translations;
 use IteratorIterator;
 use SplFileInfo;
 use WP_CLI;
@@ -90,7 +89,7 @@ class MakePhpCommand extends WP_CLI_Command {
 			$file_basename    = basename( $file->getFilename(), '.po' );
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
-			$translations = Translations::fromPoFile( $file->getPathname() );
+			$translations = PoLoader::fromFiles( $file->getPathname() );
 
 			// Remove JS-only strings from PHP files to keep them small.
 			$this->remove_js_only_strings( $translations );

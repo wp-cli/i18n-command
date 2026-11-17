@@ -2,8 +2,8 @@
 
 namespace WP_CLI\I18n\Tests;
 
-use Gettext\Translations;
 use WP_CLI\I18n\BladeCodeExtractor;
+use WP_CLI\I18n\Translations;
 use WP_CLI\Tests\TestCase;
 
 class BladeGettextExtractorTest extends TestCase {
@@ -16,7 +16,7 @@ class BladeGettextExtractorTest extends TestCase {
 	 * @return Translations
 	 */
 	private function extract( $blade, $domain = 'foo-theme' ) {
-		$translations = new Translations();
+		$translations = Translations::create();
 		$translations->setDomain( $domain );
 
 		$options = array_merge(
@@ -34,7 +34,7 @@ class BladeGettextExtractorTest extends TestCase {
 			'<x-alert :message="__(\'Hello\', \'foo-theme\')" />'
 		);
 
-		$this->assertNotFalse( $translations->find( null, 'Hello' ) );
+		$this->assertNotNull( $translations->find( null, 'Hello' ) );
 	}
 
 	public function test_extracts_multiple_bound_props() {
@@ -42,8 +42,8 @@ class BladeGettextExtractorTest extends TestCase {
 			'<x-no-results :title="__(\'Not found\', \'foo-theme\')" :subtitle="__(\'Try again\', \'foo-theme\')" />'
 		);
 
-		$this->assertNotFalse( $translations->find( null, 'Not found' ) );
-		$this->assertNotFalse( $translations->find( null, 'Try again' ) );
+		$this->assertNotNull( $translations->find( null, 'Not found' ) );
+		$this->assertNotNull( $translations->find( null, 'Try again' ) );
 	}
 
 	public function test_extracts_bound_props_from_multiline_component_tag() {
@@ -56,8 +56,8 @@ BLADE;
 
 		$translations = $this->extract( $blade );
 
-		$this->assertNotFalse( $translations->find( null, 'Page not found' ) );
-		$this->assertNotFalse( $translations->find( null, 'Please try again' ) );
+		$this->assertNotNull( $translations->find( null, 'Page not found' ) );
+		$this->assertNotNull( $translations->find( null, 'Please try again' ) );
 	}
 
 	public function test_extracts_bound_props_from_open_component_tag() {
@@ -69,8 +69,8 @@ BLADE;
 
 		$translations = $this->extract( $blade );
 
-		$this->assertNotFalse( $translations->find( null, 'Warning message' ) );
-		$this->assertNotFalse( $translations->find( null, 'Content inside' ) );
+		$this->assertNotNull( $translations->find( null, 'Warning message' ) );
+		$this->assertNotNull( $translations->find( null, 'Content inside' ) );
 	}
 
 	public function test_ignores_static_props() {
@@ -78,8 +78,8 @@ BLADE;
 			'<x-alert type="warning" :message="__(\'Hello\', \'foo-theme\')" />'
 		);
 
-		$this->assertNotFalse( $translations->find( null, 'Hello' ) );
-		$this->assertFalse( $translations->find( null, 'warning' ) );
+		$this->assertNotNull( $translations->find( null, 'Hello' ) );
+		$this->assertNull( $translations->find( null, 'warning' ) );
 	}
 
 	public function test_does_not_match_non_component_html() {
@@ -87,7 +87,7 @@ BLADE;
 			'<a href="https://example.com">{{ __(\'Link text\', \'foo-theme\') }}</a>'
 		);
 
-		$this->assertNotFalse( $translations->find( null, 'Link text' ) );
+		$this->assertNotNull( $translations->find( null, 'Link text' ) );
 		// Only 1 translation should exist.
 		$this->assertCount( 1, $translations );
 	}
@@ -98,7 +98,7 @@ BLADE;
 		);
 
 		$translation = $translations->find( 'verb', 'Read' );
-		$this->assertNotFalse( $translation );
+		$this->assertNotNull( $translation );
 	}
 
 	public function test_extracts_esc_functions_in_props() {
@@ -111,8 +111,8 @@ BLADE;
 
 		$translations = $this->extract( $blade );
 
-		$this->assertNotFalse( $translations->find( null, 'Username' ) );
-		$this->assertNotFalse( $translations->find( null, 'Enter username' ) );
+		$this->assertNotNull( $translations->find( null, 'Username' ) );
+		$this->assertNotNull( $translations->find( null, 'Enter username' ) );
 	}
 
 	public function test_extracts_single_quoted_bound_props() {
@@ -120,7 +120,7 @@ BLADE;
 			"<x-alert :message='__(\"Single quoted\", \"foo-theme\")' />"
 		);
 
-		$this->assertNotFalse( $translations->find( null, 'Single quoted' ) );
+		$this->assertNotNull( $translations->find( null, 'Single quoted' ) );
 	}
 
 	public function test_existing_blade_extraction_still_works() {
@@ -135,9 +135,9 @@ BLADE;
 
 		$translations = $this->extract( $blade );
 
-		$this->assertNotFalse( $translations->find( null, 'PHP block string' ) );
-		$this->assertNotFalse( $translations->find( null, 'Echo string' ) );
-		$this->assertNotFalse( $translations->find( null, 'Raw string' ) );
-		$this->assertNotFalse( $translations->find( null, 'Directive string' ) );
+		$this->assertNotNull( $translations->find( null, 'PHP block string' ) );
+		$this->assertNotNull( $translations->find( null, 'Echo string' ) );
+		$this->assertNotNull( $translations->find( null, 'Raw string' ) );
+		$this->assertNotNull( $translations->find( null, 'Directive string' ) );
 	}
 }

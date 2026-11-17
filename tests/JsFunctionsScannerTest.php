@@ -2,8 +2,8 @@
 
 namespace WP_CLI\I18n\Tests;
 
-use Gettext\Translations;
 use WP_CLI\I18n\JsCodeExtractor;
+use WP_CLI\I18n\Translations;
 use WP_CLI\Tests\TestCase;
 
 class JsFunctionsScannerTest extends TestCase {
@@ -16,7 +16,7 @@ class JsFunctionsScannerTest extends TestCase {
 	 * @return Translations
 	 */
 	private function extract( $code, array $options = [] ) {
-		$translations = new Translations();
+		$translations = Translations::create();
 
 		JsCodeExtractor::fromString( $code, $translations, $options + [ 'file' => 'test.js' ] );
 
@@ -39,8 +39,8 @@ class JsFunctionsScannerTest extends TestCase {
 		);
 
 		$translation = $translations->find( null, 'Hello' );
-		$this->assertNotFalse( $translation );
-		$this->assertSame( [], $translation->getExtractedComments() );
+		$this->assertNotNull( $translation );
+		$this->assertSame( [], $translation->getExtractedComments()->toArray() );
 	}
 
 	public function test_extracts_all_comments_with_empty_prefix() {
@@ -50,8 +50,8 @@ class JsFunctionsScannerTest extends TestCase {
 		);
 
 		$translation = $translations->find( null, 'Hello' );
-		$this->assertNotFalse( $translation );
-		$this->assertSame( [ 'Any comment.' ], $translation->getExtractedComments() );
+		$this->assertNotNull( $translation );
+		$this->assertSame( [ 'Any comment.' ], $translation->getExtractedComments()->toArray() );
 	}
 
 	public function test_extracts_translator_comments_with_prefix() {
@@ -61,8 +61,8 @@ class JsFunctionsScannerTest extends TestCase {
 		);
 
 		$translation = $translations->find( null, 'Hello' );
-		$this->assertNotFalse( $translation );
-		$this->assertSame( [ 'translators: A comment.' ], $translation->getExtractedComments() );
+		$this->assertNotNull( $translation );
+		$this->assertSame( [ 'translators: A comment.' ], $translation->getExtractedComments()->toArray() );
 	}
 
 	public function test_extracts_calls_with_unicode_escaped_names() {
@@ -70,8 +70,8 @@ class JsFunctionsScannerTest extends TestCase {
 			"\\u005f\\u005f( 'Escaped', 'foo-plugin' );\n_\\u{78}( 'Braced', 'context', 'foo-plugin' );"
 		);
 
-		$this->assertNotFalse( $translations->find( null, 'Escaped' ) );
-		$this->assertNotFalse( $translations->find( 'context', 'Braced' ) );
+		$this->assertNotNull( $translations->find( null, 'Escaped' ) );
+		$this->assertNotNull( $translations->find( 'context', 'Braced' ) );
 	}
 
 	public function test_skips_code_with_unrelated_unicode_escapes() {

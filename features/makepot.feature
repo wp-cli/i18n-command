@@ -4401,3 +4401,114 @@ Feature: Generate a POT file of a WordPress project
       #, js-format
       msgid "Buongiorno %1$s"
       """
+
+  Scenario: Subtracts and merges strings that are "0"
+    Given an empty foo-plugin directory
+    And a foo-plugin/exception.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+
+      #: other.php:1
+      msgid "0"
+      msgstr ""
+      """
+    And a foo-plugin/existing.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+
+      #: existing.php:1
+      msgctxt "number"
+      msgid "0"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+
+       __( '0', 'foo-plugin' );
+
+       __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin/foo-plugin.pot --subtract=foo-plugin/exception.pot --merge=foo-plugin/existing.pot`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #: existing.php:1
+      msgctxt "number"
+      msgid "0"
+      msgstr ""
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      #: foo-plugin.php:6
+      """
+
+  Scenario: Keeps flags and references in the order they were found
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+
+       /* translators: %s: Name */
+       __( 'Hello %s', 'foo-plugin' );
+      """
+    And a foo-plugin/admin.php file:
+      """
+      <?php
+       /* translators: %s: Name */
+       __( 'Hello %s', 'foo-plugin' );
+      """
+    And a foo-plugin/build/index.js file:
+      """
+      /* translators: %s: Name */
+      __( 'Hello %s', 'foo-plugin' );
+      """
+    And a foo-plugin/build/index.js.map file:
+      """
+      {"version":3,"sources":["index.js"],"sourcesContent":["\n\n/* translators: %s: Name */\n__( 'Hello %s', 'foo-plugin' );"]}
+      """
+    And a foo-plugin/build/view.js file:
+      """
+      /* translators: %s: Name */
+      __( 'Hello %s', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: %s: Name
+      #: admin.php:3
+      #: foo-plugin.php:7
+      #: build/index.js:2
+      #: build/view.js:2
+      #: build/index.js:4
+      #, php-format,js-format
+      msgid "Hello %s"
+      msgstr ""
+      """

@@ -2,18 +2,15 @@
 
 namespace WP_CLI\I18n\Tests;
 
-use Gettext\Translation;
 use WP_CLI\I18n\PotGenerator;
-use Gettext\Translations;
+use WP_CLI\I18n\Translations;
 use WP_CLI\Tests\TestCase;
 
 class PotGeneratorTest extends TestCase {
 	public function test_adds_correct_amount_of_plural_strings() {
-		$translations = new Translations();
+		$translations = Translations::create();
 
-		$translation = new Translation( '', '%d cat', '%d cats' );
-
-		$translations[] = $translation;
+		$translations->insert( null, '%d cat', '%d cats' );
 
 		$result = PotGenerator::toString( $translations );
 

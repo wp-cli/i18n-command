@@ -304,12 +304,8 @@ class PhpFunctionsScanner {
 
 		$add_reference = ! empty( $options['addReferences'] );
 
-		$constants = isset( $options['constants'] ) ? $options['constants'] : [];
-		if ( ! is_array( $constants ) ) {
-			$constants = [];
-		}
-
 		/** @var array<string, string> $constants */
+		$constants = isset( $options['constants'] ) && is_array( $options['constants'] ) ? $options['constants'] : [];
 
 		foreach ( $this->getFunctions( $constants ) as $function ) {
 			list( $name, $line, $args ) = $function;

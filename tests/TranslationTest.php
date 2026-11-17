@@ -85,6 +85,25 @@ class TranslationTest extends TestCase {
 		$this->assertFalse( $first->hasTranslation() );
 	}
 
+	public function test_insert_keeps_data_of_plain_gettext_translation() {
+		$translations = Translations::create();
+
+		$plain = \Gettext\Translation::create( null, 'Hello' )->translate( 'Hello (DE)' )->disable();
+		$plain->getReferences()->add( 'a.php', 1 );
+		$plain->getFlags()->add( 'fuzzy' );
+		$translations->add( $plain );
+
+		$translation = $translations->insert( null, 'Hello', 'Hellos' );
+
+		$this->assertCount( 1, $translations );
+		$this->assertSame( $translation, $translations->find( null, 'Hello' ) );
+		$this->assertSame( 'Hello (DE)', $translation->getTranslation() );
+		$this->assertSame( 'Hellos', $translation->getPlural() );
+		$this->assertTrue( $translation->isDisabled() );
+		$this->assertSame( [ 'fuzzy' ], $translation->getFlags()->toArray() );
+		$this->assertSame( [ [ 'a.php', 1 ] ], $translation->getReferenceEntries() );
+	}
+
 	public function test_translations_have_default_headers_in_fixed_order() {
 		$translations = Translations::create( 'foo-plugin' );
 		$translations->getHeaders()->set( 'A-Header', 'value' );

@@ -51,10 +51,20 @@ class Translations extends GettextTranslations {
 	 * @return Translation The existing or newly added translation.
 	 */
 	public function insert( ?string $context, string $original, ?string $plural = null ): Translation {
-		$translation = $this->find( $context, $original );
+		$existing = $this->find( $context, $original );
 
-		if ( ! $translation instanceof Translation ) {
+		if ( $existing instanceof Translation ) {
+			$translation = $existing;
+		} else {
 			$translation = Translation::create( $context, $original );
+
+			// Keep the data of an entry that was added as a plain gettext translation.
+			if ( null !== $existing ) {
+				/** @var Translation $translation */
+				$translation = $translation->mergeWith( $existing );
+				$translation->disable( $existing->isDisabled() );
+			}
+
 			$this->add( $translation );
 		}
 

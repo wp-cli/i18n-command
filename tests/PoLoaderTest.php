@@ -58,7 +58,7 @@ PO;
 		$this->assertStringContainsString( "msgstr[0] \"0\"\nmsgstr[1] \"0\"\n", $result );
 	}
 
-	public function test_keeps_order_of_headers_flags_and_references() {
+	public function test_sorts_headers_and_flags_and_groups_references() {
 		$po = <<<'PO'
 msgid ""
 msgstr ""
@@ -79,22 +79,22 @@ PO;
 
 		$translations = $this->load( $po );
 
-		$this->assertSame(
-			[ 'POT-Creation-Date', 'PO-Revision-Date', 'Language', 'X-Generator', 'Plural-Forms', 'A-Custom-Header' ],
-			array_slice( array_keys( $translations->getHeaders()->toArray() ), 7 )
-		);
+		$headers = array_keys( $translations->getHeaders()->toArray() );
+
+		$this->assertSame( 'A-Custom-Header', $headers[0] );
+		$this->assertSame( 'X-Generator', end( $headers ) );
 		$this->assertSame( 'de', $translations->getLanguage() );
 		$this->assertSame( 'multi line', $translations->getHeaders()->get( 'A-Custom-Header' ) );
 
 		$translation = $translations->find( null, 'Hello %s' );
 		$this->assertInstanceOf( Translation::class, $translation );
 
-		$this->assertSame( [ 'php-format', 'fuzzy', 'js-format' ], $translation->getFlags()->toArray() );
+		$this->assertSame( [ 'fuzzy', 'js-format', 'php-format' ], $translation->getFlags()->toArray() );
 		$this->assertSame(
 			[
 				[ 'b.php', 2 ],
-				[ 'a.php', 1 ],
 				[ 'b.php', 1 ],
+				[ 'a.php', 1 ],
 				[ 'c.php', null ],
 			],
 			$translation->getReferenceEntries()
@@ -102,7 +102,7 @@ PO;
 
 		$result = PoGenerator::toString( $translations );
 
-		$this->assertStringContainsString( "#: b.php:2\n#: a.php:1\n#: b.php:1\n#: c.php\n#, php-format,fuzzy,js-format\n", $result );
+		$this->assertStringContainsString( "#: b.php:2\n#: b.php:1\n#: a.php:1\n#: c.php\n#, fuzzy,js-format,php-format\n", $result );
 	}
 
 	public function test_merges_duplicate_entries() {

@@ -934,7 +934,7 @@ Feature: Update existing PO files from a POT file
       msgstr[1] "0"
       """
 
-  Scenario: Keeps the order of headers, flags and references
+  Scenario: Sorts headers and flags and groups references by file
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.pot file:
       """
@@ -975,16 +975,17 @@ Feature: Update existing PO files from a POT file
     And STDERR should be empty
     And the foo-plugin/foo-plugin-de_DE.po file should contain:
       """
-      "Language: de_DE\n"
-      "X-Poedit-Basepath: ..\n"
       "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-      "X-Generator: Poedit 3.0\n"
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: \n"
       "X-Domain: foo-plugin\n"
+      "X-Generator: Poedit 3.0\n"
+      "X-Poedit-Basepath: ..\n"
 
       #: foo-plugin.php:20
-      #: build/index.js:1
       #: foo-plugin.php:10
-      #, php-format,fuzzy,js-format
+      #: build/index.js:1
+      #, fuzzy,js-format,php-format
       msgid "Hello %s"
       msgstr "Hallo %s"
       """

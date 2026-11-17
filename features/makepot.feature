@@ -189,8 +189,8 @@ Feature: Generate a POT file of a WordPress project
     And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
       "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
       """
 
   Scenario: Sets the generator header
@@ -1765,17 +1765,23 @@ Feature: Generate a POT file of a WordPress project
       # This file is distributed under the same license as the Hello World plugin.
       msgid ""
       msgstr ""
+      "Content-Transfer-Encoding: 8bit\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "MIME-Version: 1.0\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
       "Project-Id-Version: Hello World 0.1.0\n"
       "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
-      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-      "Language-Team: LANGUAGE <LL@li.org>\n"
-      "MIME-Version: 1.0\n"
-      "Content-Type: text/plain; charset=UTF-8\n"
-      "Content-Transfer-Encoding: 8bit\n"
       """
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
       """
       "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
+      """
       "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
       """
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
@@ -4460,7 +4466,7 @@ Feature: Generate a POT file of a WordPress project
       #: foo-plugin.php:6
       """
 
-  Scenario: Keeps flags and references in the order they were found
+  Scenario: Groups references by file and sorts flags
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
       """
@@ -4506,9 +4512,9 @@ Feature: Generate a POT file of a WordPress project
       #: admin.php:3
       #: foo-plugin.php:7
       #: build/index.js:2
-      #: build/view.js:2
       #: build/index.js:4
-      #, php-format,js-format
+      #: build/view.js:2
+      #, js-format,php-format
       msgid "Hello %s"
       msgstr ""
       """

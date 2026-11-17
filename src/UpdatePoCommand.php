@@ -298,8 +298,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 			}
 
 			// Compare references (source code locations).
-			$original_refs = OrderedReferences::entries( $translation->getReferences() );
-			$updated_refs  = OrderedReferences::entries( $updated_translation->getReferences() );
+			$original_refs = Translation::flattenReferences( $translation->getReferences() );
+			$updated_refs  = Translation::flattenReferences( $updated_translation->getReferences() );
 
 			$original_refs_sorted = $original_refs;
 			$updated_refs_sorted  = $updated_refs;

@@ -72,15 +72,17 @@ class PhpArrayGenerator extends Generator {
 		}
 
 		$headers_allowlist = [
+			'Project-Id-Version' => 'project-id-version',
 			'POT-Creation-Date'  => 'pot-creation-date',
 			'PO-Revision-Date'   => 'po-revision-date',
-			'Project-Id-Version' => 'project-id-version',
 			'X-Generator'        => 'x-generator',
 		];
 
-		foreach ( $translations->getHeaders()->toArray() as $name => $value ) {
-			if ( isset( $headers_allowlist[ $name ] ) ) {
-				$result[ $headers_allowlist[ $name ] ] = $value;
+		foreach ( $headers_allowlist as $name => $key ) {
+			$value = $translations->getHeaders()->get( $name );
+
+			if ( null !== $value ) {
+				$result[ $key ] = $value;
 			}
 		}
 

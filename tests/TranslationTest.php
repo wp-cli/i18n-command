@@ -32,43 +32,6 @@ class TranslationTest extends TestCase {
 		$this->assertFalse( $theirs->mergeWith( $ours )->isDisabled() );
 	}
 
-	public function test_merge_keeps_order_of_flags_and_references() {
-		$ours = Translation::create( null, 'Hello %s' );
-		$ours->getFlags()->add( 'php-format' );
-		$ours->getReferences()->add( 'b.php', 2 )->add( 'a.php', 1 );
-
-		$theirs = Translation::create( null, 'Hello %s' );
-		$theirs->getFlags()->add( 'js-format', 'fuzzy' );
-		$theirs->getReferences()->add( 'a.js', 3 )->add( 'b.php', 1 )->add( 'a.php', 1 );
-
-		$merged = $ours->mergeWith( $theirs );
-
-		$this->assertInstanceOf( Translation::class, $merged );
-		$this->assertSame( [ 'php-format', 'js-format', 'fuzzy' ], $merged->getFlags()->toArray() );
-		$this->assertSame(
-			[
-				[ 'b.php', 2 ],
-				[ 'a.php', 1 ],
-				[ 'a.js', 3 ],
-				[ 'b.php', 1 ],
-			],
-			$merged->getReferenceEntries()
-		);
-
-		$merged = $ours->mergeWith( $theirs, Merge::REFERENCES_THEIRS | Merge::FLAGS_THEIRS );
-
-		$this->assertInstanceOf( Translation::class, $merged );
-		$this->assertSame( [ 'js-format', 'fuzzy' ], $merged->getFlags()->toArray() );
-		$this->assertSame(
-			[
-				[ 'a.js', 3 ],
-				[ 'b.php', 1 ],
-				[ 'a.php', 1 ],
-			],
-			$merged->getReferenceEntries()
-		);
-	}
-
 	public function test_insert_returns_existing_translation() {
 		$translations = Translations::create();
 
@@ -104,24 +67,22 @@ class TranslationTest extends TestCase {
 		$this->assertSame( [ [ 'a.php', 1 ] ], $translation->getReferenceEntries() );
 	}
 
-	public function test_translations_have_default_headers_in_fixed_order() {
+	public function test_translations_have_default_headers() {
 		$translations = Translations::create( 'foo-plugin' );
-		$translations->getHeaders()->set( 'A-Header', 'value' );
 
 		$this->assertSame(
 			[
+				'Content-Transfer-Encoding',
+				'Content-Type',
+				'Language',
+				'Language-Team',
+				'Last-Translator',
+				'MIME-Version',
+				'PO-Revision-Date',
+				'POT-Creation-Date',
 				'Project-Id-Version',
 				'Report-Msgid-Bugs-To',
-				'Last-Translator',
-				'Language-Team',
-				'MIME-Version',
-				'Content-Type',
-				'Content-Transfer-Encoding',
-				'POT-Creation-Date',
-				'PO-Revision-Date',
-				'Language',
 				'X-Domain',
-				'A-Header',
 			],
 			array_keys( $translations->getHeaders()->toArray() )
 		);

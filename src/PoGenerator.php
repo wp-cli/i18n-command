@@ -79,7 +79,7 @@ class PoGenerator extends Generator {
 			$lines[] = '#. ' . $comment;
 		}
 
-		foreach ( OrderedReferences::entries( $translation->getReferences() ) as $reference ) {
+		foreach ( \WP_CLI\I18n\Translation::flattenReferences( $translation->getReferences() ) as $reference ) {
 			$lines[] = '#: ' . $reference[0] . ( null !== $reference[1] ? ':' . $reference[1] : '' );
 		}
 

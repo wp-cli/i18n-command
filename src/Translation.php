@@ -3,21 +3,13 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Merge;
+use Gettext\References;
 use Gettext\Translation as GettextTranslation;
 
 /**
  * A single translation entry.
- *
- * Keeps flags and references in the order they were added.
  */
 class Translation extends GettextTranslation {
-
-	protected function __construct( string $id ) {
-		parent::__construct( $id );
-
-		$this->references = new OrderedReferences();
-		$this->flags      = new OrderedFlags();
-	}
 
 	/**
 	 * {@inheritdoc}
@@ -55,12 +47,35 @@ class Translation extends GettextTranslation {
 	}
 
 	/**
-	 * Returns the references in the order they were added.
+	 * Returns the references as a flat list.
 	 *
 	 * @return array<int, array{0: string, 1: int|null}> List of file name and line number pairs.
 	 */
 	public function getReferenceEntries(): array {
-		return OrderedReferences::entries( $this->references );
+		return self::flattenReferences( $this->getReferences() );
+	}
+
+	/**
+	 * Turns references grouped by file name into a flat list.
+	 *
+	 * @param References $references References instance.
+	 * @return array<int, array{0: string, 1: int|null}> List of file name and line number pairs.
+	 */
+	public static function flattenReferences( References $references ): array {
+		$entries = [];
+
+		foreach ( $references->toArray() as $filename => $lines ) {
+			if ( empty( $lines ) ) {
+				$entries[] = [ (string) $filename, null ];
+				continue;
+			}
+
+			foreach ( $lines as $line ) {
+				$entries[] = [ (string) $filename, $line ];
+			}
+		}
+
+		return $entries;
 	}
 
 	/**

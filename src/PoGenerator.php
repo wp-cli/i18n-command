@@ -19,7 +19,7 @@ class PoGenerator extends Generator {
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
 		$plural_form = $translations->getHeaders()->getPluralForm();
-		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : null;
+		$plural_size = is_array( $plural_form ) ? ( (int) $plural_form[0] - 1 ) : null;
 
 		$lines = static::getHeaderLines( $translations );
 
@@ -71,11 +71,11 @@ class PoGenerator extends Generator {
 	 * @return string Prefix to use for the remaining lines of the entry.
 	 */
 	protected static function addMetaLines( array &$lines, Translation $translation ) {
-		foreach ( $translation->getComments() as $comment ) {
+		foreach ( $translation->getComments()->toArray() as $comment ) {
 			$lines[] = '# ' . $comment;
 		}
 
-		foreach ( $translation->getExtractedComments() as $comment ) {
+		foreach ( $translation->getExtractedComments()->toArray() as $comment ) {
 			$lines[] = '#. ' . $comment;
 		}
 

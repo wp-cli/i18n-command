@@ -44,7 +44,7 @@ class PotGenerator extends PoGenerator {
 	 */
 	public static function toString( Translations $translations, array $options = [] ) {
 		$plural_form = $translations->getHeaders()->getPluralForm();
-		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : 1;
+		$plural_size = is_array( $plural_form ) ? ( (int) $plural_form[0] - 1 ) : 1;
 
 		$lines = array_merge( static::$comments_before_headers, static::getHeaderLines( $translations ) );
 

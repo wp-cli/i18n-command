@@ -31,6 +31,18 @@ class Translations extends GettextTranslations {
 	}
 
 	/**
+	 * {@inheritdoc}
+	 *
+	 * @return static
+	 */
+	public static function create( ?string $domain = null, ?string $language = null ): GettextTranslations {
+		/** @var static $translations */
+		$translations = parent::create( $domain, $language );
+
+		return $translations;
+	}
+
+	/**
 	 * Returns the translation with the given context and original string, creating it if needed.
 	 *
 	 * @param string|null $context  Context, if any.
@@ -42,7 +54,6 @@ class Translations extends GettextTranslations {
 		$translation = $this->find( $context, $original );
 
 		if ( ! $translation instanceof Translation ) {
-			/** @var Translation $translation */
 			$translation = Translation::create( $context, $original );
 			$this->add( $translation );
 		}

@@ -241,11 +241,11 @@ class PhpFunctionsScanner {
 					case '\\':
 						return '\\';
 					case 'x':
-						return chr( (int) hexdec( substr( $matches[1], 1 ) ) );
+						return chr( (int) hexdec( substr( $matches[1], 1 ) ) & 0xFF );
 					case 'u':
 						return (string) self::unicodeChar( (int) hexdec( trim( substr( $matches[1], 1 ), '{}' ) ) );
 					default:
-						return chr( (int) octdec( $matches[1] ) );
+						return chr( (int) octdec( $matches[1] ) & 0xFF );
 				}
 			},
 			$value
@@ -260,7 +260,7 @@ class PhpFunctionsScanner {
 	 */
 	protected static function unicodeChar( $dec ) {
 		if ( $dec < 0x80 ) {
-			return chr( $dec );
+			return chr( $dec & 0x7F );
 		}
 
 		if ( $dec < 0x0800 ) {
@@ -308,6 +308,8 @@ class PhpFunctionsScanner {
 		if ( ! is_array( $constants ) ) {
 			$constants = [];
 		}
+
+		/** @var array<string, string> $constants */
 
 		foreach ( $this->getFunctions( $constants ) as $function ) {
 			list( $name, $line, $args ) = $function;

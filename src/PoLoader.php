@@ -36,7 +36,7 @@ class PoLoader extends Loader {
 
 		$lines       = explode( "\n", $text );
 		$count       = count( $lines );
-		$translation = $this->createTranslation( null, '' );
+		$translation = Translation::create( null, '' );
 
 		for ( $i = 0; $i < $count; ++$i ) {
 			$line = trim( $lines[ $i ] );
@@ -49,7 +49,7 @@ class PoLoader extends Loader {
 
 			if ( '' === $line ) {
 				self::addTranslation( $translation, $translations );
-				$translation = $this->createTranslation( null, '' );
+				$translation = Translation::create( null, '' );
 				continue;
 			}
 
@@ -129,21 +129,6 @@ class PoLoader extends Loader {
 
 	protected function createTranslations(): GettextTranslations {
 		return Translations::create();
-	}
-
-	/**
-	 * {@inheritdoc}
-	 *
-	 * @return GettextTranslation
-	 */
-	protected function createTranslation( ?string $context, string $original, ?string $plural = null ): ?GettextTranslation {
-		$translation = Translation::create( $context, $original );
-
-		if ( null !== $plural ) {
-			$translation->setPlural( $plural );
-		}
-
-		return $translation;
 	}
 
 	/**

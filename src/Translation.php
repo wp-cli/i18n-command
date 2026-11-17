@@ -19,6 +19,18 @@ class Translation extends GettextTranslation {
 		$this->flags      = new OrderedFlags();
 	}
 
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @return static
+	 */
+	public static function create( ?string $context, string $original ): GettextTranslation {
+		/** @var static $translation */
+		$translation = parent::create( $context, $original );
+
+		return $translation;
+	}
+
 	public function hasContext(): bool {
 		return null !== $this->context && '' !== $this->context;
 	}

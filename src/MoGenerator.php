@@ -54,7 +54,7 @@ class MoGenerator extends Generator {
 		$translations_index = [];
 
 		$plural_form = $translations->getHeaders()->getPluralForm();
-		$plural_size = is_array( $plural_form ) ? ( $plural_form[0] - 1 ) : null;
+		$plural_size = is_array( $plural_form ) ? ( (int) $plural_form[0] - 1 ) : null;
 
 		foreach ( $messages as $original_string => $translation ) {
 			$original_string = (string) $original_string;

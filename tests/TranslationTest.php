@@ -144,6 +144,11 @@ class TranslationTest extends TestCase {
 		$this->assertStringContainsString( "start of week\x041\x00", $mo );
 		$this->assertStringContainsString( "%d item\x00%d items\x00", $mo );
 		$this->assertStringContainsString( "%d item (DE)\x00%d items (DE)\x00", $mo );
+
+		$loaded = ( new \Gettext\Loader\MoLoader() )->loadString( $mo )->find( 'start of week', '1' );
+		$this->assertNotNull( $loaded );
+		$this->assertSame( '0', $loaded->getTranslation() );
+
 		$this->assertStringNotContainsString( 'Untranslated', $mo );
 		$this->assertStringNotContainsString( 'Disabled', $mo );
 	}

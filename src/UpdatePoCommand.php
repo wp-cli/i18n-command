@@ -172,6 +172,13 @@ class UpdatePoCommand extends WP_CLI_Command {
 					$merged->remove( $po_entry );
 				}
 			}
+		} else {
+			// Keep entries that are no longer in the POT file, but mark them as obsolete.
+			foreach ( $merged->getTranslations() as $po_entry ) {
+				if ( ! $pot_translations->has( $po_entry ) ) {
+					$po_entry->disable();
+				}
+			}
 		}
 
 		foreach ( $pot_translations as $pot_entry ) {
@@ -211,6 +218,11 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 			// Compare translation strings.
 			if ( $translation->getTranslation() !== $updated_translation->getTranslation() ) {
+				return true;
+			}
+
+			// Compare whether the entries are obsolete.
+			if ( $translation->isDisabled() !== $updated_translation->isDisabled() ) {
 				return true;
 			}
 

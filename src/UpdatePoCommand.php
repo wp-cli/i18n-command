@@ -68,6 +68,10 @@ class UpdatePoCommand extends WP_CLI_Command {
 			WP_CLI::error( 'Source file does not exist.' );
 		}
 
+		if ( ! is_readable( $source ) ) {
+			WP_CLI::error( 'Could not read source file.' );
+		}
+
 		$destination = dirname( $source );
 
 		if ( isset( $args[1] ) ) {
@@ -120,7 +124,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 			// Reorder translations to match POT file order.
 			$ordered_translations = $this->reorder_translations( $po_translations, $pot_translations );
 
-			if ( ! ( new PoGenerator() )->generateFile( $ordered_translations, $file->getPathname() ) ) {
+			if ( false === file_put_contents( $file->getPathname(), $this->generate_po( $ordered_translations ) ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;
 			}
@@ -187,6 +191,32 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		return $merged;
+	}
+
+	/**
+	 * Generates the contents of a PO file.
+	 *
+	 * gettext/gettext writes the continuation lines of a multiline obsolete entry
+	 * without the `#~` prefix, which would turn them into active lines.
+	 *
+	 * @param Translations $translations Translations instance.
+	 * @return string
+	 */
+	private function generate_po( Translations $translations ) {
+		$lines    = explode( "\n", ( new PoGenerator() )->generateString( $translations ) );
+		$obsolete = false;
+
+		foreach ( $lines as $i => $line ) {
+			if ( '' === $line ) {
+				$obsolete = false;
+			} elseif ( 0 === strpos( $line, '#~ ' ) ) {
+				$obsolete = true;
+			} elseif ( $obsolete && 0 === strpos( $line, '"' ) ) {
+				$lines[ $i ] = '#~ ' . $line;
+			}
+		}
+
+		return implode( "\n", $lines );
 	}
 
 	/**

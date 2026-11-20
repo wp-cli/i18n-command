@@ -5,6 +5,7 @@ namespace WP_CLI\I18n;
 use Gettext\Loader\PoLoader;
 use Gettext\Translation;
 use Gettext\Translations as GettextTranslations;
+use RuntimeException;
 
 /**
  * A set of translations.
@@ -53,12 +54,20 @@ class Translations extends GettextTranslations {
 	 *
 	 * @param string|array<string> $files A file path or a list of file paths.
 	 * @return static
+	 *
+	 * @throws RuntimeException If a file cannot be read.
 	 */
 	public static function fromPoFiles( $files ): GettextTranslations {
 		$translations = null;
 
 		foreach ( (array) $files as $file ) {
-			$loaded = static::fromPoString( (string) file_get_contents( $file ) );
+			$content = is_file( $file ) && is_readable( $file ) ? file_get_contents( $file ) : false;
+
+			if ( false === $content ) {
+				throw new RuntimeException( sprintf( 'Could not read file %s', $file ) );
+			}
+
+			$loaded = static::fromPoString( $content );
 
 			/** @var static $translations */
 			$translations = null === $translations ? $loaded : $translations->mergeWith( $loaded );
@@ -93,13 +102,45 @@ class Translations extends GettextTranslations {
 			$translations->remove( $translation );
 		}
 
-		foreach ( preg_split( '/\R\s*\R/', $content ) ?: [] as $block ) {
+		foreach ( self::splitPoEntries( $content ) as $block ) {
 			foreach ( $loader->loadString( $block, static::create() )->getTranslations() as $translation ) {
 				$translations->addOrMerge( $translation );
 			}
 		}
 
 		return $translations;
+	}
+
+	/**
+	 * Splits the contents of a PO file into its entries.
+	 *
+	 * Like the PO loader, an entry ends at an empty line, or at a `#` line once its `msgid` has been read.
+	 *
+	 * @param string $content File contents.
+	 * @return array<string> The entries.
+	 */
+	private static function splitPoEntries( string $content ): array {
+		$entries = [];
+		$entry   = [];
+		$has_id  = false;
+
+		foreach ( preg_split( '/\R/', $content ) ?: [] as $line ) {
+			$trimmed = trim( $line );
+
+			if ( '' === $trimmed || ( '#' === $trimmed && $has_id ) ) {
+				$entries[] = implode( "\n", $entry );
+				$entry     = [];
+				$has_id    = false;
+				continue;
+			}
+
+			$entry[] = $line;
+			$has_id  = $has_id || 1 === preg_match( '/^(#~\s*)?msgid\s/', $trimmed );
+		}
+
+		$entries[] = implode( "\n", $entry );
+
+		return array_filter( $entries );
 	}
 
 	/**

@@ -1094,3 +1094,69 @@ Feature: Update existing PO files from a POT file
       """
       Success: Updated 0 files. 1 file unchanged.
       """
+
+  Scenario: Marks multiline translations that are no longer in the POT file as obsolete with --no-purge
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid ""
+      "Some\n"
+      "string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid ""
+      "Some\n"
+      "string"
+      msgstr ""
+      "Some translated\n"
+      "string"
+
+      #: foo-plugin.php:2
+      msgid ""
+      "Removed\n"
+      "string"
+      msgstr ""
+      "Removed translated\n"
+      "string"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot --no-purge`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid ""
+      "Some\n"
+      "string"
+      msgstr ""
+      "Some translated\n"
+      "string"
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #~ msgid ""
+      #~ "Removed\n"
+      #~ "string"
+      #~ msgstr ""
+      #~ "Removed translated\n"
+      #~ "string"
+      """

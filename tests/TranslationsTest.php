@@ -5,6 +5,7 @@ namespace WP_CLI\I18n\Tests;
 use Gettext\Generator\MoGenerator;
 use Gettext\Generator\PoGenerator;
 use Gettext\Loader\MoLoader;
+use RuntimeException;
 use WP_CLI\I18n\Translations;
 use WP_CLI\Tests\TestCase;
 
@@ -113,6 +114,44 @@ PO
 			],
 			Translations::getReferenceList( $translation )
 		);
+	}
+
+	public function test_merges_duplicate_entries_separated_by_empty_comment() {
+		$translations = Translations::fromPoString(
+			<<<'PO'
+msgid ""
+msgstr ""
+"Language: de\n"
+
+#: a.php:1
+msgid "Hello"
+msgstr ""
+#
+#: b.php:2
+msgid "Hello"
+msgstr "Hello (DE)"
+
+PO
+		);
+
+		$this->assertCount( 1, $translations );
+
+		$translation = $translations->find( null, 'Hello' );
+		$this->assertNotNull( $translation );
+		$this->assertSame( 'Hello (DE)', $translation->getTranslation() );
+		$this->assertSame(
+			[
+				[ 'a.php', 1 ],
+				[ 'b.php', 2 ],
+			],
+			Translations::getReferenceList( $translation )
+		);
+	}
+
+	public function test_throws_for_files_that_cannot_be_read() {
+		$this->expectException( RuntimeException::class );
+
+		Translations::fromPoFiles( "$this->dir/missing.po" );
 	}
 
 	public function test_keeps_file_comments_and_flags() {

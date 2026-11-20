@@ -1160,3 +1160,42 @@ Feature: Update existing PO files from a POT file
       #~ "Removed translated\n"
       #~ "string"
       """
+
+  Scenario: Bails when the POT file cannot be read
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+    And I run `chmod 000 foo-plugin/foo-plugin.pot`
+
+    When I try `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDERR should be:
+      """
+      Error: Could not read source file.
+      """
+    And the return code should be 1
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+
+    When I run `chmod 644 foo-plugin/foo-plugin.pot`
+    Then STDERR should be empty

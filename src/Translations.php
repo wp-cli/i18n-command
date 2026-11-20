@@ -94,7 +94,7 @@ class Translations extends GettextTranslations {
 		}
 
 		foreach ( preg_split( '/\R\s*\R/', $content ) ?: [] as $block ) {
-			foreach ( $loader->loadString( $block, static::create() ) as $translation ) {
+			foreach ( $loader->loadString( $block, static::create() )->getTranslations() as $translation ) {
 				$translations->addOrMerge( $translation );
 			}
 		}

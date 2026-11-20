@@ -2,6 +2,7 @@
 
 namespace WP_CLI\I18n;
 
+use Gettext\Translation;
 use WP_CLI;
 use WP_CLI\Path;
 use WP_CLI\Utils;
@@ -394,7 +395,7 @@ class AuditCommand extends MakePotCommand {
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
-			$references = $translation->getReferenceEntries();
+			$references = Translations::getReferenceList( $translation );
 
 			// File headers don't have any file references.
 			if ( empty( $references ) ) {
@@ -482,7 +483,7 @@ class AuditCommand extends MakePotCommand {
 				];
 			}
 
-			if ( $translation->hasPlural() ) {
+			if ( Translations::hasValue( $translation->getPlural() ) ) {
 				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
 				$single_placeholders = $single_placeholders[0];
 

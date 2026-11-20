@@ -89,7 +89,7 @@ class MakePhpCommand extends WP_CLI_Command {
 			$file_basename    = basename( $file->getFilename(), '.po' );
 			$destination_file = "{$destination}/{$file_basename}.l10n.php";
 
-			$translations = PoLoader::fromFiles( $file->getPathname() );
+			$translations = Translations::fromPoFiles( $file->getPathname() );
 
 			// Remove JS-only strings from PHP files to keep them small.
 			$this->remove_js_only_strings( $translations );

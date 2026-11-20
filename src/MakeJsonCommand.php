@@ -2,6 +2,7 @@
 
 namespace WP_CLI\I18n;
 
+use Gettext\Translation;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -236,7 +237,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 	protected function make_json( $source_file, $destination, $map, $domain, $extensions ) {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
-		$translations = PoLoader::fromFiles( $source_file );
+		$translations = Translations::fromPoFiles( $source_file );
 		$result       = [];
 		$extensions   = array_merge( [ 'js' ], $extensions );
 
@@ -271,7 +272,7 @@ class MakeJsonCommand extends WP_CLI_Command {
 						? (string) preg_replace( "/\.min\.{$extension}$/", ".{$extension}", $file )
 						: null;
 				},
-				$this->reference_map( $translation->getReferenceEntries(), $map )
+				$this->reference_map( Translations::getReferenceList( $translation ), $map )
 			);
 
 			$sources = array_unique( array_filter( $sources ) );

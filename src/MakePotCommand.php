@@ -3,6 +3,7 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Headers;
+use Gettext\Translation;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Path;
@@ -462,7 +463,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 				WP_CLI::debug( sprintf( 'Ignoring any string already existing in: %s', $file ), 'make-pot' );
 
-				$this->exceptions[ $file ] = PoLoader::fromFiles( $file );
+				$this->exceptions[ $file ] = Translations::fromPoFiles( $file );
 			}
 		}
 
@@ -625,7 +626,7 @@ class MakePotCommand extends WP_CLI_Command {
 
 		// Add existing strings first but don't keep headers.
 		if ( ! empty( $this->merge ) ) {
-			foreach ( PoLoader::fromFiles( $this->merge ) as $existing_translation ) {
+			foreach ( Translations::fromPoFiles( $this->merge ) as $existing_translation ) {
 				/** @var Translation $existing_translation */
 				$translations->add( $existing_translation );
 			}
@@ -821,7 +822,7 @@ class MakePotCommand extends WP_CLI_Command {
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
-			$references = $translation->getReferenceEntries();
+			$references = Translations::getReferenceList( $translation );
 
 			// File headers don't have any file references.
 			$location = ! empty( $references ) ? '(' . implode( ':', $references[0] ) . ')' : '';
@@ -899,7 +900,7 @@ class MakePotCommand extends WP_CLI_Command {
 				WP_CLI::warning( $message );
 			}
 
-			if ( $translation->hasPlural() ) {
+			if ( Translations::hasValue( $translation->getPlural() ) ) {
 				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
 				$single_placeholders = $single_placeholders[0];
 

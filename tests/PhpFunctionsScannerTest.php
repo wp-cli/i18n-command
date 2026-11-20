@@ -4,7 +4,7 @@ namespace WP_CLI\I18n\Tests;
 
 use WP_CLI\I18n\PhpCodeExtractor;
 use WP_CLI\I18n\PhpFunctionsScanner;
-use WP_CLI\I18n\Translation;
+use Gettext\Translation;
 use WP_CLI\I18n\Translations;
 use WP_CLI\Tests\TestCase;
 
@@ -101,6 +101,6 @@ PHP;
 		$this->assertSame( '%d items', $translation->getPlural() );
 		$this->assertSame( [ 'php-format' ], $translation->getFlags()->toArray() );
 		$this->assertSame( [ 'translators: %d: Number of items.' ], $translation->getExtractedComments()->toArray() );
-		$this->assertSame( [ [ 'foo-plugin.php', 3 ] ], $translation->getReferenceEntries() );
+		$this->assertSame( [ [ 'foo-plugin.php', 3 ] ], Translations::getReferenceList( $translation ) );
 	}
 }

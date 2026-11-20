@@ -3,8 +3,10 @@
 namespace WP_CLI\I18n;
 
 use DirectoryIterator;
+use Gettext\Generator\PoGenerator;
 use Gettext\Headers;
 use Gettext\Merge;
+use Gettext\Translation;
 use IteratorIterator;
 use SplFileInfo;
 use WP_CLI;
@@ -82,7 +84,7 @@ class UpdatePoCommand extends WP_CLI_Command {
 			$files = new IteratorIterator( new DirectoryIterator( $destination ) );
 		}
 
-		$pot_translations = PoLoader::fromFiles( $source );
+		$pot_translations = Translations::fromPoFiles( $source );
 
 		/** @var array<int|string, bool|string> $assoc_args */
 		$purge = (bool) Utils\get_flag_value( $assoc_args, 'purge', true );
@@ -100,19 +102,14 @@ class UpdatePoCommand extends WP_CLI_Command {
 				continue;
 			}
 
-			// Preserve file-level comments when --no-purge is set
-			$file_comments = '';
-			if ( ! $purge ) {
-				$file_comments = $this->extract_file_comments( $file->getPathname() );
-			}
-			$original_translations = PoLoader::fromFiles( $file->getPathname() );
+			$original_translations = Translations::fromPoFiles( $file->getPathname() );
 			$po_translations       = $this->merge_translations( $original_translations, $pot_translations, $purge );
 
 			// Check if the translations actually changed by comparing the objects.
 			$has_changes = $this->translations_differ( $original_translations, $po_translations );
 
-			// When using --no-purge, file-level comments being restored counts as a change.
-			if ( ! $purge && ! empty( $file_comments ) ) {
+			// When using --no-purge, file-level comments being kept counts as a change.
+			if ( ! $purge && null !== $original_translations->getDescription() ) {
 				$has_changes = true;
 			}
 
@@ -123,16 +120,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 			// Reorder translations to match POT file order.
 			$ordered_translations = $this->reorder_translations( $po_translations, $pot_translations );
 
-			if ( ! PoGenerator::toFile( $ordered_translations, $file->getPathname() ) ) {
+			if ( ! ( new PoGenerator() )->generateFile( $ordered_translations, $file->getPathname() ) ) {
 				WP_CLI::warning( sprintf( 'Could not update file %s', $file->getPathname() ) );
 				continue;
-			}
-
-			// Restore file-level comments when --no-purge is set
-			if ( ! $purge && ! empty( $file_comments ) ) {
-				if ( ! $this->restore_file_comments( $file->getPathname(), $file_comments ) ) {
-					WP_CLI::warning( sprintf( 'Could not restore file-level comments for %s', $file->getPathname() ) );
-				}
 			}
 
 			if ( $has_changes ) {
@@ -150,74 +140,6 @@ class UpdatePoCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( implode( '. ', $message_parts ) . '.' );
-	}
-
-	/**
-	 * Extract file-level comments from a PO file.
-	 *
-	 * These are comments that appear before the first msgid in the file.
-	 *
-	 * @param string $file_path Path to the PO file.
-	 * @return string The file-level comments.
-	 */
-	private function extract_file_comments( $file_path ) {
-		$content = file_get_contents( $file_path );
-		if ( false === $content ) {
-			return '';
-		}
-
-		$lines         = explode( "\n", $content );
-		$file_comments = [];
-		$found_msgid   = false;
-
-		foreach ( $lines as $line ) {
-			$trimmed = trim( $line );
-
-			// Stop when we hit the first msgid
-			if ( preg_match( '/^msgid\s/', $trimmed ) ) {
-				$found_msgid = true;
-				break;
-			}
-
-			// Collect comment lines
-			if ( preg_match( '/^#([^.,:~]|$)/', $trimmed ) ) {
-				$file_comments[] = $line;
-			}
-		}
-
-		return ! empty( $file_comments ) ? implode( "\n", $file_comments ) . "\n" : '';
-	}
-
-	/**
-	 * Restore file-level comments to a PO file.
-	 *
-	 * @param string $file_path Path to the PO file.
-	 * @param string $comments The file-level comments to restore.
-	 * @return bool True on success, false on failure.
-	 */
-	private function restore_file_comments( $file_path, $comments ) {
-		$content = file_get_contents( $file_path );
-		if ( false === $content ) {
-			return false;
-		}
-
-		// Prepend the comments to the file content
-		$updated_content = $comments . $content;
-
-		// Use atomic file operation with temporary file
-		$temp_file = $file_path . '.tmp';
-		if ( false === file_put_contents( $temp_file, $updated_content ) ) {
-			return false;
-		}
-
-		// Rename is atomic on most filesystems
-		if ( ! rename( $temp_file, $file_path ) ) {
-			// Clean up temp file on failure
-			unlink( $temp_file );
-			return false;
-		}
-
-		return true;
 	}
 
 	/**
@@ -241,6 +163,9 @@ class UpdatePoCommand extends WP_CLI_Command {
 
 		if ( $purge ) {
 			$strategy |= Merge::COMMENTS_THEIRS;
+
+			// File-level comments, like a copyright notice.
+			$merged->setDescription( null );
 
 			foreach ( $merged->getTranslations() as $po_entry ) {
 				if ( ! $pot_translations->has( $po_entry ) ) {
@@ -298,8 +223,8 @@ class UpdatePoCommand extends WP_CLI_Command {
 			}
 
 			// Compare references (source code locations).
-			$original_refs = Translation::flattenReferences( $translation->getReferences() );
-			$updated_refs  = Translation::flattenReferences( $updated_translation->getReferences() );
+			$original_refs = Translations::getReferenceList( $translation );
+			$updated_refs  = Translations::getReferenceList( $updated_translation );
 
 			$original_refs_sorted = $original_refs;
 			$updated_refs_sorted  = $updated_refs;
@@ -335,10 +260,13 @@ class UpdatePoCommand extends WP_CLI_Command {
 	private function reorder_translations( Translations $po_translations, Translations $pot_translations ) {
 		$ordered = Translations::create();
 
-		// Copy headers from the merged PO translations.
+		// Copy headers, file-level comments and flags from the merged PO translations.
 		foreach ( $po_translations->getHeaders()->toArray() as $name => $value ) {
 			$ordered->getHeaders()->set( $name, $value );
 		}
+
+		$ordered->setDescription( $po_translations->getDescription() );
+		$ordered->getFlags()->add( ...$po_translations->getFlags()->toArray() );
 
 		// Add translations in POT file order.
 		foreach ( $pot_translations as $pot_entry ) {

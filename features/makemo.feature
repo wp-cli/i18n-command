@@ -254,3 +254,31 @@ Feature: Generate MO files from PO files
       JS Only Translation
       """
 
+
+  Scenario: Includes translations that are "0"
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:10
+      msgctxt "start of week"
+      msgid "1"
+      msgstr "0"
+      """
+
+    When I run `wp i18n make-mo foo-plugin`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE.mo file should contain:
+      """
+      start of week
+      """

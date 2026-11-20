@@ -55,9 +55,10 @@
 		</properties>
 	</rule>
 
-	<!-- Whitelist method names for classes that extend a PSR-2 package. -->
+	<!-- Whitelist method names for classes that follow the naming of the gettext/gettext package. -->
 	<rule ref="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid">
-		<exclude-pattern>*/src/IterableCodeExtractor\.php$</exclude-pattern>
+		<exclude-pattern>*/src/*(Extractor|Generator|Scanner)\.php$</exclude-pattern>
+		<exclude-pattern>*/src/Parsed(Comment|Function)\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Whitelist property name for a a JSON-decoded object. -->
@@ -65,7 +66,6 @@
 		<properties>
 			<property name="allowed_custom_properties" type="array">
 				<element value="sourcesContent"/>
-				<element value="functionsScannerClass"/>
 			</property>
 		</properties>
 	</rule>

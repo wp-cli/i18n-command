@@ -11,5 +11,3 @@ parameters:
 
   treatPhpDocTypesAsCertain: false
 
-  stubFiles:
-    - stubs/Gettext.stub

@@ -3,11 +3,9 @@
 namespace WP_CLI\I18n;
 
 use Exception;
-use Gettext\Extractors\PhpCode;
-use Gettext\Translations;
 use WP_CLI;
 
-final class PhpCodeExtractor extends PhpCode {
+final class PhpCodeExtractor {
 	use IterableCodeExtractor;
 
 	/**
@@ -47,16 +45,11 @@ final class PhpCodeExtractor extends PhpCode {
 	];
 
 	/**
-	 * @var string
-	 */
-	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
-
-	/**
-	 * {@inheritdoc}
+	 * Extracts translations from PHP code.
 	 *
-	 * @param string       $text
-	 * @param Translations $translations
-	 * @param array<mixed> $options
+	 * @param string       $text         The code to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
 	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {
@@ -67,7 +60,7 @@ final class PhpCodeExtractor extends PhpCode {
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		try {
-			self::fromStringMultiple( $text, [ $translations ], $options );
+			self::scan( $text, $translations, $options + self::$options );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(
@@ -78,5 +71,25 @@ final class PhpCodeExtractor extends PhpCode {
 				'make-pot'
 			);
 		}
+	}
+
+	/**
+	 * Scans PHP code for the configured functions and adds the strings found.
+	 *
+	 * @param string       $text         The code to extract strings from.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
+	 * @return void
+	 */
+	public static function scan( $text, Translations $translations, array $options ) {
+		$scanner = new PhpFunctionsScanner( $text );
+
+		$extract_comments = $options['extractComments'] ?? false;
+		if ( is_string( $extract_comments ) || is_array( $extract_comments ) ) {
+			/** @var string|array<string> $extract_comments */
+			$scanner->enableCommentsExtraction( $extract_comments );
+		}
+
+		$scanner->saveGettextFunctions( $translations, $options );
 	}
 }

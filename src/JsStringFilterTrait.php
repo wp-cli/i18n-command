@@ -2,9 +2,6 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Translation;
-use Gettext\Translations;
-
 trait JsStringFilterTrait {
 	/**
 	 * JavaScript file extensions to check for.
@@ -19,17 +16,16 @@ trait JsStringFilterTrait {
 	 * @param Translations $translations The translations instance to filter.
 	 */
 	protected function remove_js_only_strings( Translations $translations ): void {
-		foreach ( $translations->getArrayCopy() as $translation ) {
-			/** @var Translation $translation */
+		foreach ( $translations->getTranslations() as $translation ) {
+			$files = array_keys( $translation->getReferences()->toArray() );
 
-			if ( ! $translation->hasReferences() ) {
+			if ( empty( $files ) ) {
 				continue;
 			}
 
 			$has_non_js_reference = false;
-			foreach ( $translation->getReferences() as $reference ) {
-				$file      = $reference[0];
-				$extension = '.' . strtolower( pathinfo( $file, PATHINFO_EXTENSION ) );
+			foreach ( $files as $file ) {
+				$extension = '.' . strtolower( pathinfo( (string) $file, PATHINFO_EXTENSION ) );
 
 				if ( ! in_array( $extension, static::$js_extensions, true ) ) {
 					$has_non_js_reference = true;
@@ -39,7 +35,7 @@ trait JsStringFilterTrait {
 
 			// If all references are JS files, remove this translation.
 			if ( ! $has_non_js_reference ) {
-				unset( $translations[ $translation->getId() ] );
+				$translations->remove( $translation );
 			}
 		}
 	}

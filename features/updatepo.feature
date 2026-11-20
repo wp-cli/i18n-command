@@ -864,3 +864,338 @@ Feature: Update existing PO files from a POT file
       Success: Updated 1 file. 1 file unchanged.
       """
     And STDERR should be empty
+
+  Scenario: Keeps strings and translations that are "0"
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgctxt "start of week"
+      msgid "1"
+      msgstr ""
+
+      #: foo-plugin.php:2
+      msgid "0"
+      msgstr ""
+
+      #: foo-plugin.php:3
+      msgid "%d item"
+      msgid_plural "%d items"
+      msgstr[0] ""
+      msgstr[1] ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:10
+      msgctxt "start of week"
+      msgid "1"
+      msgstr "0"
+
+      #: foo-plugin.php:30
+      msgid "%d item"
+      msgid_plural "%d items"
+      msgstr[0] "0"
+      msgstr[1] "0"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgctxt "start of week"
+      msgid "1"
+      msgstr "0"
+
+      #: foo-plugin.php:2
+      msgid "0"
+      msgstr ""
+
+      #: foo-plugin.php:3
+      msgid "%d item"
+      msgid_plural "%d items"
+      msgstr[0] "0"
+      msgstr[1] "0"
+      """
+
+  Scenario: Sorts headers and flags and groups references by file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:20
+      #: build/index.js:1
+      #: foo-plugin.php:10
+      #, php-format,js-format
+      msgid "Hello %s"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Poedit-Basepath: ..\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Generator: Poedit 3.0\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      #, php-format,fuzzy
+      msgid "Hello %s"
+      msgstr "Hallo %s"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "Project-Id-Version: Foo Plugin\n"
+      "Report-Msgid-Bugs-To: \n"
+      "X-Domain: foo-plugin\n"
+      "X-Generator: Poedit 3.0\n"
+      "X-Poedit-Basepath: ..\n"
+
+      #: foo-plugin.php:20
+      #: foo-plugin.php:10
+      #: build/index.js:1
+      #, fuzzy,js-format,php-format
+      msgid "Hello %s"
+      msgstr "Hallo %s"
+      """
+
+  Scenario: Reactivates obsolete translations that are back in the POT file
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      #, fuzzy
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #~ msgid "Some string"
+      #~ msgstr "Some translated string"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot --no-purge`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      # Copyright (C) 2018 Foo Plugin
+      #
+      #, fuzzy
+      msgid ""
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should not contain:
+      """
+      #~ msgid "Some string"
+      """
+
+  Scenario: Marks translations that are no longer in the POT file as obsolete with --no-purge
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+
+      #: foo-plugin.php:2
+      msgid "Removed string"
+      msgstr "Removed translated string"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot --no-purge`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #~ msgid "Removed string"
+      #~ msgstr "Removed translated string"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot --no-purge`
+    Then STDOUT should be:
+      """
+      Success: Updated 0 files. 1 file unchanged.
+      """
+
+  Scenario: Marks multiline translations that are no longer in the POT file as obsolete with --no-purge
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid ""
+      "Some\n"
+      "string"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid ""
+      "Some\n"
+      "string"
+      msgstr ""
+      "Some translated\n"
+      "string"
+
+      #: foo-plugin.php:2
+      msgid ""
+      "Removed\n"
+      "string"
+      msgstr ""
+      "Removed translated\n"
+      "string"
+      """
+
+    When I run `wp i18n update-po foo-plugin/foo-plugin.pot --no-purge`
+    Then STDOUT should be:
+      """
+      Success: Updated 1 file.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid ""
+      "Some\n"
+      "string"
+      msgstr ""
+      "Some translated\n"
+      "string"
+      """
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #~ msgid ""
+      #~ "Removed\n"
+      #~ "string"
+      #~ msgstr ""
+      #~ "Removed translated\n"
+      #~ "string"
+      """
+
+  Scenario: Bails when the POT file cannot be read
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "X-Domain: foo-plugin\n"
+      """
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+    And I run `chmod 000 foo-plugin/foo-plugin.pot`
+
+    When I try `wp i18n update-po foo-plugin/foo-plugin.pot`
+    Then STDERR should be:
+      """
+      Error: Could not read source file.
+      """
+    And the return code should be 1
+    And the foo-plugin/foo-plugin-de_DE.po file should contain:
+      """
+      #: foo-plugin.php:1
+      msgid "Some string"
+      msgstr "Some translated string"
+      """
+
+    When I run `chmod 644 foo-plugin/foo-plugin.pot`
+    Then STDERR should be empty

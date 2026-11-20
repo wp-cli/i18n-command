@@ -2,12 +2,10 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\JsCode;
-use Gettext\Translations;
 use Peast\Syntax\Exception as PeastException;
 use WP_CLI;
 
-final class MapCodeExtractor extends JsCode {
+final class MapCodeExtractor {
 	use IterableCodeExtractor;
 
 	/**
@@ -25,11 +23,11 @@ final class MapCodeExtractor extends JsCode {
 	];
 
 	/**
-	 * {@inheritdoc}
+	 * Extracts translations from the sources embedded in a JavaScript source map.
 	 *
-	 * @param string       $text
-	 * @param Translations $translations
-	 * @param array<mixed> $options
+	 * @param string       $text         The source map contents.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Extraction options.
 	 * @return void
 	 */
 	public static function fromString( $text, Translations $translations, array $options = [] ) {

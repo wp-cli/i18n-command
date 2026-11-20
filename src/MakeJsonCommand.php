@@ -2,9 +2,7 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Po as PoExtractor;
 use Gettext\Translation;
-use Gettext\Translations;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_CLI\Utils;
@@ -239,11 +237,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	protected function make_json( $source_file, $destination, $map, $domain, $extensions ) {
 		/** @var Translations[] $mapping */
 		$mapping      = [];
-		$translations = new Translations();
+		$translations = Translations::fromPoFiles( $source_file );
 		$result       = [];
 		$extensions   = array_merge( [ 'js' ], $extensions );
-
-		PoExtractor::fromFile( $source_file, $translations );
 
 		$base_file_name = basename( $source_file, '.po' );
 
@@ -276,31 +272,31 @@ class MakeJsonCommand extends WP_CLI_Command {
 						? (string) preg_replace( "/\.min\.{$extension}$/", ".{$extension}", $file )
 						: null;
 				},
-				$this->reference_map( $translation->getReferences(), $map )
+				$this->reference_map( Translations::getReferenceList( $translation ), $map )
 			);
 
 			$sources = array_unique( array_filter( $sources ) );
 
 			foreach ( $sources as $source ) {
 				if ( ! isset( $mapping[ $source ] ) ) {
-					$mapping[ $source ] = new Translations();
+					$mapping[ $source ] = Translations::create();
 
 					// phpcs:ignore Squiz.PHP.CommentedOutCode.Found -- Provide code that is meant to be used once the bug is fixed.
 					// See https://core.trac.wordpress.org/ticket/45441
 					// $mapping[ $source ]->setDomain( $translations->getDomain() );
 
-					$mapping[ $source ]->setHeader( 'Language', $translations->getLanguage() );
-					$mapping[ $source ]->setHeader( 'PO-Revision-Date', $translations->getHeader( 'PO-Revision-Date' ) ?? '' );
+					$mapping[ $source ]->getHeaders()->set( 'Language', (string) $translations->getLanguage() );
+					$mapping[ $source ]->getHeaders()->set( 'PO-Revision-Date', (string) $translations->getHeaders()->get( 'PO-Revision-Date' ) );
 
-					$plural_forms = $translations->getPluralForms();
+					$plural_forms = $translations->getHeaders()->getPluralForm();
 
 					if ( $plural_forms ) {
 						list( $count, $rule ) = $plural_forms;
-						$mapping[ $source ]->setPluralForms( $count, $rule );
+						$mapping[ $source ]->getHeaders()->setPluralForm( $count, $rule );
 					}
 				}
 
-				$mapping[ $source ][] = $translation;
+				$mapping[ $source ]->addOrMerge( $translation );
 			}
 		}
 
@@ -359,9 +355,9 @@ class MakeJsonCommand extends WP_CLI_Command {
 	 *
 	 * Exports translations for each JS file to a separate translation file.
 	 *
-	 * @param array<string, \Gettext\Translations> $mapping        A mapping of files to translation entries.
-	 * @param string                              $base_file_name Base file name for JSON files.
-	 * @param string                              $destination    Path to the destination directory.
+	 * @param array<string, Translations> $mapping        A mapping of files to translation entries.
+	 * @param string                      $base_file_name Base file name for JSON files.
+	 * @param string                      $destination    Path to the destination directory.
 	 *
 	 * @return array<string> List of created JSON files.
 	 */

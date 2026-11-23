@@ -87,8 +87,17 @@ final class PhpCodeExtractor {
 
 		$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
 
-		$prefixes = $options['extractComments'] ?? false;
-		$prefixes = is_string( $prefixes ) || is_array( $prefixes ) ? array_filter( (array) $prefixes ) : false;
+		$prefixes = false;
+		if ( isset( $options['extractComments'] ) && ( is_string( $options['extractComments'] ) || is_array( $options['extractComments'] ) ) ) {
+			$prefixes = array_values(
+				array_filter(
+					(array) $options['extractComments'],
+					static function ( $prefix ) {
+						return is_string( $prefix ) && '' !== $prefix;
+					}
+				)
+			);
+		}
 
 		$add_reference = ! empty( $options['addReferences'] );
 		$target_domain = isset( $options['domain'] ) ? $options['domain'] : $translations->getDomain();

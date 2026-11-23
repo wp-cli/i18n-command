@@ -13,6 +13,7 @@
     "require": {
         "eftec/bladeone": "3.52",
         "gettext/gettext": "^5.7.4",
+        "gettext/php-scanner": "dev-master",
         "mck89/peast": "^1.13.11",
         "wp-cli/wp-cli": "^3.0"
     },

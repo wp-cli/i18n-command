@@ -58,7 +58,7 @@
 	<!-- Whitelist method names for classes that follow the naming of the gettext/gettext package. -->
 	<rule ref="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid">
 		<exclude-pattern>*/src/*(Extractor|Generator|Scanner)\.php$</exclude-pattern>
-		<exclude-pattern>*/src/Parsed(Comment|Function)\.php$</exclude-pattern>
+		<exclude-pattern>*/src/ParsedComment\.php$</exclude-pattern>
 	</rule>
 
 	<!-- Whitelist property name for a a JSON-decoded object. -->

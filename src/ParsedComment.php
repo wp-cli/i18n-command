@@ -85,16 +85,6 @@ class ParsedComment {
 	}
 
 	/**
-	 * Whether this comment is on the same line as the given function call or on the one before.
-	 *
-	 * @param ParsedFunction $parsed_function The function to check.
-	 * @return bool
-	 */
-	public function isRelatedWith( ParsedFunction $parsed_function ) {
-		return $this->getLastLine() === $parsed_function->getLine() || $this->getLastLine() === $parsed_function->getLine() - 1;
-	}
-
-	/**
 	 * Whether the comment starts with one of the given prefixes.
 	 *
 	 * @param array<string> $prefixes Prefixes to check. Every non-empty comment matches if there are none.

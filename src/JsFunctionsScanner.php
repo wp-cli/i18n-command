@@ -2,14 +2,19 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
-use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use Peast\Peast;
 use Peast\Syntax\Node;
 use Peast\Traverser;
 
-final class JsFunctionsScanner extends GettextJsFunctionsScanner {
+final class JsFunctionsScanner {
+
+	/**
+	 * The JavaScript code to scan.
+	 *
+	 * @var string
+	 */
+	private $code;
 
 	/**
 	 * If not false, comments will be extracted.
@@ -26,6 +31,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * @var Node\Comment[] $comments_cache
 	 */
 	private $comments_cache = [];
+
+	/**
+	 * @param string $code The JavaScript code to scan.
+	 */
+	public function __construct( $code ) {
+		// Normalize newline characters.
+		$this->code = str_replace( [ "\r\n", "\n\r", "\r" ], "\n", $code );
+	}
 
 	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).
@@ -47,19 +60,13 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Searches for specific functions and creates translations.
 	 *
-	 * @param \Gettext\Translations $translations Translations instance.
-	 * @param array<mixed>         $options      Options.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Options.
 	 * @return void
 	 */
-	public function saveGettextFunctions( $translations, array $options ) {
-		// Ignore multiple translations for now.
-		// @todo Add proper support for multiple translations.
-		if ( is_array( $translations ) ) {
-			$translations = $translations[0];
-		}
-
+	public function saveGettextFunctions( Translations $translations, array $options ) {
 		$functions = isset( $options['functions'] ) && is_array( $options['functions'] ) ? array_keys( $options['functions'] ) : [];
 
 		// Parsing is by far the most expensive part, so skip it for code that
@@ -97,7 +104,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				if ( ! is_array( $functions ) ) {
 					return;
 				}
-				$file          = $options['file'];
+				$file          = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
 				$add_reference = ! empty( $options['addReferences'] );
 
 				foreach ( $node->getLeadingComments() as $comment ) {
@@ -200,22 +207,26 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 
 				if ( isset( $options['line'] ) ) {
-					$line = $options['line'];
+					$line = is_numeric( $options['line'] ) ? (int) $options['line'] : null;
 				} else {
 					$line = $node->getLocation()->getStart()->getLine();
 				}
 
-				$translation = $translations->insert( $context, $original, $plural );
+				$translation = $translations->insert(
+					is_scalar( $context ) ? (string) $context : null,
+					$original,
+					is_scalar( $plural ) ? (string) $plural : null
+				);
 
 				if ( $add_reference ) {
-					$translation->addReference( $file, $line );
+					$translation->getReferences()->add( $file, $line );
 				}
 
 				if (
 					1 === preg_match( MakePotCommand::SPRINTF_PLACEHOLDER_REGEX, $original ) ||
 					1 === preg_match( MakePotCommand::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $original )
 				) {
-					$translation->addFlag( 'js-format' );
+					$translation->getFlags()->add( 'js-format' );
 				}
 
 				/** @var Node\Comment $comment */
@@ -233,7 +244,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					$prefixes       = array_filter( (array) $this->extract_comments );
 
 					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-						$translation->addExtractedComment( $parsed_comment->getComment() );
+						$translation->getExtractedComments()->add( $parsed_comment->getComment() );
 
 						$this->comments_cache[] = $comment;
 					}

@@ -2,8 +2,7 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Translation;
-use Gettext\Translations;
+use InvalidArgumentException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -75,15 +74,13 @@ trait IterableCodeExtractor {
 				$headers = FileDataExtractor::get_file_data_from_string( $text, [ 'Template Name' => 'Template Name' ] );
 
 				if ( ! empty( $headers['Template Name']['value'] ) ) {
-					$translation = new Translation( '', $headers['Template Name']['value'] );
-					$translation->addExtractedComment( 'Template Name of the theme' );
+					$translation = $translations->insert( null, $headers['Template Name']['value'] );
+					$translation->getExtractedComments()->add( 'Template Name of the theme' );
 
 					// Add file reference with line number if available
 					if ( ! empty( $headers['Template Name']['line'] ) ) {
-						$translation->addReference( $options['file'], $headers['Template Name']['line'] );
+						$translation->getReferences()->add( $options['file'], $headers['Template Name']['line'] );
 					}
-
-					$translations[] = $translation;
 				}
 			}
 
@@ -98,29 +95,25 @@ trait IterableCodeExtractor {
 				);
 
 				if ( ! empty( $headers['Title']['value'] ) ) {
-					$translation = new Translation( 'Pattern title', $headers['Title']['value'] );
+					$translation = $translations->insert( 'Pattern title', $headers['Title']['value'] );
 
 					// Add file reference with line number if available
 					if ( ! empty( $headers['Title']['line'] ) ) {
-						$translation->addReference( $options['file'], $headers['Title']['line'] );
+						$translation->getReferences()->add( $options['file'], $headers['Title']['line'] );
 					} else {
-						$translation->addReference( $options['file'] );
+						$translation->getReferences()->add( $options['file'] );
 					}
-
-					$translations[] = $translation;
 				}
 
 				if ( ! empty( $headers['Description']['value'] ) ) {
-					$translation = new Translation( 'Pattern description', $headers['Description']['value'] );
+					$translation = $translations->insert( 'Pattern description', $headers['Description']['value'] );
 
 					// Add file reference with line number if available
 					if ( ! empty( $headers['Description']['line'] ) ) {
-						$translation->addReference( $options['file'], $headers['Description']['line'] );
+						$translation->getReferences()->add( $options['file'], $headers['Description']['line'] );
 					} else {
-						$translation->addReference( $options['file'] );
+						$translation->getReferences()->add( $options['file'] );
 					}
-
-					$translations[] = $translation;
 				}
 			}
 
@@ -128,6 +121,45 @@ trait IterableCodeExtractor {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Checks and returns all files.
+	 *
+	 * @param array<mixed>|string $file_or_files A path of a file or files.
+	 * @return array<string> The file paths.
+	 *
+	 * @throws InvalidArgumentException If a file does not exist or is not readable.
+	 */
+	protected static function getFiles( $file_or_files ) {
+		if ( empty( $file_or_files ) ) {
+			throw new InvalidArgumentException( 'There is not any file defined' );
+		}
+
+		if ( is_string( $file_or_files ) ) {
+			if ( ! is_file( $file_or_files ) ) {
+				throw new InvalidArgumentException( "'$file_or_files' is not a valid file" );
+			}
+
+			if ( ! is_readable( $file_or_files ) ) {
+				throw new InvalidArgumentException( "'$file_or_files' is not a readable file" );
+			}
+
+			return [ $file_or_files ];
+		}
+
+		if ( is_array( $file_or_files ) ) {
+			$files = [];
+
+			foreach ( $file_or_files as $file ) {
+				/** @var array<mixed>|string $file */
+				$files = array_merge( $files, static::getFiles( $file ) );
+			}
+
+			return $files;
+		}
+
+		throw new InvalidArgumentException( 'The first argument must be string or array' );
 	}
 
 	/**

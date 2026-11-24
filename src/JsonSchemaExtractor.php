@@ -2,13 +2,11 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Extractors\Extractor;
-use Gettext\Translations;
 use RuntimeException;
 use WP_CLI;
 use WP_CLI\Utils;
 
-class JsonSchemaExtractor extends Extractor {
+class JsonSchemaExtractor {
 	use IterableCodeExtractor;
 
 	/**
@@ -86,7 +84,7 @@ class JsonSchemaExtractor extends Extractor {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Extracts translations from a JSON file using its i18n schema.
 	 *
 	 * @param string       $text         The text to extract strings from.
 	 * @param Translations $translations Translations instance.
@@ -155,7 +153,7 @@ class JsonSchemaExtractor extends Extractor {
 			$translation = $translations->insert( $i18n_schema, $settings );
 
 			if ( $file ) {
-				$translation->addReference( $file );
+				$translation->getReferences()->add( $file );
 			}
 
 			return;

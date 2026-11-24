@@ -2,7 +2,6 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Generators\Jed;
 use Gettext\Translation;
 use Gettext\Translations;
 
@@ -11,9 +10,17 @@ use Gettext\Translations;
  *
  * Adds some more meta data to JED translation files than the default generator.
  */
-class JedGenerator extends Jed {
+class JedGenerator extends Generator {
 	/**
-	 * {@parentDoc}.
+	 * @var array<string, mixed>
+	 */
+	public static $options = [
+		'json'   => 0,
+		'source' => '',
+	];
+
+	/**
+	 * {@inheritdoc}
 	 *
 	 * @param Translations $translations Translations instance.
 	 * @param array<mixed> $options      Options.
@@ -28,12 +35,12 @@ class JedGenerator extends Jed {
 			'' => [
 				'domain'       => $domain,
 				'lang'         => $translations->getLanguage() ?: 'en',
-				'plural-forms' => $translations->getHeader( 'Plural-Forms' ) ?: 'nplurals=2; plural=(n != 1);',
+				'plural-forms' => $translations->getHeaders()->get( 'Plural-Forms' ) ?: 'nplurals=2; plural=(n != 1);',
 			],
 		];
 
 		$data = [
-			'translation-revision-date' => $translations->getHeader( 'PO-Revision-Date' ),
+			'translation-revision-date' => $translations->getHeaders()->get( 'PO-Revision-Date' ),
 			'generator'                 => 'WP-CLI/' . WP_CLI_VERSION,
 			'source'                    => $options['source'],
 			'domain'                    => $domain,
@@ -42,7 +49,7 @@ class JedGenerator extends Jed {
 			],
 		];
 
-		$result = json_encode( $data, $options['json'] );
+		$result = json_encode( $data, is_int( $options['json'] ) ? $options['json'] : 0 );
 		return false === $result ? '' : $result;
 	}
 
@@ -54,8 +61,8 @@ class JedGenerator extends Jed {
 	 * @return array<string, array<string>>
 	 */
 	public static function buildMessages( Translations $translations ) {
-		$plural_forms      = $translations->getPluralForms();
-		$number_of_plurals = is_array( $plural_forms ) && is_numeric( $plural_forms[0] ) ? ( (int) $plural_forms[0] ) - 1 : null;
+		$plural_forms      = $translations->getHeaders()->getPluralForm();
+		$number_of_plurals = is_array( $plural_forms ) ? (int) $plural_forms[0] - 1 : null;
 		$messages          = [];
 		$context_glue      = chr( 4 );
 
@@ -68,15 +75,15 @@ class JedGenerator extends Jed {
 
 			$key = $translation->getOriginal();
 
-			if ( $translation->hasContext() ) {
+			if ( null !== $translation->getContext() && '' !== $translation->getContext() ) {
 				$key = $translation->getContext() . $context_glue . $key;
 			}
 
-			if ( $translation->hasPluralTranslations( true ) ) {
+			if ( '' !== implode( '', $translation->getPluralTranslations() ) ) {
 				$message = $translation->getPluralTranslations( $number_of_plurals );
-				array_unshift( $message, $translation->getTranslation() );
+				array_unshift( $message, (string) $translation->getTranslation() );
 			} else {
-				$message = [ $translation->getTranslation() ];
+				$message = [ (string) $translation->getTranslation() ];
 			}
 
 			$messages[ $key ] = $message;

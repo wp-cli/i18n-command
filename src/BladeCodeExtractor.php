@@ -3,7 +3,6 @@
 namespace WP_CLI\I18n;
 
 use Exception;
-use Gettext\Translations;
 use WP_CLI;
 
 final class BladeCodeExtractor extends BladeGettextExtractor {
@@ -46,12 +45,7 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 	];
 
 	/**
-	 * @var string
-	 */
-	protected static $functionsScannerClass = 'WP_CLI\I18n\PhpFunctionsScanner';
-
-	/**
-	 * {@inheritdoc}
+	 * Extracts translations from a Blade template.
 	 *
 	 * @param string       $text         The text to extract strings from.
 	 * @param Translations $translations Translations instance.
@@ -63,7 +57,7 @@ final class BladeCodeExtractor extends BladeGettextExtractor {
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		try {
-			self::fromStringMultiple( $text, [ $translations ], $options );
+			PhpCodeExtractor::scan( self::toPhp( $text, $options ), $translations, $options + self::$options );
 		} catch ( Exception $exception ) {
 			WP_CLI::debug(
 				sprintf(

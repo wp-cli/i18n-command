@@ -4,14 +4,10 @@ namespace WP_CLI\I18n;
 
 use eftec\bladeone\BladeOne;
 
-// Modified Gettext Blade extractor that
-// uses the up-to-date BladeOne standalone Blade engine,
-// correctly supports fromStringMultiple.
-
 /**
- * Class to get gettext strings from blade.php files returning arrays.
+ * Turns Blade templates into PHP code using the BladeOne standalone Blade engine.
  */
-class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
+class BladeGettextExtractor {
 
 	/**
 	 * Prepares a Blade compiler/engine and returns it.
@@ -73,19 +69,13 @@ class BladeGettextExtractor extends \Gettext\Extractors\PhpCode {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Returns the PHP code to scan for a Blade template.
 	 *
-	 * @param string                        $text         The text to extract strings from.
-	 * @param array<\Gettext\Translations> $translations Translations instances.
-	 * @param array<mixed>         $options      Options.
-	 * @return void
-	 *
-	 * Note: In the parent PhpCode class fromString() uses fromStringMultiple() (overridden here)
+	 * @param string               $text    Blade template string.
+	 * @param array<string, mixed> $options Options array.
+	 * @return string
 	 */
-	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
-		$php_string = static::compileBladeToPhp( $text, $options );
-
-		$php_string .= static::extractComponentPropExpressions( $text );
-		parent::fromStringMultiple( $php_string, $translations, $options );
+	protected static function toPhp( $text, array $options = [] ) {
+		return static::compileBladeToPhp( $text, $options ) . static::extractComponentPropExpressions( $text );
 	}
 }

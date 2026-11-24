@@ -2,13 +2,19 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Utils\JsFunctionsScanner as GettextJsFunctionsScanner;
-use Gettext\Utils\ParsedComment;
+use WP_CLI;
 use Peast\Peast;
 use Peast\Syntax\Node;
 use Peast\Traverser;
 
-final class JsFunctionsScanner extends GettextJsFunctionsScanner {
+final class JsFunctionsScanner {
+
+	/**
+	 * The JavaScript code to scan.
+	 *
+	 * @var string
+	 */
+	private $code;
 
 	/**
 	 * If not false, comments will be extracted.
@@ -25,6 +31,14 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	 * @var Node\Comment[] $comments_cache
 	 */
 	private $comments_cache = [];
+
+	/**
+	 * @param string $code The JavaScript code to scan.
+	 */
+	public function __construct( $code ) {
+		// Normalize newline characters.
+		$this->code = str_replace( [ "\r\n", "\n\r", "\r" ], "\n", $code );
+	}
 
 	/**
 	 * Enable extracting comments that start with a tag (if $tag is empty all the comments will be extracted).
@@ -46,22 +60,30 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * Searches for specific functions and creates translations.
 	 *
-	 * @param \Gettext\Translations $translations Translations instance.
-	 * @param array<mixed>         $options      Options.
+	 * @param Translations $translations Translations instance.
+	 * @param array<mixed> $options      Options.
 	 * @return void
 	 */
-	public function saveGettextFunctions( $translations, array $options ) {
-		// Ignore multiple translations for now.
-		// @todo Add proper support for multiple translations.
-		if ( is_array( $translations ) ) {
-			$translations = $translations[0];
+	public function saveGettextFunctions( Translations $translations, array $options ) {
+		$functions = isset( $options['functions'] ) && is_array( $options['functions'] ) ? array_keys( $options['functions'] ) : [];
+
+		// Parsing is by far the most expensive part, so skip it for code that
+		// can't contain any translations, and skip collecting comments if
+		// none of them can matter. The checks below work on the raw code, so
+		// they don't apply to code in `eval()` strings or to identifiers
+		// written with Unicode escapes.
+		$parse_all = $this->containsName( [ 'eval' ] ) || $this->containsEscapedName( $functions );
+		if ( ! $parse_all && ! $this->containsName( $functions ) ) {
+			$file = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
+			WP_CLI::debug( "Skipping file {$file}: no translation function calls found", 'make-pot' );
+			return;
 		}
 
 		$peast_options = [
 			'sourceType' => Peast::SOURCE_TYPE_MODULE,
-			'comments'   => false !== $this->extract_comments,
+			'comments'   => $parse_all ? false !== $this->extract_comments : $this->needsComments( $functions ),
 			'jsx'        => true,
 		];
 		$ast           = Peast::latest( $this->code, $peast_options )->parse();
@@ -82,7 +104,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				if ( ! is_array( $functions ) ) {
 					return;
 				}
-				$file          = $options['file'];
+				$file          = isset( $options['file'] ) && is_scalar( $options['file'] ) ? (string) $options['file'] : '';
 				$add_reference = ! empty( $options['addReferences'] );
 
 				foreach ( $node->getLeadingComments() as $comment ) {
@@ -185,22 +207,26 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 				}
 
 				if ( isset( $options['line'] ) ) {
-					$line = $options['line'];
+					$line = is_numeric( $options['line'] ) ? (int) $options['line'] : null;
 				} else {
 					$line = $node->getLocation()->getStart()->getLine();
 				}
 
-				$translation = $translations->insert( $context, $original, $plural );
+				$translation = $translations->insert(
+					is_scalar( $context ) ? (string) $context : null,
+					$original,
+					is_scalar( $plural ) ? (string) $plural : null
+				);
 
 				if ( $add_reference ) {
-					$translation->addReference( $file, $line );
+					$translation->getReferences()->add( $file, $line );
 				}
 
 				if (
 					1 === preg_match( MakePotCommand::SPRINTF_PLACEHOLDER_REGEX, $original ) ||
 					1 === preg_match( MakePotCommand::UNORDERED_SPRINTF_PLACEHOLDER_REGEX, $original )
 				) {
-					$translation->addFlag( 'js-format' );
+					$translation->getFlags()->add( 'js-format' );
 				}
 
 				/** @var Node\Comment $comment */
@@ -218,7 +244,7 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 					$prefixes       = array_filter( (array) $this->extract_comments );
 
 					if ( $parsed_comment->checkPrefixes( $prefixes ) ) {
-						$translation->addExtractedComment( $parsed_comment->getComment() );
+						$translation->getExtractedComments()->add( $parsed_comment->getComment() );
 
 						$this->comments_cache[] = $comment;
 					}
@@ -284,6 +310,91 @@ final class JsFunctionsScanner extends GettextJsFunctionsScanner {
 		);
 
 		$traverser->traverse( $ast );
+	}
+
+	/**
+	 * Whether the code contains any of the given names as a whole word.
+	 *
+	 * Every call that resolveExpressionCallee() can resolve contains the
+	 * function name as a whole word: as an identifier (`__(`, `u.__(`,
+	 * `(0, u.__)(`), as a string (`u["__"]`) or as a comment (`u[/* __ *\/ "a"]`).
+	 *
+	 * This doesn't hold for code inside string literals passed to `eval()`,
+	 * as in `eval("\n__(...)")`, so callers must check for `eval` too.
+	 *
+	 * @param array<int|string> $names Names to look for.
+	 * @return bool
+	 */
+	private function containsName( array $names ) {
+		if ( empty( $names ) ) {
+			return false;
+		}
+
+		$pattern = implode( '|', array_map( 'preg_quote', array_map( 'strval', $names ) ) );
+
+		return 1 === preg_match( '/(?<![\w$])(?:' . $pattern . ')(?![\w$])/', $this->code );
+	}
+
+	/**
+	 * Whether the code contains a Unicode escape for a character of any of the given names.
+	 *
+	 * Identifiers can be written with escapes, like `\u005f\u005f( 'Hello' )`
+	 * for `__( 'Hello' )`. Such a call doesn't contain the name itself.
+	 *
+	 * @param array<int|string> $names Names to look for.
+	 * @return bool
+	 */
+	private function containsEscapedName( array $names ) {
+		if ( false === strpos( $this->code, '\\u' ) ) {
+			return false;
+		}
+
+		$codes = [];
+		foreach ( $names as $name ) {
+			foreach ( str_split( (string) $name ) as $char ) {
+				if ( ord( $char ) > 0x7f ) {
+					// Not worth handling precisely for non-ASCII names.
+					return true;
+				}
+				$codes[] = sprintf( '%x', ord( $char ) );
+			}
+		}
+
+		if ( empty( $codes ) ) {
+			return false;
+		}
+
+		$pattern = implode( '|', array_unique( $codes ) );
+
+		// Either `\uXXXX` with exactly four hex digits, or `\u{X…}`.
+		return 1 === preg_match( '/\\\\u(?:00(?:' . $pattern . ')|\{0*(?:' . $pattern . ')\})/i', $this->code );
+	}
+
+	/**
+	 * Whether the code needs to be parsed with comments.
+	 *
+	 * Comments are needed for translator comments, and for the function names
+	 * in mangled webpack output like `u[/* __ *\/ "a"]( "translation" )`.
+	 *
+	 * Only called for code that contains at least one of the function names.
+	 *
+	 * @param array<int|string> $functions Function names, not empty.
+	 * @return bool
+	 */
+	private function needsComments( array $functions ) {
+		if ( false === $this->extract_comments ) {
+			return false;
+		}
+
+		foreach ( (array) $this->extract_comments as $prefix ) {
+			if ( '' === $prefix || false !== strpos( $this->code, $prefix ) ) {
+				return true;
+			}
+		}
+
+		$pattern = implode( '|', array_map( 'preg_quote', array_map( 'strval', $functions ) ) );
+
+		return 1 === preg_match( '#/\*\s*(?:' . $pattern . ')\s*\*/#', $this->code );
 	}
 
 	/**

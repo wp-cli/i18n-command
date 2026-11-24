@@ -3,12 +3,10 @@
 namespace WP_CLI\I18n;
 
 use Exception;
-use Gettext\Extractors\JsCode;
-use Gettext\Translations;
 use Peast\Syntax\Exception as PeastException;
 use WP_CLI;
 
-final class JsCodeExtractor extends JsCode {
+final class JsCodeExtractor {
 	use IterableCodeExtractor;
 
 	/**
@@ -26,12 +24,7 @@ final class JsCodeExtractor extends JsCode {
 	];
 
 	/**
-	 * @var string
-	 */
-	protected static $functionsScannerClass = 'WP_CLI\I18n\JsFunctionsScanner';
-
-	/**
-	 * {@inheritdoc}
+	 * Extracts translations from JavaScript code.
 	 *
 	 * @param string       $text         The text to extract strings from.
 	 * @param Translations $translations Translations instance.
@@ -43,7 +36,17 @@ final class JsCodeExtractor extends JsCode {
 		WP_CLI::debug( "Parsing file {$file}", 'make-pot' );
 
 		try {
-			self::fromStringMultiple( $text, [ $translations ], $options );
+			$options += self::$options;
+
+			$scanner = new JsFunctionsScanner( $text );
+
+			if ( isset( $options['extractComments'] ) && ( is_string( $options['extractComments'] ) || is_array( $options['extractComments'] ) ) ) {
+				/** @var array<string>|string $extract_comments */
+				$extract_comments = $options['extractComments'];
+				$scanner->enableCommentsExtraction( $extract_comments );
+			}
+
+			$scanner->saveGettextFunctions( $translations, $options );
 		} catch ( PeastException $exception ) {
 			WP_CLI::debug(
 				sprintf(
@@ -64,30 +67,6 @@ final class JsCodeExtractor extends JsCode {
 				),
 				'make-pot'
 			);
-		}
-	}
-
-	/**
-	 * {@inheritdoc}
-	 *
-	 * @param string               $text         The text to extract strings from.
-	 * @param array<\Gettext\Translations> $translations Translations instances.
-	 * @param array<mixed>         $options      Extraction options.
-	 * @return void
-	 */
-	public static function fromStringMultiple( $text, array $translations, array $options = [] ) {
-		$options += self::$options;
-
-		/** @var JsFunctionsScanner $functions */
-		$functions = new self::$functionsScannerClass( $text );
-		if ( isset( $options['extractComments'] ) && ( is_string( $options['extractComments'] ) || is_array( $options['extractComments'] ) ) ) {
-			/** @var array<string>|string $extract_comments */
-			$extract_comments = $options['extractComments'];
-			$functions->enableCommentsExtraction( $extract_comments );
-		}
-
-		if ( ! empty( $translations ) ) {
-			$functions->saveGettextFunctions( $translations[0], $options );
 		}
 	}
 }

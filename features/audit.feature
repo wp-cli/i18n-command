@@ -107,7 +107,7 @@ Feature: Audit strings in a WordPress project
        * Text Domain: foo-plugin
        */
 
-      __( 'Hello %s %s', 'foo-plugin' );
+      __( 'Hello %s %s', 'foo-plugin' ); // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- Unordered on purpose, this is what the audit is expected to flag.
       """
 
     When I try `wp i18n audit foo-plugin`

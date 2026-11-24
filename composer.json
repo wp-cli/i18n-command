@@ -12,7 +12,8 @@
     ],
     "require": {
         "eftec/bladeone": "3.52",
-        "gettext/gettext": "^4.8",
+        "gettext/gettext": "^5.7.4",
+        "gettext/php-scanner": "^2.1",
         "mck89/peast": "^1.13.11",
         "wp-cli/wp-cli": "^3.0"
     },
@@ -63,6 +64,7 @@
         "behat": "run-behat-tests",
         "behat-rerun": "rerun-behat-tests",
         "lint": "run-linter-tests",
+        "lint-gherkin": "run-gherkin-lint-tests",
         "phpcs": "run-phpcs-tests",
         "phpstan": "run-phpstan-tests",
         "phpcbf": "run-phpcbf-cleanup",
@@ -70,6 +72,7 @@
         "prepare-tests": "install-package-tests",
         "test": [
             "@lint",
+            "@lint-gherkin",
             "@phpcs",
             "@phpstan",
             "@phpunit",

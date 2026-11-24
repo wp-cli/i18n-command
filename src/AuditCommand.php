@@ -3,8 +3,6 @@
 namespace WP_CLI\I18n;
 
 use Gettext\Translation;
-use Gettext\Translations;
-use Gettext\Utils\ParsedComment;
 use WP_CLI;
 use WP_CLI\Path;
 use WP_CLI\Utils;
@@ -268,7 +266,7 @@ class AuditCommand extends MakePotCommand {
 	 * @return Translations A Translation set.
 	 */
 	protected function extract_strings_for_audit() {
-		$translations = new Translations();
+		$translations = Translations::create();
 
 		if ( $this->domain ) {
 			$translations->setDomain( $this->domain );
@@ -384,16 +382,6 @@ class AuditCommand extends MakePotCommand {
 	}
 
 	/**
-	 * Extracts comment text from a ParsedComment or string.
-	 *
-	 * @param ParsedComment|string $comment Comment object or string.
-	 * @return string Comment text.
-	 */
-	protected function get_comment_text( $comment ) {
-		return $comment instanceof ParsedComment ? $comment->getComment() : $comment;
-	}
-
-	/**
 	 * Collects audit issues from translations.
 	 *
 	 * Goes through all extracted strings to find possible mistakes.
@@ -407,19 +395,21 @@ class AuditCommand extends MakePotCommand {
 		foreach ( $translations as $translation ) {
 			/** @var Translation $translation */
 
-			$references = $translation->getReferences();
+			$references = Translations::getReferenceList( $translation );
 
 			// File headers don't have any file references.
-			if ( ! $translation->hasReferences() ) {
+			if ( empty( $references ) ) {
 				continue;
 			}
 
 			$file = $references[0][0];
-			$line = $references[0][1] ?? null;
+			$line = $references[0][1];
+
+			$comments = $translation->getExtractedComments()->toArray();
 
 			// Check 1: Flag strings with placeholders that should have translator comments.
 			if (
-				! $translation->hasExtractedComments() &&
+				empty( $comments ) &&
 				preg_match( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal() ) >= 1
 			) {
 				$issues[] = [
@@ -434,15 +424,13 @@ class AuditCommand extends MakePotCommand {
 			}
 
 			// Check 2: Flag strings with different translator comments.
-			if ( $translation->hasExtractedComments() ) {
-				$comments = $translation->getExtractedComments();
-
+			if ( ! empty( $comments ) ) {
 				// Remove plugin header information from comments.
 				$comments = array_filter(
 					$comments,
 					function ( $comment ) {
 						foreach ( $this->get_file_headers( $this->project_type ) as $file_header ) {
-							if ( 0 === strpos( $this->get_comment_text( $comment ), $file_header ) ) {
+							if ( 0 === strpos( $comment, $file_header ) ) {
 								return false;
 							}
 						}
@@ -451,9 +439,7 @@ class AuditCommand extends MakePotCommand {
 					}
 				);
 
-				$unique_comment_texts = array_unique(
-					array_map( [ $this, 'get_comment_text' ], $comments )
-				);
+				$unique_comment_texts = array_unique( $comments );
 
 				$comments_count = count( $unique_comment_texts );
 
@@ -497,11 +483,11 @@ class AuditCommand extends MakePotCommand {
 				];
 			}
 
-			if ( $translation->hasPlural() ) {
+			if ( Translations::hasValue( $translation->getPlural() ) ) {
 				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getOriginal(), $single_placeholders );
 				$single_placeholders = $single_placeholders[0];
 
-				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, $translation->getPlural(), $plural_placeholders );
+				preg_match_all( self::SPRINTF_PLACEHOLDER_REGEX, (string) $translation->getPlural(), $plural_placeholders );
 				$plural_placeholders = $plural_placeholders[0];
 
 				// see https://developer.wordpress.org/plugins/internationalization/how-to-internationalize-your-plugin/#plurals

@@ -11,5 +11,4 @@
 /phpstan.neon.dist export-ignore
 /phpunit.xml.dist export-ignore
 /tests export-ignore
-/stubs export-ignore
 /wp-cli.yml export-ignore

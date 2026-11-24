@@ -2,7 +2,6 @@
 
 namespace WP_CLI\I18n;
 
-use Gettext\Generators\PhpArray;
 use Gettext\Translation;
 use Gettext\Translations;
 
@@ -11,7 +10,7 @@ use Gettext\Translations;
  *
  * Returns output in the form WordPress uses.
  */
-class PhpArrayGenerator extends PhpArray {
+class PhpArrayGenerator extends Generator {
 	/**
 	 * @var array<string, bool>
 	 */
@@ -64,7 +63,7 @@ class PhpArrayGenerator extends PhpArray {
 
 		$result = [
 			'domain'       => $translations->getDomain(),
-			'plural-forms' => $translations->getHeader( 'Plural-Forms' ),
+			'plural-forms' => $translations->getHeaders()->get( 'Plural-Forms' ),
 		];
 
 		$language = $translations->getLanguage();
@@ -74,15 +73,17 @@ class PhpArrayGenerator extends PhpArray {
 
 		// GlotPress exports the revision date as `translation-revision-date`, so use that name here too.
 		$headers_allowlist = [
+			'Project-Id-Version' => 'project-id-version',
 			'POT-Creation-Date'  => 'pot-creation-date',
 			'PO-Revision-Date'   => 'translation-revision-date',
-			'Project-Id-Version' => 'project-id-version',
 			'X-Generator'        => 'x-generator',
 		];
 
-		foreach ( $translations->getHeaders() as $name => $value ) {
-			if ( isset( $headers_allowlist[ $name ] ) ) {
-				$result[ $headers_allowlist[ $name ] ] = $value;
+		foreach ( $headers_allowlist as $name => $key ) {
+			$value = $translations->getHeaders()->get( $name );
+
+			if ( null !== $value ) {
+				$result[ $key ] = $value;
 			}
 		}
 
@@ -90,7 +91,7 @@ class PhpArrayGenerator extends PhpArray {
 		 * @var Translation $translation
 		 */
 		foreach ( $translations as $translation ) {
-			if ( $translation->isDisabled() || ! $translation->hasTranslation() ) {
+			if ( $translation->isDisabled() || null === $translation->getTranslation() || '' === $translation->getTranslation() ) {
 				continue;
 			}
 
@@ -99,7 +100,7 @@ class PhpArrayGenerator extends PhpArray {
 
 			$key = $context ? $context . "\4" . $original : $original;
 
-			if ( $translation->hasPluralTranslations() ) {
+			if ( ! empty( $translation->getPluralTranslations() ) ) {
 				$msg_translations = $translation->getPluralTranslations();
 				array_unshift( $msg_translations, $translation->getTranslation() );
 				$messages[ $key ] = implode( "\0", $msg_translations );

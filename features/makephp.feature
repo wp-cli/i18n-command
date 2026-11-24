@@ -432,3 +432,39 @@ Feature: Generate PHP files from PO files
       [,
       """
 
+
+  Scenario: Includes translations that are "0"
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin-de_DE.po file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+      "Language: de_DE\n"
+      "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+      "X-Domain: foo-plugin\n"
+
+      #: foo-plugin.php:10
+      msgctxt "start of week"
+      msgid "1"
+      msgstr "0"
+
+      #: foo-plugin.php:20
+      msgid "0"
+      msgstr "Null"
+      """
+
+    When I run `wp i18n make-php foo-plugin --pretty-print`
+    Then STDOUT should contain:
+      """
+      Success: Created 1 file.
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
+      """
+      1' => '0',
+      """
+    And the foo-plugin/foo-plugin-de_DE.l10n.php file should contain:
+      """
+      0 => 'Null',
+      """

@@ -189,8 +189,8 @@ Feature: Generate a POT file of a WordPress project
     And I run `wp i18n make-pot wp-content/plugins/hello-world wp-content/plugins/hello-world/languages/hello-world.pot`
     Then the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
       """
-      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
       "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
       """
 
   Scenario: Sets the generator header
@@ -893,8 +893,8 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        _n( 'One Comment', '%s Comments', $number, 'foo-plugin' ),
-        $number
+          _n( 'One Comment', '%s Comments', $number, 'foo-plugin' ),
+          $number
       );
 
       """
@@ -920,9 +920,9 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        _n( '%1$s Comment (%2$d)', '%2$s Comments (%1$s)', $number, 'foo-plugin' ),
-        $number,
-        $another_variable
+          _n( '%1$s Comment (%2$d)', '%2$s Comments (%1$s)', $number, 'foo-plugin' ),
+          $number,
+          $another_variable
       );
 
       """
@@ -948,9 +948,9 @@ Feature: Generate a POT file of a WordPress project
        */
 
       sprintf(
-        __( 'Hello %s %s', 'foo-plugin' ),
-        $a_variable,
-        $another_variable
+          __( 'Hello %s %s', 'foo-plugin' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- Unordered on purpose, this is what make-pot is expected to warn about.
+          $a_variable,
+          $another_variable
       );
 
       """
@@ -1765,17 +1765,23 @@ Feature: Generate a POT file of a WordPress project
       # This file is distributed under the same license as the Hello World plugin.
       msgid ""
       msgstr ""
+      "Content-Transfer-Encoding: 8bit\n"
+      "Content-Type: text/plain; charset=UTF-8\n"
+      "Language-Team: LANGUAGE <LL@li.org>\n"
+      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+      "MIME-Version: 1.0\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
+      """
       "Project-Id-Version: Hello World 0.1.0\n"
       "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/hello-world\n"
-      "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-      "Language-Team: LANGUAGE <LL@li.org>\n"
-      "MIME-Version: 1.0\n"
-      "Content-Type: text/plain; charset=UTF-8\n"
-      "Content-Transfer-Encoding: 8bit\n"
       """
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
       """
       "POT-Creation-Date: 2018-05-02T22:06:24+00:00\n"
+      """
+    And the wp-content/plugins/hello-world/languages/hello-world.pot file should not contain:
+      """
       "PO-Revision-Date: 2018-05-02T22:06:24+00:00\n"
       """
     And the wp-content/plugins/hello-world/languages/hello-world.pot file should contain:
@@ -2014,6 +2020,75 @@ Feature: Generate a POT file of a WordPress project
     And the foo-plugin/foo-plugin.pot file should not contain:
       """
       msgid "foo-plugin"
+      """
+
+  Scenario: Only parses JavaScript files that can contain translations
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/no-calls.js file:
+      """
+      function __webpack_require__( moduleId ) { return moduleId; }
+      const strings = { label_x: 'Not translated', foo__: 'Not translated either' };
+      """
+    And a foo-plugin/mangled.js file:
+      """
+      Object(i18n[/* __ */ "a"])( 'Mangled webpack', 'foo-plugin' );
+      """
+    And a foo-plugin/eval.js file:
+      """
+      eval( "var a = 1;\n__( 'Inside eval', 'foo-plugin' );" );
+      """
+    And a foo-plugin/minified.js file:
+      """
+      var a=Object(u.__)("Minified","foo-plugin");
+      """
+    And a foo-plugin/comment.js file:
+      """
+      // translators: A comment.
+      wp.i18n._x( 'With comment', 'context', 'foo-plugin' );
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug=make-pot`
+    Then STDERR should contain:
+      """
+      Skipping file no-calls.js: no translation function calls found
+      """
+    And STDERR should not contain:
+      """
+      Skipping file mangled.js
+      """
+    And STDERR should not contain:
+      """
+      Skipping file eval.js
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Mangled webpack"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Inside eval"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Minified"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: A comment.
+      #: comment.js:2
+      msgctxt "context"
+      msgid "With comment"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      Not translated
       """
 
   Scenario: Ignores dynamic import in JavaScript file.
@@ -3398,6 +3473,77 @@ Feature: Generate a POT file of a WordPress project
       msgid "anotherkeyword"
       """
 
+  Scenario: Falls back to bundled schemas when remote schemas cannot be downloaded
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+      """
+    And a foo-plugin/block.json file:
+      """
+      {
+        "name": "my-plugin/notice",
+        "title": "Notice",
+        "category": "common",
+        "textdomain": "foo-plugin"
+      }
+      """
+    And a foo-plugin/theme.json file:
+      """
+      {
+        "version": 1,
+        "settings": {
+          "color": {
+            "palette": [
+              { "slug": "black", "color": "#000000", "name": "Black" }
+            ]
+          }
+        }
+      }
+      """
+    # A response without a header/body separator makes Requests throw, which
+    # WP_CLI\Utils\http_request() turns into a RuntimeException, as on a network error.
+    And that HTTP requests to https://develop.svn.wordpress.org/trunk/src/wp-includes/ will respond with:
+      """
+      HTTP/1.1 503 Service Unavailable
+      """
+
+    When I try `wp i18n make-pot foo-plugin --debug`
+    Then STDOUT should contain:
+      """
+      Success: POT file successfully generated.
+      """
+    And STDERR should contain:
+      """
+      Failed to download from URL https://develop.svn.wordpress.org/trunk/src/wp-includes/block-i18n.json
+      """
+    And STDERR should contain:
+      """
+      Failed to download from URL https://develop.svn.wordpress.org/trunk/src/wp-includes/theme-i18n.json
+      """
+    And STDERR should contain:
+      """
+      Remote file could not be accessed, will use local file as fallback
+      """
+    And STDERR should not contain:
+      """
+      Error:
+      """
+    And the return code should be 0
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "block title"
+      msgid "Notice"
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgctxt "Color name"
+      msgid "Black"
+      """
+
   Scenario: Ignores block.json files with other text domain
     Given an empty foo-plugin directory
     And a foo-plugin/foo-plugin.php file:
@@ -4260,4 +4406,115 @@ Feature: Generate a POT file of a WordPress project
       #: foo.js:4
       #, js-format
       msgid "Buongiorno %1$s"
+      """
+
+  Scenario: Subtracts and merges strings that are "0"
+    Given an empty foo-plugin directory
+    And a foo-plugin/exception.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+
+      #: other.php:1
+      msgid "0"
+      msgstr ""
+      """
+    And a foo-plugin/existing.pot file:
+      """
+      msgid ""
+      msgstr ""
+      "Project-Id-Version: Foo Plugin\n"
+
+      #: existing.php:1
+      msgctxt "number"
+      msgid "0"
+      msgstr ""
+      """
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+
+       __( '0', 'foo-plugin' );
+
+       __( 'Hello World', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin foo-plugin/foo-plugin.pot --subtract=foo-plugin/exception.pot --merge=foo-plugin/existing.pot`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #: existing.php:1
+      msgctxt "number"
+      msgid "0"
+      msgstr ""
+      """
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      msgid "Hello World"
+      """
+    And the foo-plugin/foo-plugin.pot file should not contain:
+      """
+      #: foo-plugin.php:6
+      """
+
+  Scenario: Groups references by file and sorts flags
+    Given an empty foo-plugin directory
+    And a foo-plugin/foo-plugin.php file:
+      """
+      <?php
+      /**
+       * Plugin Name: Foo Plugin
+       */
+
+       /* translators: %s: Name */
+       __( 'Hello %s', 'foo-plugin' );
+      """
+    And a foo-plugin/admin.php file:
+      """
+      <?php
+       /* translators: %s: Name */
+       __( 'Hello %s', 'foo-plugin' );
+      """
+    And a foo-plugin/build/index.js file:
+      """
+      /* translators: %s: Name */
+      __( 'Hello %s', 'foo-plugin' );
+      """
+    And a foo-plugin/build/index.js.map file:
+      """
+      {"version":3,"sources":["index.js"],"sourcesContent":["\n\n/* translators: %s: Name */\n__( 'Hello %s', 'foo-plugin' );"]}
+      """
+    And a foo-plugin/build/view.js file:
+      """
+      /* translators: %s: Name */
+      __( 'Hello %s', 'foo-plugin' );
+      """
+
+    When I run `wp i18n make-pot foo-plugin`
+    Then STDOUT should be:
+      """
+      Plugin file detected.
+      Success: POT file successfully generated.
+      """
+    And STDERR should be empty
+    And the foo-plugin/foo-plugin.pot file should contain:
+      """
+      #. translators: %s: Name
+      #: admin.php:3
+      #: foo-plugin.php:7
+      #: build/index.js:2
+      #: build/index.js:4
+      #: build/view.js:2
+      #, js-format,php-format
+      msgid "Hello %s"
+      msgstr ""
       """

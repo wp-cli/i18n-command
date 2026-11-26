@@ -71,10 +71,11 @@ class PhpArrayGenerator extends Generator {
 			$result['language'] = $language;
 		}
 
+		// GlotPress exports the revision date as `translation-revision-date`, so use that name here too.
 		$headers_allowlist = [
 			'Project-Id-Version' => 'project-id-version',
 			'POT-Creation-Date'  => 'pot-creation-date',
-			'PO-Revision-Date'   => 'po-revision-date',
+			'PO-Revision-Date'   => 'translation-revision-date',
 			'X-Generator'        => 'x-generator',
 		];
 
